@@ -82,17 +82,17 @@ class PromptManager:
         prompt_parts = []
         
         # Sistema prompt
-        prompt_parts.append("""Sei un esperto di SQL che aiuta a convertire domande in linguaggio naturale in query SQL.
-        Il tuo compito è:
-        1. Generare una query SQL valida che risponda alla domanda dell'utente
-        2. Fornire una breve spiegazione dei risultati
+        prompt_parts.append("""You are an SQL expert who helps convert natural language queries into SQL queries.
+        Your task is:
+        1. Generate a valid SQL query that answers the user's question
+        2. Provide a brief explanation of the results
         
-        Formato della risposta:
+        Response format:
         ```sql
-        -- La tua query SQL qui
+        -- Your SQL query here
         ```
-        
-        Spiegazione: [Breve spiegazione della query e dei risultati attesi]
+        Always insert schema name before the tables in sql query. The schema name is "video_games"
+        Explanation: [Brief explanation of the query and expected results].
         """)
         
         # Schema del database
