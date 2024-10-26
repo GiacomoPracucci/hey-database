@@ -83,16 +83,24 @@ class PromptManager:
         
         # Sistema prompt
         prompt_parts.append("""You are an SQL expert who helps convert natural language queries into SQL queries.
-        Your task is:
-        1. Generate a valid SQL query that answers the user's question
-        2. Provide a brief explanation of the results
-        
-        Response format:
-        ```sql
-        -- Your SQL query here
-        ```
-        Always insert schema name before the tables in sql query. The schema name is "video_games"
-        Explanation: [Brief explanation of the query and expected results].
+Your task is:
+1. Generate a valid SQL query that answers the user's question
+2. Provide a brief explanation of the results
+
+Response format:
+```sql
+SELECT column_names
+FROM table_names
+WHERE conditions;
+```
+
+Important:
+- Always insert schema name "video_games" before the tables
+- Do not include comments in the SQL query
+- The query must be executable
+
+After the query, provide:
+Explanation: [Brief explanation of what the query does and what results to expect]
         """)
         
         # Schema del database
@@ -129,13 +137,18 @@ class PromptManager:
             query = response[sql_start:sql_end].strip()
             query = query.replace("```sql", "").replace("```", "").strip()
             
-            # Estrae la spiegazione (tutto ciò che segue dopo "Spiegazione:")
-            explanation_start = response.find("Spiegazione:")
+            # Rimuove i commenti SQL
+            query_lines = query.split('\n')
+            query_lines = [line.strip() for line in query_lines if line.strip() and not line.strip().startswith('--')]
+            query = '\n'.join(query_lines)
+            
+            # Estrae la spiegazione (tutto ciò che segue dopo "Explanation:")
+            explanation_start = response.find("Explanation:")
             explanation = response[explanation_start:].strip() if explanation_start != -1 else ""
             
             return {
                 "query": query,
-                "explanation": explanation.replace("Spiegazione:", "").strip()
+                "explanation": explanation.replace("Explanation:", "").strip()
             }
         except Exception as e:
             print(f"Errore nel parsing della risposta: {e}")
@@ -174,12 +187,16 @@ class PromptManager:
                     "explanation": parsed["explanation"]
                 }
             
+            # Converti sempre i DataFrame in liste di dizionari
+            results_dict = df.to_dict('records')
+            preview_dict = df.head().to_dict('records')
+            
             return {
                 "success": True,
                 "query": parsed["query"],
                 "explanation": parsed["explanation"],
-                "results": df,
-                "preview": df.head()
+                "results": results_dict,
+                "preview": preview_dict
             }
             
         except Exception as e:
