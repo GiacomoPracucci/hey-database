@@ -103,6 +103,44 @@ body {
     margin: 8px 0;
     font-family: 'Courier New', Courier, monospace;
     white-space: pre-wrap;
+    /* Assicura che il container si adatti al contenuto */
+    width: 100%;
+    overflow-x: auto;  /* Aggiunge scroll orizzontale solo se necessario */
+}
+
+/* Stile per il contenuto della query */
+.sql-query pre {
+    margin: 0;
+    white-space: pre-wrap;       /* Permette il wrapping del testo */
+    word-wrap: break-word;       /* Spezza le parole lunghe se necessario */
+    word-break: break-all;       /* Spezza le parole in qualsiasi punto se necessario */
+}
+
+.sql-query code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    /* Rimuovi white-space: pre perché viene gestito dal pre parent */
+    display: block;
+    width: 100%;
+}
+
+/* Se vuoi che il box si adatti al contenuto ma non diventi troppo largo */
+.message.bot .message-content {
+    max-width: 80%;         /* o qualsiasi larghezza massima desideri */
+    overflow-wrap: break-word;
+}
+
+/* Aggiungi stili per evidenziare le parole chiave SQL (opzionale) */
+.sql-query .keyword {
+    color: #ff79c6;
+}
+
+.sql-query .table {
+    color: #8be9fd;
+}
+
+.sql-query .function {
+    color: #50fa7b;
 }
 
 .results-container {

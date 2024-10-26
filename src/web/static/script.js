@@ -11,13 +11,43 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.style.height = userInput.scrollHeight + 'px';
     }
 
+    // Funzione helper per il bottone di copia
+    function createCopyButton(textToCopy) {
+        const button = document.createElement('button');
+        button.className = 'copy-button';
+        button.innerHTML = '<i class="fas fa-copy"></i>';
+        button.title = 'Copia query';
+        
+        button.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                button.classList.add('copied');
+                
+                // Ripristina l'icona dopo 2 secondi
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                    button.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Errore nella copia:', err);
+                button.innerHTML = '<i class="fas fa-times"></i>';
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            }
+        });
+        
+        return button;
+    }
+
     function addMessage(content, type = 'user') {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
         
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
-
+    
         if (type === 'bot') {
             if (!content.success) {
                 // Visualizzazione dell'errore
@@ -39,19 +69,31 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Visualizzazione normale della risposta
                 if (content.query) {
+                    const queryContainer = document.createElement('div');
+                    queryContainer.className = 'sql-query-container';
+                    
+                    // Toolbar per il bottone di copia
+                    const toolbar = document.createElement('div');
+                    toolbar.className = 'sql-query-toolbar';
+                    toolbar.appendChild(createCopyButton(content.query));
+                    queryContainer.appendChild(toolbar);
+                    
+                    // Box della query
                     const queryDiv = document.createElement('div');
                     queryDiv.className = 'sql-query';
                     queryDiv.innerHTML = `<pre><code>${content.query}</code></pre>`;
-                    contentDiv.appendChild(queryDiv);
+                    queryContainer.appendChild(queryDiv);
+                    
+                    contentDiv.appendChild(queryContainer);
                 }
-
+    
                 if (content.explanation) {
                     const explanationDiv = document.createElement('div');
                     explanationDiv.className = 'explanation';
                     explanationDiv.textContent = content.explanation;
                     contentDiv.appendChild(explanationDiv);
                 }
-
+    
                 if (content.results && content.results.length > 0) {
                     const tableDiv = document.createElement('div');
                     tableDiv.className = 'results-container';
@@ -90,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             contentDiv.textContent = content;
         }
-
+    
         messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
