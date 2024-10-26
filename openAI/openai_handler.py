@@ -10,8 +10,7 @@ class OpenAIManger:
     def __init__(self,
                  api_key: str,
                  embedding_model: str = "text-embedding-3-large",
-                 chat_model: str = "gpt-4o",
-                 max_retries: int = 2
+                 chat_model: str = "gpt-4o"
                  ) -> None:
         """Inizializza il client OpenAI e configura i modelli da utilizzare.
         
@@ -25,10 +24,9 @@ class OpenAIManger:
         self.client = OpenAI(api_key=api_key)
         self.embedding_model = embedding_model
         self.chat_model = chat_model
-        self.max_retries = max_retries
         
     @retry(
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(2),
         wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     def get_embedding(self, text: str) -> Union[List[float], None]:
@@ -52,7 +50,7 @@ class OpenAIManger:
             return None
 
     @retry(
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(2),
         wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     def get_completion(self,
