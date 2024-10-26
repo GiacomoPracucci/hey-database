@@ -23,6 +23,8 @@ body {
     line-height: 1.6;
 }
 
+
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -227,4 +229,122 @@ textarea:focus {
     margin: 8px 0;
     font-style: italic;
     color: #666;
+}
+
+.error-container {
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 8px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.error-icon {
+    font-size: 20px;
+    color: #e53e3e;
+}
+
+.error-message {
+    flex: 1;
+}
+
+.error-title {
+    color: #e53e3e;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.error-details {
+    color: #4a5568;
+    margin-bottom: 8px;
+}
+
+.error-query {
+    background-color: #fff;
+    border: 1px solid #edf2f7;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 8px;
+}
+
+.error-query-label {
+    color: #4a5568;
+    font-size: 0.875rem;
+    margin-bottom: 4px;
+}
+
+.error-query pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.error-query code {
+    color: #805ad5;
+    font-family: monospace;
+}
+
+
+/* Modifica il messaggio di benvenuto */
+.message.bot.welcome {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 2rem auto;
+    max-width: 1200px;  /* o la larghezza che preferisci */
+}
+
+.message.bot.welcome .message-content {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message.bot.welcome ul {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.message.bot.welcome li {
+    margin: 0.5rem 0;
+    color: #2c3e50;
+}
+
+/* Stile per l'indicatore di caricamento nella chat */
+.typing-indicator-container {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+.typing-indicator {
+    display: inline-flex;
+    gap: 4px;
+    padding: 12px 24px;
+    background-color: #f8f9fa;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background-color: var(--secondary-color);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+    opacity: 0.6;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
 }

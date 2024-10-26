@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.style.height = userInput.scrollHeight + 'px';
     }
 
-    // Aggiunge un messaggio alla chat
     function addMessage(content, type = 'user') {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
@@ -19,10 +18,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
 
-        if (type === 'bot' && typeof content === 'object') {
-            // Gestisce la risposta strutturata del bot
-            if (content.success) {
-                // Aggiunge la query SQL se presente
+        if (type === 'bot') {
+            if (!content.success) {
+                // Visualizzazione dell'errore
+                contentDiv.innerHTML = `
+                    <div class="error-container">
+                        <div class="error-icon">❌</div>
+                        <div class="error-message">
+                            <div class="error-title">Si è verificato un errore:</div>
+                            <div class="error-details">${content.error}</div>
+                            ${content.query ? `
+                                <div class="error-query">
+                                    <div class="error-query-label">Query tentata:</div>
+                                    <pre><code>${content.query}</code></pre>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Visualizzazione normale della risposta
                 if (content.query) {
                     const queryDiv = document.createElement('div');
                     queryDiv.className = 'sql-query';
@@ -30,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     contentDiv.appendChild(queryDiv);
                 }
 
-                // Aggiunge la spiegazione se presente
                 if (content.explanation) {
                     const explanationDiv = document.createElement('div');
                     explanationDiv.className = 'explanation';
@@ -38,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     contentDiv.appendChild(explanationDiv);
                 }
 
-                // Aggiunge i risultati in una tabella se presenti
                 if (content.results && content.results.length > 0) {
                     const tableDiv = document.createElement('div');
                     tableDiv.className = 'results-container';
@@ -73,15 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     tableDiv.appendChild(table);
                     contentDiv.appendChild(tableDiv);
                 }
-            } else {
-                // Mostra l'errore
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.textContent = `Errore: ${content.error}`;
-                contentDiv.appendChild(errorDiv);
             }
         } else {
-            // Messaggio semplice (testo)
             contentDiv.textContent = content;
         }
 
@@ -95,12 +101,38 @@ document.addEventListener('DOMContentLoaded', () => {
         typingIndicator.style.display = show ? 'flex' : 'none';
     }
 
+    // Funzione per aggiungere l'indicatore di caricamento nella chat
+    function addLoadingIndicator() {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'typing-indicator-container';
+        loadingDiv.id = 'typingIndicator';
+        
+        loadingDiv.innerHTML = `
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        `;
+        
+        chatMessages.appendChild(loadingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Funzione per rimuovere l'indicatore di caricamento
+    function removeLoadingIndicator() {
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
     // Invia il messaggio al server
     async function sendMessage() {
         const message = userInput.value.trim();
         if (!message) return;
         
-        // Disabilita input e bottone durante l'invio
+        // Disabilita input e bottone
         userInput.disabled = true;
         sendButton.disabled = true;
         
@@ -109,8 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.value = '';
         adjustTextareaHeight();
         
-        // Mostra l'indicatore di digitazione
-        toggleTypingIndicator(true);
+        // Aggiunge l'indicatore di caricamento
+        addLoadingIndicator();
         
         try {
             const response = await fetch('/api/chat', {
@@ -122,9 +154,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             const data = await response.json();
+            
+            // Rimuove l'indicatore di caricamento
+            removeLoadingIndicator();
+            
+            // Aggiunge la risposta del bot
             addMessage(data, 'bot');
             
         } catch (error) {
+            // Rimuove l'indicatore di caricamento
+            removeLoadingIndicator();
+            
             addMessage({
                 success: false,
                 error: 'Errore di comunicazione con il server'
@@ -133,7 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Riabilita input e bottone
             userInput.disabled = false;
             sendButton.disabled = false;
-            toggleTypingIndicator(false);
             userInput.focus();
         }
     }

@@ -2,16 +2,13 @@
 
 {% block content %}
 <div class="chat-container">
-    <!-- Header con titolo e descrizione -->
     <div class="chat-header">
         <h1>SQL Chatbot</h1>
-        <p>Fai domande sul database dei videogiochi utilizzando il linguaggio naturale</p>
     </div>
 
-    <!-- Area messaggi -->
     <div class="chat-messages" id="chatMessages">
-        <!-- Messaggio di benvenuto -->
-        <div class="message bot">
+        <!-- Messaggio di benvenuto con la nuova classe -->
+        <div class="message bot welcome">
             <div class="message-content">
                 <p>👋 Ciao! Sono un chatbot specializzato in query SQL.</p>
                 <p>Puoi chiedermi informazioni sul database dei videogiochi, ad esempio:</p>
@@ -24,7 +21,6 @@
         </div>
     </div>
 
-    <!-- Area input -->
     <div class="chat-input-container">
         <div class="input-wrapper">
             <textarea 
@@ -35,11 +31,6 @@
             <button id="sendButton" class="send-button">
                 <i class="fas fa-paper-plane"></i>
             </button>
-        </div>
-        <div class="typing-indicator" id="typingIndicator" style="display: none;">
-            <span></span>
-            <span></span>
-            <span></span>
         </div>
     </div>
 </div>

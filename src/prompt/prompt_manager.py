@@ -1,5 +1,8 @@
 from typing import Dict, Optional, List, Any
 from dataclasses import dataclass
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 class PromptManager:
     """Classe responsabile per la gestione e generazione dei prompt."""
@@ -103,14 +106,12 @@ After the query, provide:
 Explanation: [Brief explanation of what the query does and what results to expect]
         """)
         
-        # Schema del database
+        # schema del database
         prompt_parts.append(self._format_schema_description())
-        
-        # Dati di esempio (se richiesti)
+        # dati di esempio (se richiesti)
         if include_sample_data:
             prompt_parts.append(self._format_sample_data(max_sample_rows))
-        
-        # Domanda dell'utente
+        # domanda dell'utente
         prompt_parts.append("\nDOMANDA DELL'UTENTE:")
         prompt_parts.append(user_question)
         
@@ -125,37 +126,103 @@ Explanation: [Brief explanation of what the query does and what results to expec
         Returns:
             Dict[str, str]: Dizionario con query e spiegazione"""
         try:
-            # Estrae la query SQL (assume che sia racchiusa in ```sql ... ```)
-            sql_start = response.find("```sql")
-            sql_end = response.find("```", sql_start + 6)
+            response = response.strip().replace('\r\n', '\n')
             
-            if sql_start == -1 or sql_end == -1:
-                # Fallback: cerca solo la query senza il tag sql
-                sql_start = response.find("```")
-                sql_end = response.find("```", sql_start + 3)
+            # Lista di possibili delimitatori di query SQL
+            sql_markers = [
+                ("```sql", "```"),  # Markdown SQL
+                ("```", "```"),     # Markdown generico
+                ("SELECT", ";"),    # Query SQL diretta
+                ("WITH", ";"),      # Per query con CTE
+                ("select", ";"),    # Case insensitive
+                ("with", ";")       # Case insensitive per CTE
+            ]
             
-            query = response[sql_start:sql_end].strip()
-            query = query.replace("```sql", "").replace("```", "").strip()
+            # cerca la query usando i vari delimitatori
+            query = None
+            for start_marker, end_marker in sql_markers:
+                start_idx = response.lower().find(start_marker.lower())
+                if start_idx != -1:
+                    # se troviamo un marker di inizio
+                    start_pos = start_idx + len(start_marker)
+                    if end_marker == "```":
+                        end_idx = response.find(end_marker, start_pos)
+                        if end_idx != -1:
+                            query = response[start_pos:end_idx]
+                            break
+                    else:  # Per i casi SELECT/WITH
+                        # cerca il primo ; dopo la posizione di start
+                        end_idx = response.find(end_marker, start_idx)
+                        if end_idx != -1:
+                            query = response[start_idx:end_idx + 1]
+                            break
             
-            # Rimuove i commenti SQL
-            query_lines = query.split('\n')
-            query_lines = [line.strip() for line in query_lines if line.strip() and not line.strip().startswith('--')]
-            query = '\n'.join(query_lines)
+            if not query:
+                raise ValueError("Nessuna query SQL valida trovata nella risposta")
+                
+            # pulizia e validazione della query
+            query = self._clean_sql_query(query)
             
-            # Estrae la spiegazione (tutto ciò che segue dopo "Explanation:")
-            explanation_start = response.find("Explanation:")
-            explanation = response[explanation_start:].strip() if explanation_start != -1 else ""
+            # estrae la spiegazione
+            explanation = ""
+            explanation_markers = ["explanation:", "spiegazione:", "this query"]
+            for marker in explanation_markers:
+                exp_idx = response.lower().find(marker)
+                if exp_idx != -1:
+                    explanation = response[exp_idx:].strip()
+                    break
             
             return {
                 "query": query,
-                "explanation": explanation.replace("Explanation:", "").strip()
+                "explanation": explanation
             }
+            
         except Exception as e:
-            print(f"Errore nel parsing della risposta: {e}")
+            logger.error(f"Errore nel parsing della risposta LLM: {str(e)}")
             return {
                 "query": "",
-                "explanation": "Errore nel parsing della risposta del modello."
+                "explanation": f"Errore nel parsing della risposta: {str(e)}"
             }
+
+    def _clean_sql_query(self, query: str) -> str:
+        """Pulisce e valida una query SQL.
+        
+        Args:
+            query (str): Query SQL grezza
+            
+        Returns:
+            str: Query SQL pulita e validata
+            
+        Raises:
+            ValueError: Se la query non è valida"""
+        
+        # rimuove i marker di codice se presenti
+        query = query.replace("```sql", "").replace("```", "").strip()
+        
+        # rimuove i commenti
+        query_lines = []
+        for line in query.split('\n'):
+            line = line.strip()
+            if line and not line.startswith('--'):
+                # Rimuove i commenti inline
+                comment_idx = line.find('--')
+                if comment_idx != -1:
+                    line = line[:comment_idx].strip()
+                if line:
+                    query_lines.append(line)
+        
+        query = ' '.join(query_lines)
+        
+        # validazione base
+        if not any(keyword in query.lower() for keyword in ['select', 'with']):
+            raise ValueError("La query non contiene SELECT o WITH")
+            
+        if 'video_games.' not in query:
+            # aggiungi automaticamente lo schema se mancante
+            query = query.replace('FROM ', 'FROM video_games.')
+            
+        return query
+
 
     def process_query(self, response: str) -> Dict[str, Any]:
         """Analizza la risposta del modello, estrae la query SQL, la esegue e fornisce i risultati.
@@ -166,7 +233,7 @@ Explanation: [Brief explanation of what the query does and what results to expec
         Returns:
             Dict[str, Any]: Dizionario con query, spiegazione e risultati"""
         try:
-            # Estrae query e spiegazione
+            # estrae query e spiegazione
             parsed = self.parse_llm_response(response)
             
             if not parsed["query"]:
@@ -176,7 +243,7 @@ Explanation: [Brief explanation of what the query does and what results to expec
                     "explanation": parsed["explanation"]
                 }
             
-            # Esegue la query
+            # esegue la query
             df = self.db_manager.execute_query(parsed["query"])
             
             if df is None:
@@ -187,7 +254,7 @@ Explanation: [Brief explanation of what the query does and what results to expec
                     "explanation": parsed["explanation"]
                 }
             
-            # Converti sempre i DataFrame in liste di dizionari
+            # converti sempre i DataFrame in liste di dizionari
             results_dict = df.to_dict('records')
             preview_dict = df.head().to_dict('records')
             
