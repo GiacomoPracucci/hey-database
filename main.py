@@ -9,7 +9,6 @@ from flask import Flask
 from src.web.routes import chat_bp
 
 def create_app():
-    # percorsi assoluti per template e static
     template_dir = os.path.join(project_root, 'src', 'web', 'templates')
     static_dir = os.path.join(project_root, 'src', 'web', 'static')
     
@@ -20,7 +19,6 @@ def create_app():
                 template_folder=template_dir,
                 static_folder=static_dir)
     
-    # debug per vedere eventuali errori
     app.config['DEBUG'] = True
     
     app.register_blueprint(chat_bp)
