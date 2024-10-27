@@ -8,6 +8,7 @@ from src.ollama_.ollama_manager import OllamaManager
 logger = logging.getLogger(__name__)
 
 class ChatService:
+    """Classe che gestisce la logica del servizio di chat"""
     def __init__(self):
         
         self.db = DatabaseManager(
