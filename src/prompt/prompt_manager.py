@@ -16,6 +16,25 @@ class PromptManager:
         
         self.schema_manager = schema_manager
         self.db_manager = db_manager
+
+    def _get_table_ddl(self, table_name: str) -> str:
+        """Recupera il DDL di una tabella specifica.
+        Args:
+            table_name (str): Nome della tabella
+        Returns:
+            str: DDL della tabella"""
+        try:
+            query = f"""
+            SELECT pg_get_tabledef('{self.schema_manager.schema}.{table_name}'::regclass);
+            """ # funzione creata in postgres per ottenere il ddl di una tabella
+            df = self.db_manager.execute_query(query)
+            if df is not None and not df.empty:
+                return df.iloc[0, 0]
+            return ""
+        except Exception as e:
+            logger.error(f"Errore nel recupero del DDL per {table_name}: {str(e)}")
+            return ""
+
     
     def _format_schema_description(self) -> str:
         """Formatta la descrizione dello schema in modo leggibile.
@@ -28,6 +47,11 @@ class PromptManager:
         
         for table_name, table_info in self.schema_manager.get_all_tables().items():
             description.append(f"\nTabella: {table_name} ({table_info.row_count} righe)")
+
+            ddl = self._get_table_ddl(table_name)
+            if ddl:
+                description.append("DDL:")
+                description.append(ddl)
             
             description.append("Colonne:")
             for col in table_info.columns:
@@ -102,9 +126,15 @@ Important:
 - Always insert schema name "video_games" before the tables
 - Do not include comments in the SQL query
 - The query must be executable
+- Use the table DDL information to ensure correct column names and types
+- Follow the foreign key relationships when joining tables
 
 After the query, provide:
 Explanation: [Brief explanation of what the query does and what results to expect]
+
+if you do not have the necessary information to respond or if the requested data does not appear to be in the DB, 
+generate a simple SQL query to extract generic data from a single table (with a limit 5) and inform the user in the explanation 
+that you cannot fulfill their request, concisely explaining the reason.
         """)
         
         # aggiunge info sullo schema del database
@@ -112,7 +142,8 @@ Explanation: [Brief explanation of what the query does and what results to expec
         # aggiunge dati di esempio (se richiesti)
         if include_sample_data:
             prompt_parts.append(self._format_sample_data(max_sample_rows))
-        
+
+        prompt_parts.append("\nRispondi in lingua Italiana.")
         prompt_parts.append("\nDOMANDA DELL'UTENTE:")
         prompt_parts.append(user_question)
         
