@@ -4,7 +4,7 @@ from typing import Union, List, Dict, Any
 import time
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-class OpenAIManger:
+class OpenAIManager:
     """Classe per gestire le operazion con le API di OpenAI"""
     
     def __init__(self,
@@ -24,7 +24,25 @@ class OpenAIManger:
         self.client = OpenAI(api_key=api_key)
         self.embedding_model = embedding_model
         self.chat_model = chat_model
-        
+
+    def _serialize_response(self, obj: Any) -> Any:
+        """Serializza gli oggetti in formato JSON-compatibile.
+
+        Args:
+            obj: Oggetto da serializzare
+
+        Returns:
+            Any: Oggetto serializzato"""
+
+        if hasattr(obj, 'keys'):  # Se è un dict-like object
+            return {key: self._serialize_response(value) for key, value in dict(obj).items()}
+        elif isinstance(obj, (list, tuple)):
+            return [self._serialize_response(item) for item in obj]
+        elif isinstance(obj, (int, float, str, bool, type(None))):
+            return obj
+        else:
+            return str(obj)
+
     @retry(
         stop=stop_after_attempt(2),
         wait=wait_exponential(multiplier=1, min=4, max=10)
@@ -80,7 +98,7 @@ class OpenAIManger:
                 temperature=temperature,
                 max_tokens=max_tokens
             )
-            return response.choices[0].message.content
+            return self._serialize_response(response.choices[0].message.content)
             
         except Exception as e:
             print(f"Errore nella generazione della risposta: {str(e)}")
@@ -106,7 +124,7 @@ class OpenAIManger:
                     model=self.embedding_model,
                     input=batch
                 )
-                batch_embeddings = [data.embedding for data in response.data]
+                batch_embeddings = [self._serialize_response(data.embedding) for data in response.data]
                 embeddings.extend(batch_embeddings)
                 
                 # Piccola pausa per evitare rate limiting
@@ -122,7 +140,7 @@ class OpenAIManger:
     def get_chat_stream(self,
                         prompt: str,
                         system_prompt: str = "Sei un assistente utile ed accurato.",
-                        temperature: float = 0.7):
+                        temperature: float = 0.2):
         """Genera una risposta in streaming dal modello di chat.
         
         Args:
@@ -145,7 +163,7 @@ class OpenAIManger:
             
             for chunk in stream:
                 if chunk.choices[0].delta.content is not None:
-                    yield chunk.choices[0].delta.content
+                    yield self._serialize_response(chunk.choices[0].delta.content)
                     
         except Exception as e:
             print(f"Errore nello streaming della risposta: {str(e)}")

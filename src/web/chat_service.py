@@ -4,6 +4,10 @@ from src.connettori.db_manager import DatabaseManager
 from src.dbcontext.schema_context_manager import SchemaContextManager
 from src.prompt.prompt_manager import PromptManager
 from src.ollama_.ollama_manager import OllamaManager
+from src.openAI.openai_handler import OpenAIManager
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +25,15 @@ class ChatService:
         
         self.db.connect()
         
-        self.ollama_manager = OllamaManager(
-            base_url="http://localhost:11434",
-            model="llama3.1"
+        #self.llm_manager = OllamaManager(
+        #    base_url="http://localhost:11434",
+        #    model="llama3.1"
+        #)
+
+        self.llm_manager = OpenAIManager(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            embedding_model="text-embedding-3-large",
+            chat_model="gpt-4o"
         )
         
         self.schema_manager = SchemaContextManager(self.db.engine, schema="video_games")
@@ -37,7 +47,7 @@ class ChatService:
             logger.debug(f"Generated prompt: {prompt}")
             
             # Ottieni la risposta dal modello
-            llm_response = self.ollama_manager.get_completion(prompt)
+            llm_response = self.llm_manager.get_completion(prompt)
             logger.debug(f"LLM response: {llm_response}")
             
             # Processa la query e ottieni i risultati
