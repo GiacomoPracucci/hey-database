@@ -4,15 +4,14 @@ from sqlalchemy.exc import SQLAlchemyError
 import pandas as pd
 from typing import Optional
 
-class DatabaseManager:
+class PostgresManager:
     """ Classe per gestire la connessione e le query al database PostgreSQL"""
-    
     def __init__(self,
                  host: str = "localhost",
                  port: str = "5432",
                  database: str = "postgres",
                  user: str = "postgres",
-                 password: str = "admin"
+                 password: str = None
                  ) -> None:
         
         self.connection_string = f"postgresql://{user}:{password}@{host}:{port}/{database}"
@@ -21,7 +20,6 @@ class DatabaseManager:
     
     def connect(self) -> bool:
         """Stabilisce la connessione al database.
-        
         Returns:
             bool: True se la connessione ha successo, False altrimenti"""
         
@@ -37,10 +35,8 @@ class DatabaseManager:
     
     def execute_query(self, query: str) -> Optional[pd.DataFrame]:
         """ Esegue una query SQL e restituisce i risultati come DataFrame.
-        
         Args:
             query (str): Query SQL da eseguire
-            
         Returns:
             Optional[pd.DataFrame]: DataFrame con i risultati della query, None se si verifica un errore """   
         

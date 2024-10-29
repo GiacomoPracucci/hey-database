@@ -155,7 +155,6 @@ that you cannot fulfill their request, concisely explaining the reason.
         
         Args:
             response (str): Risposta dal modello
-            
         Returns:
             Dict[str, Any]: Dizionario con query, spiegazione e risultati"""
         try:

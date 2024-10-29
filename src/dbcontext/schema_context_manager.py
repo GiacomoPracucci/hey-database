@@ -40,7 +40,7 @@ class SchemaContextManager:
                 print(f"\nProcessando tabella: {table_name}")
                 
                 try:
-                    # Ottiene informazioni sulle colonne
+                    # informazioni sulle colonne
                     columns = []
                     for column in inspector.get_columns(table_name, schema=self.schema):
                         columns.append({

@@ -1,10 +1,7 @@
 from pandas import DataFrame
 import logging
-from src.connettori.db_manager import DatabaseManager
 from src.dbcontext.schema_context_manager import SchemaContextManager
 from src.prompt.prompt_manager import PromptManager
-from src.ollama_.ollama_manager import OllamaManager
-from src.openAI.openai_handler import OpenAIManager
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -13,48 +10,27 @@ logger = logging.getLogger(__name__)
 
 class ChatService:
     """Classe che gestisce la logica del servizio di chat"""
-    def __init__(self):
-        
-        self.db = DatabaseManager(
-            host="localhost",
-            port="5432",
-            database="postgres",
-            user="postgres",
-            password="admin"
-        )
-        
+    def __init__(self, db, llm_manager):
+        self.db = db
         self.db.connect()
-        
-        #self.llm_manager = OllamaManager(
-        #    base_url="http://localhost:11434",
-        #    model="llama3.1"
-        #)
-
-        self.llm_manager = OpenAIManager(
-            api_key=os.getenv("OPENAI_API_KEY"),
-            embedding_model="text-embedding-3-large",
-            chat_model="gpt-4o"
-        )
+        self.llm_manager = llm_manager
         
         self.schema_manager = SchemaContextManager(self.db.engine, schema="video_games")
         self.prompt_manager = PromptManager(self.schema_manager, self.db)
     
     def process_message(self, message: str) -> dict:
+        """ Elabora un messaggio dell'utente, interroga il modello e restituisce i risultati formattati"""
         logger.debug(f"Processing message: {message}")
         try:
-            # Genera il prompt
             prompt = self.prompt_manager.generate_prompt(message)
             logger.debug(f"Generated prompt: {prompt}")
-            
-            # Ottieni la risposta dal modello
+
             llm_response = self.llm_manager.get_completion(prompt)
             logger.debug(f"LLM response: {llm_response}")
-            
-            # Processa la query e ottieni i risultati
+
             results = self.prompt_manager.process_query(llm_response)
             logger.debug(f"Query results: {results}")
-            
-            # Converti il DataFrame in una lista di dizionari solo se è un DataFrame
+
             if results["success"]:
                 if isinstance(results.get("results"), DataFrame):
                     results["results"] = results["results"].to_dict('records')
