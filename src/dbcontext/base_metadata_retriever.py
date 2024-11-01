@@ -90,8 +90,8 @@ class DatabaseMetadataRetriever(ABC):
         """Recupera i metadati di una tabella specifica."""
         return self.tables.get(table_name)
     
-    def get_all_tables(self) -> Dict[str, TableMetadata]:
-        """Recupera i metadati di tutte le tabelle."""
+    def get_all_tables_metadata(self) -> Dict[str, TableMetadata]:
+        """Recupera i metadati di tutte le tabelle dello schema"""
         return self.tables
     
     def get_sample_data(self, table_name: str, max_rows: int = 3) -> List[Dict]:

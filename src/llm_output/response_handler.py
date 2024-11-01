@@ -1,152 +1,17 @@
-from typing import Dict, Optional, List, Any
-from dataclasses import dataclass
 import pandas as pd
+from typing import Dict, Any
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-class PromptManager:
-    """Classe responsabile per la gestione e generazione dei prompt."""
     
-    def __init__(self, schema_manager, db_manager):
-        """Inizializza il gestore dei prompt.
-        
-        Args:
-            schema_manager (SchemaContextManager): Istanza del gestore dello schema
-            db_manager (DatabaseManager): Istanza del gestore di connessione e query verso il DB"""
-        
-        self.schema_manager = schema_manager
-        self.db_manager = db_manager
-
-    def _get_table_ddl(self, table_name: str) -> str:
-        """Recupera il DDL di una tabella specifica.
-        Args:
-            table_name (str): Nome della tabella
-        Returns:
-            str: DDL della tabella"""
-        try:
-            query = f"""
-            SELECT pg_get_tabledef('{self.schema_manager.schema}.{table_name}'::regclass);
-            """ # funzione creata in postgres per ottenere il ddl di una tabella
-            df = self.db_manager.execute_query(query)
-            if df is not None and not df.empty:
-                return df.iloc[0, 0]
-            return ""
-        except Exception as e:
-            logger.error(f"Errore nel recupero del DDL per {table_name}: {str(e)}")
-            return ""
-
+class ResponseHandler:
+    """Processa la risposta generata dal LLM, formattandola ed estraendo query SQL e spiegazione + ci aggiunge i risultati dell'estrazione. 
+    L'output di questa classe è ciò che vediamo in webapp in risposta alla nostra domanda"""
     
-    def _format_schema_description(self) -> str:
-        """Formatta la descrizione dello schema in modo leggibile.
-        
-        Returns:
-            str: Descrizione formattata dello schema"""
-        
-        description = []
-        description.append("Schema del Database:")
-        
-        for table_name, table_info in self.schema_manager.get_all_tables().items():
-            description.append(f"\nTabella: {table_name} ({table_info.row_count} righe)")
-            
-            description.append("Colonne:")
-            for col in table_info.columns:
-                nullable = "NULL" if col["nullable"] else "NOT NULL"
-                description.append(f"- {col['name']} ({col['type']}) {nullable}")
-            
-            if table_info.primary_keys:
-                description.append(f"Chiavi Primarie: {', '.join(table_info.primary_keys)}")
-            
-            if table_info.foreign_keys:
-                description.append("Foreign Keys:")
-                for fk in table_info.foreign_keys:
-                    description.append(
-                        f"- {', '.join(fk['constrained_columns'])} -> "
-                        f"{fk['referred_table']}({', '.join(fk['referred_columns'])})"
-                    )
-        
-        return "\n".join(description)
+    def __init__(self, db): 
+        self.db = db    
     
-    def _format_sample_data(self, max_rows: int = 3) -> str:
-        """Formatta i dati di esempio di tutte le tabelle.
-        
-        Args:
-            max_rows (int): Numero massimo di righe per tabella
-            
-        Returns:
-            str: Dati di esempio formattati
-        """
-        samples = []
-        samples.append("\nEsempi di Dati:")
-        
-        for table_name in self.schema_manager.get_all_tables():
-            sample_data = self.schema_manager.get_sample_data(table_name, max_rows)
-            if sample_data:
-                samples.append(f"\n{table_name} (primi {len(sample_data)} record):")
-                for row in sample_data:
-                    samples.append(str(row))
-        
-        return "\n".join(samples)
-    
-    def generate_prompt(self,
-                        user_question: str,
-                        include_sample_data: bool = True,
-                        max_sample_rows: int = 3
-                        ) -> str:
-        """Genera il prompt completo per il modello.
-        
-        Args:
-            user_question (str): Domanda dell'utente
-            include_sample_data (bool): Se includere dati di esempio
-            max_sample_rows (int): Numero massimo di righe di esempio per tabella
-            
-        Returns:
-            str: Prompt completo formattato"""
-            
-        prompt_parts = []
-        
-        # Sistema prompt
-        prompt_parts.append("""You are an SQL expert who helps convert natural language queries into SQL queries.
-Your task is:
-1. Generate a valid SQL query that answers the user's question
-2. Provide a brief explanation of the results
-
-Response format:
-```sql
-SELECT column_names
-FROM table_names
-WHERE conditions;
-```
-
-Important:
-- Always insert schema name "video_games" before the tables
-- Do not include comments in the SQL query
-- The query must be executable
-- Use the table DDL information to ensure correct column names and types
-- Follow the foreign key relationships when joining tables
-
-After the query, provide:
-Explanation: [Brief explanation of what the query does and what results to expect]
-
-if you do not have the necessary information to respond or if the requested data does not appear to be in the DB, 
-generate a simple SQL query to extract generic data from a single table (with a limit 5) and inform the user in the explanation 
-that you cannot fulfill their request, concisely explaining the reason.
-        """)
-        
-        # aggiunge info sullo schema del database
-        prompt_parts.append(self._format_schema_description())
-        # aggiunge dati di esempio (se richiesti)
-        if include_sample_data:
-            prompt_parts.append(self._format_sample_data(max_sample_rows))
-
-        prompt_parts.append("\nRispondi in lingua Italiana.")
-        prompt_parts.append("\nDOMANDA DELL'UTENTE:")
-        prompt_parts.append(user_question)
-        
-        return "\n\n".join(prompt_parts)
-    
-    
-    def process_query(self, response: str) -> Dict[str, Any]:
+    def process_response(self, response: str) -> Dict[str, Any]:
         """Analizza la risposta del modello, estrae la query SQL, la esegue e fornisce i risultati.
         
         Args:
@@ -165,7 +30,7 @@ that you cannot fulfill their request, concisely explaining the reason.
                 }
             
             # esegue la query
-            result = self.db_manager.execute_query(parsed["query"])
+            result = self.db.execute_query(parsed["query"])
             
             if result is None:
                 return {
@@ -187,7 +52,6 @@ that you cannot fulfill their request, concisely explaining the reason.
                     "preview": []
                 }
             
-            # Converti i DataFrame in liste di dizionari
             results_dict = df.to_dict('records')
             preview_dict = df.head().to_dict('records')
             
@@ -208,7 +72,6 @@ that you cannot fulfill their request, concisely explaining the reason.
             }  
     
 
-
     def parse_llm_response(self, response: str) -> Dict[str, str]:
         """ Analizza la risposta del modello e estrae la query SQL e la spiegazione.
         
@@ -221,7 +84,7 @@ that you cannot fulfill their request, concisely explaining the reason.
         try:
             response = response.strip().replace('\r\n', '\n')
             
-            # Lista di possibili delimitatori di query SQL
+            # lista di possibili delimitatori di query SQL
             sql_markers = [
                 ("```sql", "```"),  # Markdown SQL
                 ("```", "```"),     # Markdown generico

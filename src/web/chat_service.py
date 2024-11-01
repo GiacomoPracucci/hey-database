@@ -1,7 +1,8 @@
 from pandas import DataFrame
 import logging
 from src.dbcontext.postgres_metadata_retriever import PostgresMetadataRetriever
-from src.prompt.prompt_manager import PromptManager
+from src.llm_input.prompt_generator import PromptGenerator
+from src.llm_output.response_handler import ResponseHandler
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -16,19 +17,20 @@ class ChatService:
         self.llm_manager = llm_manager
         
         self.schema_manager = PostgresMetadataRetriever(self.db.engine, schema="video_games")
-        self.prompt_manager = PromptManager(self.schema_manager, self.db)
+        self.prompt_generator = PromptGenerator(self.schema_manager)
+        self.response_handler = ResponseHandler(self.db)
     
     def process_message(self, message: str) -> dict:
         """ Elabora un messaggio dell'utente, interroga il modello e restituisce i risultati formattati"""
         logger.debug(f"Processing message: {message}")
         try:
-            prompt = self.prompt_manager.generate_prompt(message)
+            prompt = self.prompt_generator.generate_prompt(message)
             logger.debug(f"Generated prompt: {prompt}")
 
             llm_response = self.llm_manager.get_completion(prompt)
             logger.debug(f"LLM response: {llm_response}")
 
-            results = self.prompt_manager.process_query(llm_response)
+            results = self.response_handler.process_response(llm_response)
             logger.debug(f"Query results: {results}")
 
             if results["success"]:
