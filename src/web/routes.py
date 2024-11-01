@@ -5,8 +5,8 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 from src.web.chat_service import ChatService
-from src.ollama_.ollama_manager import OllamaManager
-from src.openAI.openai_handler import OpenAIManager
+from src.ollama_.ollama_handler import OllamaHandler
+from src.openai_.openai_handler import OpenAIHandler
 from src.connettori.postgres import PostgresManager
 
 chat_bp = Blueprint('chat', __name__)
@@ -19,12 +19,12 @@ db = PostgresManager(
     password=os.getenv("POSTGRES_PWD")
 )
 
-llm_manager = OllamaManager(
+llm_manager = OllamaHandler(
     base_url="http://localhost:11434",
     model="llama3.1"
 )
 
-#llm_manager = OpenAIManager(
+#llm_manager = OpenAIHandler(
 #    api_key=os.getenv("OPENAI_API_KEY"),
 #    embedding_model="text-embedding-3-large",
 #    chat_model="gpt-4o"

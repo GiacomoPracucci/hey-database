@@ -3,7 +3,7 @@ from typing import Union, List, Dict, Any, Generator
 import json
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-class OllamaManager:
+class OllamaHandler:
     """Classe per gestire le operazioni con i modelli Ollama locali"""
     
     def __init__(self,

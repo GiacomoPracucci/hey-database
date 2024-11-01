@@ -1,10 +1,9 @@
 from openai import OpenAI
-import numpy as np
-from typing import Union, List, Dict, Any
+from typing import Union, List,  Any
 import time
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-class OpenAIManager:
+class OpenAIHandler:
     """Classe per gestire le operazion con le API di OpenAI"""
     
     def __init__(self,
