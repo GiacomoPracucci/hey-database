@@ -3,8 +3,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 import pandas as pd
 from typing import Optional
+from src.connettori.base_connector import DatabaseConnector
 
-class PostgresManager:
+class PostgresManager(DatabaseConnector):
     """ Classe per gestire la connessione e le query al database PostgreSQL"""
     def __init__(self,
                  host: str = "localhost",
@@ -16,16 +17,16 @@ class PostgresManager:
         
         self.connection_string = f"postgresql://{user}:{password}@{host}:{port}/{database}"
         self.engine = None
-        self.session_maker = None
     
     def connect(self) -> bool:
         """Stabilisce la connessione al database.
+        Inizializza sia l'engine per query raw SQL che il session maker per operazioni ORM.
         Returns:
             bool: True se la connessione ha successo, False altrimenti"""
         
         try:
             self.engine = create_engine(self.connection_string)
-            self.session_maker = sessionmaker(bind=self.engine)
+
             with self.engine.connect(): # verifica la connessione
                 return True
             
@@ -38,8 +39,8 @@ class PostgresManager:
         Args:
             query (str): Query SQL da eseguire
         Returns:
-            Optional[pd.DataFrame]: DataFrame con i risultati della query, None se si verifica un errore """   
-        
+            Optional[pd.DataFrame]: DataFrame con i risultati della query, None se si verifica un errore 
+        """   
         try:
             if not self.engine:
                 if not self.connect():
