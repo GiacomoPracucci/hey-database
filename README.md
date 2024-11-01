@@ -134,15 +134,14 @@ hey-database/
 │   │   ├── routes.py      # Flask routes
 │   │   ├── templates/     # HTML templates
 │   │   └── static/        # CSS, JS files
-│   ├── dbcontext/         # Database context management
-│   ├── prompt/            # LLM prompt management
+│   ├── dbcontext/         # Database context retrievers
+│   ├── llm_input/         # LLM prompt generator
+|   ├── llm_output/        # LLM response handler
+|   ├── openai_/            # API call Handler
+|   ├── ollama_/           # call to local model handler
 │   └── connettori/        # Database connectors
-│       ├── base_connector.py     # Base connector interface
-│       ├── postgresql.py         # PostgreSQL connector
-│       ├── mysql.py             # MySQL connector
-│       └── snowflake.py         # Snowflake connector
 ├── requirements.txt        # Python dependencies
-└── .env                   # Environment variables
+└── .env                   # Environment variables (you have to create it and populate)
 ```
 
 ## 🤝 Contributing
