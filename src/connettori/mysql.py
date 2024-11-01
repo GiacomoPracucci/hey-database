@@ -10,7 +10,7 @@ class MySQLManager(DatabaseConnector):
     def __init__(self,
                  host: str = "localhost",
                  port: str = "3306",
-                 database: str = None,
+                 database: str = "mysql",
                  user: str = "root",
                  password: str = None,
                  charset: str = "utf8mb4",
