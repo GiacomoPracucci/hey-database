@@ -12,20 +12,29 @@ The app translates user questions into SQL queries using LLMs (supports both Ope
 - Query explanation for better understanding  
 - Copy-to-clipboard functionality for SQL queries  
 - Error handling with detailed feedback
+- Multiple database support (PostgreSQL, MySQL, Snowflake)
 
 ## 🛠️ Tech Stack
 
 - Backend: Python, Flask
 - Frontend: HTML, CSS, JavaScript
-- Database: PostgreSQL
-- LLM Integration: OpenAI API / Ollama
-- ORM: SQLAlchemy
+- Databases:   
+   - PostgreSQL  
+   - MySQL  
+   - Snowflake  
+- LLM Integration:  
+   - OpenAI API  
+   - Ollama (local models)  
+- Database Access: SQLAlchemy  
 - Data Processing: Pandas
 
 ## 📋 Prerequisites
 
 - Python 3.8+
-- PostgreSQL database
+- One of the supported databases:
+   - PostgreSQL  
+   - MySQL 8.0+  
+   - Snowflake account  
 - OpenAI API key (if using OpenAI) or Ollama instance (if using local models)
 
 ## 🔧 Setup
@@ -60,9 +69,19 @@ Edit .env and add your:
 
 5. Initialize the database:  
    
-- Make sure PostgreSQL is running  
-- Create a database called "postgres" (or update the config to use a different name)  
-- Import your video games data into the "video_games" schema
+For PostgreSQL:  
+- Create a database
+- Import your video games data into the "video_games" schema  
+  
+For MySQL:  
+- Create a database  
+- Import your video games data  
+- Ensure you're using the Strong Password Authentication method  
+  
+For Snowflake:  
+- Have a working Snowflake account  
+- Set up your warehouse, database, and schema  
+- Import your video games data  
 
 6. Run the application:
 ```
@@ -87,18 +106,39 @@ Example questions:
 - "Show me the first 5 games in the database"  
 - "What are the most popular genres?"
 
+## 📝 Database Connectors
+The application supports multiple databases through a modular connector system:  
+
+- `DatabaseConnector`: Base interface defining standard database operations
+- `PostgreSQLManager`: PostgreSQL implementation
+- `MySQLManager`: MySQL implementation
+- `SnowflakeManager`: Snowflake implementation
+
+Each connector provides consistent interfaces for:
+
+- Establishing connections
+- Executing queries
+- Retrieving results as pandas DataFrames
+- Proper resource cleanup
+
+To use a specific database, simply initialize the appropriate connector with your credentials.
+
 ## 🔍 Project Structure:
 ```
-sql-chatbot/
+hey-database/
 ├── main.py                 # Application entry point
 ├── src/
 │   ├── web/               # Web-related components
 │   │   ├── routes.py      # Flask routes
 │   │   ├── templates/     # HTML templates
 │   │   └── static/        # CSS, JS files
-│   ├── dbcontext/         # Database handling
+│   ├── dbcontext/         # Database context management
 │   ├── prompt/            # LLM prompt management
 │   └── connettori/        # Database connectors
+│       ├── base_connector.py     # Base connector interface
+│       ├── postgresql.py         # PostgreSQL connector
+│       ├── mysql.py             # MySQL connector
+│       └── snowflake.py         # Snowflake connector
 ├── requirements.txt        # Python dependencies
 └── .env                   # Environment variables
 ```
