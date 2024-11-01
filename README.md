@@ -67,8 +67,10 @@ Edit .env and add your:
 - Ollama endpoint (if using Ollama)  
 
 
-5. Initialize the database:  
-   
+5. Initialize the database:
+
+Sample video_games schema at https://github.com/bbrumm/databasestar/tree/main/sample_databases/sample_db_videogames  
+
 For PostgreSQL:  
 - Create a database
 - Import your video games data into the "video_games" schema  
