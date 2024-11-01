@@ -47,11 +47,6 @@ class PromptManager:
         
         for table_name, table_info in self.schema_manager.get_all_tables().items():
             description.append(f"\nTabella: {table_name} ({table_info.row_count} righe)")
-
-            ddl = self._get_table_ddl(table_name)
-            if ddl:
-                description.append("DDL:")
-                description.append(ddl)
             
             description.append("Colonne:")
             for col in table_info.columns:

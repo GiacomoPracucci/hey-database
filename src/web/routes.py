@@ -16,19 +16,19 @@ db = PostgresManager(
     port="5432",
     database="postgres",
     user="postgres",
-    password=os.getenv("DB_PWD")
+    password=os.getenv("POSTGRES_PWD")
 )
 
-#self.llm_manager = OllamaManager(
-#    base_url="http://localhost:11434",
-#    model="llama3.1"
+llm_manager = OllamaManager(
+    base_url="http://localhost:11434",
+    model="llama3.1"
+)
+
+#llm_manager = OpenAIManager(
+#    api_key=os.getenv("OPENAI_API_KEY"),
+#    embedding_model="text-embedding-3-large",
+#    chat_model="gpt-4o"
 #)
-
-llm_manager = OpenAIManager(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    embedding_model="text-embedding-3-large",
-    chat_model="gpt-4o"
-)
 
 chat_service = ChatService(db, llm_manager)
 

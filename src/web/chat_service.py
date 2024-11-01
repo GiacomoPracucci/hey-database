@@ -1,6 +1,6 @@
 from pandas import DataFrame
 import logging
-from src.dbcontext.schema_context_manager import SchemaContextManager
+from src.dbcontext.postgres_metadata_retriever import PostgresMetadataRetriever
 from src.prompt.prompt_manager import PromptManager
 from dotenv import load_dotenv
 import os
@@ -15,7 +15,7 @@ class ChatService:
         self.db.connect()
         self.llm_manager = llm_manager
         
-        self.schema_manager = SchemaContextManager(self.db.engine, schema="video_games")
+        self.schema_manager = PostgresMetadataRetriever(self.db.engine, schema="video_games")
         self.prompt_manager = PromptManager(self.schema_manager, self.db)
     
     def process_message(self, message: str) -> dict:
