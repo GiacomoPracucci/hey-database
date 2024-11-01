@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Optional
-import pandas as pd
+from typing import Optional, Tuple
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 class DatabaseConnector(ABC):
     """Interfaccia base per i connettori database"""
@@ -13,19 +14,27 @@ class DatabaseConnector(ABC):
         """
         pass
     
-    @abstractmethod
-    def execute_query(self, query: str) -> Optional[pd.DataFrame]:
-        """Esegue una query SQL e restituisce i risultati come DataFrame
-        
+    def execute_query(self, query: str) -> Optional[Tuple]:
+        """ Esegue una query SQL e restituisce i risultati.
         Args:
             query (str): Query SQL da eseguire
-            
         Returns:
-            Optional[pd.DataFrame]: DataFrame con i risultati della query, None se si verifica un errore
-        """
-        pass
+            Optional[Tuple]: Tupla (column_names, data) o None se si verifica un errore
+        """   
+        try:
+            if not self.engine:
+                if not self.connect():
+                    return None
+            
+            with self.engine.connect() as conn:
+                result = conn.execute(text(query))
+                return result.keys()._keys, result.fetchall()
+        
+        except SQLAlchemyError as e:
+            print(f"Errore nell'esecuzione della query: {str(e)}")
+            return None     
     
-    @abstractmethod
     def close(self) -> None:
-        """Chiude la connessione al database"""
-        pass
+        """Chiude la connessione al DB"""
+        if self.engine:
+            self.engine.dispose()

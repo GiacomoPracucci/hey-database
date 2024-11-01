@@ -62,23 +62,3 @@ class SnowflakeManager(DatabaseConnector):
         except SQLAlchemyError as e:
             print(f"Errore di connessione: {str(e)}")
             return False
-        
-    def execute_query(self, query: str) -> Optional[pd.DataFrame]:
-        """Esegue una query SQL su snowflake e restituisce i risultati come DataFrame."""
-        
-        try:
-            if not self.engine:
-                if not self.connect():
-                    return None
-            
-            return pd.read_sql_query(query, self.engine)
-        
-        except SQLAlchemyError as e:
-            print(f"Errore nell'esecuzione della query su Snowflake: {str(e)}")
-            return None
-        
-    
-    def close(self) -> None:
-        """Chiude la connessione al DB snowflake"""
-        if self.engine:
-            self.engine.dispose()

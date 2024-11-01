@@ -1,5 +1,6 @@
 from typing import Dict, Optional, List, Any
 from dataclasses import dataclass
+import pandas as pd
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -164,17 +165,29 @@ that you cannot fulfill their request, concisely explaining the reason.
                 }
             
             # esegue la query
-            df = self.db_manager.execute_query(parsed["query"])
+            result = self.db_manager.execute_query(parsed["query"])
             
-            if df is None:
+            if result is None:
                 return {
                     "success": False,
                     "error": "Errore nell'esecuzione della query",
                     "query": parsed["query"],
                     "explanation": parsed["explanation"]
                 }
+
+            columns, data = result  # spacchettamento del risultato
+            df = pd.DataFrame(data, columns=columns)
             
-            # converti sempre i DataFrame in liste di dizionari
+            if df.empty:
+                return {
+                    "success": True,
+                    "query": parsed["query"],
+                    "explanation": parsed["explanation"],
+                    "results": [],
+                    "preview": []
+                }
+            
+            # Converti i DataFrame in liste di dizionari
             results_dict = df.to_dict('records')
             preview_dict = df.head().to_dict('records')
             
@@ -192,8 +205,9 @@ that you cannot fulfill their request, concisely explaining the reason.
                 "error": f"Errore nel processing della query: {str(e)}",
                 "query": parsed.get("query", ""),
                 "explanation": parsed.get("explanation", "")
-            }    
+            }  
     
+
 
     def parse_llm_response(self, response: str) -> Dict[str, str]:
         """ Analizza la risposta del modello e estrae la query SQL e la spiegazione.
