@@ -1,27 +1,35 @@
 import os
 import sys
 from pathlib import Path
-project_root = Path(__file__).resolve().parent
-sys.path.append(str(project_root))
-os.chdir(project_root)
 
 from flask import Flask
-from src.web.routes import chat_bp
+from src.config.config_loader import ConfigLoader
+from src.config.factory import ServiceFactory 
+from src.web.routes import create_routes
 
 def create_app():
+    project_root = Path(__file__).resolve().parent
+    sys.path.append(str(project_root))
+    os.chdir(project_root)
+    
     template_dir = os.path.join(project_root, 'src', 'web', 'templates')
     static_dir = os.path.join(project_root, 'src', 'web', 'static')
+    config_path = os.path.join(project_root, 'config.yaml')
     
-    print(f"Template directory: {template_dir}")
-    print(f"Static directory: {static_dir}")
+    config = ConfigLoader.load_config(config_path)
     
     app = Flask(__name__, 
                 template_folder=template_dir,
                 static_folder=static_dir)
     
-    app.config['DEBUG'] = True
+    app.config['DEBUG'] = config.debug
     
-    app.register_blueprint(chat_bp)
+    try:
+        chat_service = ServiceFactory.create_chat_service(config)
+        create_routes(app, chat_service)
+    except Exception as e:
+        print(f"Failed to initialize service: {e}")
+        raise
     
     return app
 

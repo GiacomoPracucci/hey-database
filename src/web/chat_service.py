@@ -1,23 +1,33 @@
 from pandas import DataFrame
 import logging
-from src.dbcontext.postgres_metadata_retriever import PostgresMetadataRetriever
+from src.dbcontext.base_metadata_retriever import DatabaseMetadataRetriever
 from src.llm_input.prompt_generator import PromptGenerator
 from src.llm_output.response_handler import ResponseHandler
-from dotenv import load_dotenv
-import os
-load_dotenv()
+from src.connettori.base_connector import DatabaseConnector
 
 logger = logging.getLogger(__name__)
 
 class ChatService:
-    """Classe che gestisce la logica del servizio di chat"""
-    def __init__(self, db, llm_manager):
-        self.db = db
-        self.db.connect()
-        self.llm_manager = llm_manager
+    """Servizio che gestisce la logica della chat"""
+    def __init__(self, 
+                 db: DatabaseConnector,
+                 llm_manager,
+                 metadata_retriever: DatabaseMetadataRetriever):
+        """
+        Inizializza il servizio chat
         
-        self.schema_manager = PostgresMetadataRetriever(self.db.engine, schema="video_games")
-        self.prompt_generator = PromptGenerator(self.schema_manager)
+        Args:
+            db: Istanza di un DatabaseConnector
+            llm_manager: Gestore del modello LLM
+            metadata_retriever: Retriever dei metadati del database
+        """
+        self.db = db
+        if not self.db.connect():
+            raise RuntimeError("Failed to connect to database")
+            
+        self.llm_manager = llm_manager
+        self.metadata_retriever = metadata_retriever
+        self.prompt_generator = PromptGenerator(self.metadata_retriever)
         self.response_handler = ResponseHandler(self.db)
     
     def process_message(self, message: str) -> dict:

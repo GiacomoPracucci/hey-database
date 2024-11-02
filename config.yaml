@@ -1,0 +1,23 @@
+# config.yaml
+database:
+  type: postgres  # o mysql o snowflake
+  host: localhost
+  port: 5432
+  database: postgres
+  user: postgres
+  password: ${POSTGRES_PWD}  # Prende il valore dalla variabile d'ambiente
+  schema: video_games
+  # Configurazioni opzionali per Snowflake
+  # warehouse: compute_wh
+  # account: xy12345.eu-central-1
+  # role: analyst
+
+llm:
+  type: ollama    # o openai
+  base_url: http://localhost:11434
+  model: llama3.1
+  # Configurazioni per OpenAI
+  # api_key: ${OPENAI_API_KEY}
+  # model: gpt-4
+
+debug: true
