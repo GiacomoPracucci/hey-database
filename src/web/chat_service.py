@@ -12,7 +12,8 @@ class ChatService:
     def __init__(self, 
                  db: DatabaseConnector,
                  llm_manager,
-                 metadata_retriever: DatabaseMetadataRetriever):
+                 metadata_retriever: DatabaseMetadataRetriever,
+                 prompt_generator: PromptGenerator):
         """
         Inizializza il servizio chat
         
@@ -20,6 +21,7 @@ class ChatService:
             db: Istanza di un DatabaseConnector
             llm_manager: Gestore del modello LLM
             metadata_retriever: Retriever dei metadati del database
+            prompt_generator: Generatore dei prompt
         """
         self.db = db
         if not self.db.connect():
@@ -27,7 +29,7 @@ class ChatService:
             
         self.llm_manager = llm_manager
         self.metadata_retriever = metadata_retriever
-        self.prompt_generator = PromptGenerator(self.metadata_retriever)
+        self.prompt_generator = prompt_generator
         self.response_handler = ResponseHandler(self.db)
     
     def process_message(self, message: str) -> dict:

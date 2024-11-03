@@ -20,9 +20,15 @@ class LLMConfig:
     api_key: Optional[str] = None
     model: Optional[str] = None
     base_url: Optional[str] = None # parametro opzionale per modelli locali (localhost su cui girano)
+    
+@dataclass
+class PromptConfig:
+    include_sample_data: bool = True
+    max_sample_rows: int = 3 
 
 @dataclass
 class AppConfig:
     database: DatabaseConfig
     llm: LLMConfig
+    prompt: PromptConfig
     debug: bool = False

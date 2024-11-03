@@ -2,7 +2,7 @@ from typing import Dict, Any
 import yaml
 import os
 from dotenv import load_dotenv
-from src.config.models import AppConfig, DatabaseConfig, LLMConfig
+from src.config.models import AppConfig, DatabaseConfig, LLMConfig, PromptConfig
 
 class ConfigLoader:
     @staticmethod
@@ -33,10 +33,16 @@ class ConfigLoader:
             model=config_data['llm'].get('model'),
             base_url=config_data['llm'].get('base_url')            
         )
+
+        prompt_config = PromptConfig(
+            include_sample_data=config_data.get('prompt', {}).get('include_sample_data', True),
+            max_sample_rows=config_data.get('prompt', {}).get('max_sample_rows', 3)
+        )
         
         return AppConfig(
             database=db_config,
             llm=llm_config,
+            prompt=prompt_config,
             debug=config_data.get('debug', False)
         )
     

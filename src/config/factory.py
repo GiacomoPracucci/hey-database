@@ -7,6 +7,7 @@ from src.dbcontext.mysql_metadata_retriever import MySQLMetadataRetriever
 from src.dbcontext.snowflake_metadata_retriever import SnowflakeMetadataRetriever
 from src.openai_.openai_handler import OpenAIHandler
 from src.ollama_.ollama_handler import OllamaHandler
+from src.llm_input.prompt_generator import PromptGenerator
 from src.web.chat_service import ChatService
 
 class ServiceFactory:
@@ -84,4 +85,10 @@ class ServiceFactory:
         llm = ServiceFactory.create_llm_handler(app_config.llm)
         metadata_retriever = ServiceFactory.create_metadata_retriever(app_config.database, db)
         
-        return ChatService(db, llm, metadata_retriever)
+        prompt_generator = PromptGenerator(
+            metadata_retriever=metadata_retriever,
+            schema_name=app_config.database.schema,
+            prompt_config=app_config.prompt
+        )        
+        
+        return ChatService(db, llm, metadata_retriever, prompt_generator)

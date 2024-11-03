@@ -20,4 +20,8 @@ llm:
   # api_key: ${OPENAI_API_KEY}
   # model: gpt-4
 
+prompt:
+  include_sample_data: true
+  max_sample_rows: 3
+
 debug: true

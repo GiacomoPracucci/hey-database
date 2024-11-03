@@ -7,7 +7,7 @@ class PromptGenerator:
     Il prompt viene costruito estraendo metadati dallo schema che si deve interrogare, usando gli appositi retriever dei DB.
     """
     
-    def __init__(self, metadata_retriever):
+    def __init__(self, metadata_retriever, schema_name: str, prompt_config):
         """Inizializza il gestore dei prompt.
         
         Args:
@@ -15,13 +15,11 @@ class PromptGenerator:
         """
         
         self.metadata_retriever = metadata_retriever
+        self.schema_name = schema_name
+        self.prompt_config = prompt_config
 
 
-    def generate_prompt(self,
-                        user_question: str,
-                        include_sample_data: bool = True,
-                        max_sample_rows: int = 3
-                        ) -> str:
+    def generate_prompt(self, user_question: str) -> str:
         """Genera il prompt completo per il modello.
         
         Args:
@@ -35,7 +33,7 @@ class PromptGenerator:
         prompt_parts = []
         
         # prompt template standard
-        prompt_parts.append("""You are an SQL expert who helps convert natural language queries into SQL queries.
+        prompt_parts.append(f"""You are an SQL expert who helps convert natural language queries into SQL queries.
 Your task is:
 1. Generate a valid SQL query that answers the user's question
 2. Provide a brief explanation of the results
@@ -48,7 +46,7 @@ WHERE conditions;
 ```
 
 Important:
-- Always insert schema name "video_games" before the tables
+- Always insert schema name "{self.schema_name}" before the tables
 - Do not include comments in the SQL query
 - The query must be executable
 - Use the table DDL information to ensure correct column names and types
@@ -65,8 +63,8 @@ that you cannot fulfill their request, concisely explaining the reason.
         # aggiunge info sullo schema del database
         prompt_parts.append(self._format_metadata())
         # aggiunge dati di esempio (se richiesti)
-        if include_sample_data:
-            prompt_parts.append(self._format_sample_data(max_sample_rows))
+        if self.prompt_config.include_sample_data:
+            prompt_parts.append(self._format_sample_data(self.prompt_config.max_sample_rows))
 
         prompt_parts.append("\nRispondi in lingua Italiana.")
         prompt_parts.append("\nDOMANDA DELL'UTENTE:")
