@@ -1,4 +1,7 @@
 from typing import Dict, Type
+from src.embedding.huggingface_embedding import HuggingFaceEmbedding
+from src.embedding.openai_embedding import OpenAIEmbedding
+       
 from src.connettori.postgres import PostgresManager
 from src.connettori.mysql import MySQLManager
 from src.connettori.snowflake import SnowflakeManager
@@ -10,6 +13,7 @@ from src.ollama_.ollama_handler import OllamaHandler
 from src.llm_input.prompt_generator import PromptGenerator
 from src.store.qdrant_vectorstore import QdrantStore
 from src.web.chat_service import ChatService
+from src.embedding.base_embedding_model import EmbeddingModel
 
 class ServiceFactory:
     """ Factory class responsible for creating and configuring all major components of the application.
@@ -131,19 +135,27 @@ class ServiceFactory:
         Returns:
             VectorStore: Istanza configurata del vector store o None se non supportato
         """
+        if not config.enabled:
+            return None
+        
         if config.type == 'qdrant':
+            # modello di embedding in base alla configurazione
+            embedding_model = ServiceFactory.create_embedding_model(config.embedding)
+            
             # se è specificato un path, usiamo lo storage locale
             if config.path:
                 store = QdrantStore(
                     path=config.path,
-                    collection_name=config.collection_name
+                    collection_name=config.collection_name,
+                    embedding_model=embedding_model
                 )
             # altrimenti usiamo l'URL del server
             elif config.url:
                 store = QdrantStore(
                     url=config.url,
                     collection_name=config.collection_name,
-                    api_key=config.api_key
+                    api_key=config.api_key,
+                    embedding_model=embedding_model
                 )
             else:
                 raise ValueError("Neither path nor url specified for Qdrant")
@@ -152,7 +164,28 @@ class ServiceFactory:
                 return store
             raise RuntimeError("Failed to initialize vector store")
         return None
-                
+    
+    @staticmethod
+    def create_embedding_model(config: EmbeddingModel):
+        """Creates the appropriate embedding model based on configuration
+        
+        Args:
+            config: Embedding model configuration
+            
+        Returns:
+            BaseEmbeddingModel: Configured embedding model instance
+            
+        Raises:
+            ValueError: If the embedding type is not supported
+        """
+        if config.type == 'huggingface':
+            return HuggingFaceEmbedding(model_name=config.model_name)
+        elif config.type == 'openai':
+            if not config.api_key:
+                raise ValueError("OpenAI API key is required for OpenAI embeddings")
+            return OpenAIEmbedding(api_key=config.api_key, model=config.model_name)
+        else:
+            raise ValueError(f"Embedding type {config.type} not supported")
         
     @staticmethod
     def create_chat_service(app_config):

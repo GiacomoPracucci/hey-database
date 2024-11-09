@@ -33,5 +33,10 @@ vector_store:
   #url: http://localhost:6333
   # api_key: optional
   batch_size: 100
+  embedding:
+    type: openai # type: openai, huggingface
+    model_name: text-embedding-3-small # sentence-transformers/multi-qa-MiniLM-L6-cos-v1 , text-embedding-3-small text-embedding-3-large
+    
+    api_key: ${OPENAI_API_KEY} # Per OpenAI
 
 debug: true

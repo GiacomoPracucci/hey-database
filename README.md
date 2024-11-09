@@ -13,9 +13,14 @@ The app translates user questions into SQL queries using LLMs (supports both Ope
 - Real-time query execution  
 - Interactive chat interface  
 - Query explanation for better understanding  
-- Copy-to-clipboard functionality for SQL queries  
 - Error handling with detailed feedback
 - Multiple database support (PostgreSQL, MySQL, Snowflake)
+- Query caching with vector store:
+   - Store and retrieve similar queries
+   - Supports multiple embedding models (OpenAI, HuggingFace)
+- User feedback system:
+   - Thumbs up for correct queries
+   - Automatic storage of validated queries
 
 ## 🛠️ Tech Stack
 
@@ -28,8 +33,12 @@ The app translates user questions into SQL queries using LLMs (supports both Ope
 - LLM Integration:  
    - OpenAI API  
    - Ollama (local models)  
+- Vector Store:
+   - Qdrant for query storage
+- Embedding Models:
+   - HuggingFace Sentence Transformers
+   - OpenAI Embeddings
 - Database Access: SQLAlchemy  
-- Data Processing: Pandas
 
 ## 📋 Prerequisites
 
@@ -39,6 +48,9 @@ The app translates user questions into SQL queries using LLMs (supports both Ope
    - MySQL 8.0+  
    - Snowflake account  
 - OpenAI API key (if using OpenAI) or Ollama instance (if using local models)
+- Vector store requirements (optional):
+   - Qdrant (local or cloud)
+   - HuggingFace or OpenAI for embeddings
 
 ## 🔧 Setup
 
@@ -69,31 +81,58 @@ Edit .env and add your:
 - OpenAI API key (if using OpenAI)  
 - Ollama endpoint (if using Ollama)  
 
+5. Configure the application (config.yaml):
+   ```yaml
+   database:
+      type: postgres  # or mysql or snowflake
+      host: ...
+      port: ...
+      database: ...
+      user: ...
+      password: ...
+      schema: ...
 
-5. Initialize the database:
+   llm:
+      type: openai # or ollama
+      api_key: ${OPENAI_API_KEY}
+      model: gpt-4o
 
-Sample video_games schema at https://github.com/bbrumm/databasestar/tree/main/sample_databases/sample_db_videogames  
+   vector_store:
+      enabled: true
+      type: qdrant
+      collection_name: ${db_schema}_store
+      path: ./data/${db_schema}_store
+      batch_size: 100
+      embedding:
+         type: huggingface    # or openai
+         model_name: sentence-transformers/multi-qa-MiniLM-L6-cos-v1
+         # api_key: ${OPENAI_API_KEY}  # required for OpenAI embeddings
+   ```
+
+6. Initialize the database:
+
+   Sample video_games schema at https://github.com/bbrumm/databasestar/tree/main/sample_databases/sample_db_videogames  
 
 For PostgreSQL:  
-- Create a database
-- Import your video games data into the "video_games" schema  
+   - Create a database
+   - Import your video games data into the "video_games" schema  
   
 For MySQL:  
-- Create a database  
-- Import your video games data  
-- Ensure you're using the Strong Password Authentication method  
+   - Create a database  
+   - Import your video games data  
+   - Ensure you're using the Strong Password Authentication method  
   
 For Snowflake:  
-- Have a working Snowflake account  
-- Set up your warehouse, database, and schema  
-- Import your video games data  
+   - Have a working Snowflake account  
+   - Set up your warehouse, database, and schema  
+   - Import your video games data  
 
-6. Run the application:
+7. Run the application:
 ```
 python main.py
 ```
 
-The app will be available at http://localhost:5000
+   **The app will be available at http://localhost:5000**
 
 ## 💡 Usage
 
@@ -106,45 +145,72 @@ The app will be available at http://localhost:5000
 - Display the results in a formatted table  
 - Provide an explanation of what the query does  
 
-Example questions:
-
-- "Show me the first 5 games in the database"  
-- "What are the most popular genres?"
-
-## 📝 Database Connectors
-The application supports multiple databases through a modular connector system:  
-
-- `DatabaseConnector`: Base interface defining standard database operations
-- `PostgreSQLManager`: PostgreSQL implementation
-- `MySQLManager`: MySQL implementation
-- `SnowflakeManager`: Snowflake implementation
-
-Each connector provides consistent interfaces for:
-
-- Establishing connections
-- Executing queries
-- Retrieving results as pandas DataFrames
-- Proper resource cleanup
-
-To use a specific database, simply initialize the appropriate connector with your credentials.
 
 ## 🔍 Project Structure:
 ```
 hey-database/
-├── main.py                 # Application entry point
-├── src/
-│   ├── web/               # Web-related components
-│   │   ├── routes.py      # Flask routes
-│   │   ├── templates/     # HTML templates
-│   │   └── static/        # CSS, JS files
-│   ├── dbcontext/         # Database context retrievers
-│   ├── llm_input/         # LLM prompt generator
-|   ├── llm_output/        # LLM response handler
-|   ├── openai_/            # API call Handler
-|   ├── ollama_/           # call to local model handler
-│   └── connettori/        # Database connectors
-├── requirements.txt        # Python dependencies
-└── .env                   # Environment variables (you have to create it and populate)
+│   .gitignore
+│   config.yaml
+│   LICENSE
+│   main.py
+│   README.md
+│   requirements.txt
+|   .env # you have to create and populate it
+│
+├───data
+│   └─── your vectorstores
+│
+├───docs
+│       add_components.MD
+│       configuration.MD
+│       query_caching_doc_0911.MD
+│
+└───src
+    ├───config
+    │   │   config_loader.py
+    │   │   factory.py
+    │   │   models.py
+    │
+    ├───connettori
+    │   │   base_connector.py
+    │   │   mysql.py
+    │   │   postgres.py
+    │   │   snowflake.py
+    │
+    ├───dbcontext
+    │   │   base_metadata_retriever.py
+    │   │   mysql_metadata_retriever.py
+    │   │   postgres_metadata_retriever.py
+    │   │   snowflake_metadata_retriever.py
+    │
+    ├───embedding
+    │   │   base_embedding_model.py
+    │   │   huggingface_embedding.py
+    │   │   openai_embedding.py
+    │
+    ├───llm_input
+    │   │   prompt_generator.py
+    ├───llm_output
+    │   │   response_handler.py
+    ├───ollama_
+    │   │   ollama_handler.py
+    │
+    ├───openai_
+    │   │   openai_handler.py
+    ├───store
+    │   │   base_vectorstore.py
+    │   │   qdrant_vectorstore.py
+    └───web
+        │   chat_service.py
+        │   routes.py
+        │
+        ├───static
+        │       script.js
+        │       style.css
+        │
+        ├───templates
+        │       base.html
+        │       index.html
 ```
 
 ## 🤝 Contributing

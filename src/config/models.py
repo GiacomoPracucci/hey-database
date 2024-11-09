@@ -24,6 +24,13 @@ class LLMConfig:
     model: Optional[str] = None
     base_url: Optional[str] = None # parametro opzionale per modelli locali (localhost su cui girano)
     
+# --------- EMBEDDING ----------
+@dataclass
+class EmbeddingConfig:
+    type: str  # huggingface o openai
+    model_name: str  
+    api_key: Optional[str] = None  # non richiesto per huggingface (local models)
+
 # ---------- PROMPT ----------
 @dataclass
 class PromptConfig:
@@ -47,6 +54,7 @@ class VectorStoreConfig:
     collection_name: str
     path: Optional[str] # path per lo storage locale
     url: Optional[str] # url per server remoto
+    embedding: EmbeddingConfig
     api_key: Optional[str] = None
     batch_size: int = 100
     

@@ -8,6 +8,8 @@ from qdrant_client.http.models import Distance, VectorParams
 from sentence_transformers import SentenceTransformer
 from src.config.models import QueryStorePayload, SearchResult
 from src.store.base_vectorstore import VectorStore
+from src.embedding.base_embedding_model import EmbeddingModel
+
 logger = logging.getLogger('hey-database')
 
 class QdrantStore(VectorStore):
@@ -15,11 +17,11 @@ class QdrantStore(VectorStore):
     
     def __init__(self,
                 collection_name: str,
+                embedding_model: EmbeddingModel,
                 path: Optional[str] = None,
                 url: Optional[str] = None,
-                api_key: Optional[str] = None,
-                embedding_model: str = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
-                 ) -> None:
+                api_key: Optional[str] = None
+                ) -> None:
         """ Inizializza il client Qdrant
         
         Args:
@@ -36,9 +38,9 @@ class QdrantStore(VectorStore):
         else:
             raise ValueError("Neither path nor url specified")
 
+        self.embedding_model = embedding_model
         self.collection_name = collection_name
-        self.embedding_model = SentenceTransformer(embedding_model)
-        self.vector_size = self.embedding_model.get_sentence_embedding_dimension()
+        self.vector_size = self.embedding_model.get_embedding_dimension()
         
     def _payload_to_dict(self, payload: QueryStorePayload) -> dict:
         """Converte un QueryStorePayload in un dizionario per Qdrant"""
@@ -90,7 +92,6 @@ class QdrantStore(VectorStore):
                 point = existing
                 payload = point.payload
                 payload["positive_votes"] += 1
-                
                 logger.debug(f"Aggiornamento voti a {payload['positive_votes']}")
             else:
                 logger.debug("Creazione nuova entry")
@@ -106,7 +107,7 @@ class QdrantStore(VectorStore):
                 collection_name=self.collection_name,
                 points=[models.PointStruct(
                     id=self._generate_id(question),
-                    vector=vector.tolist(),
+                    vector=vector,
                     payload=self._payload_to_dict(payload)
                 )]
             )
@@ -169,7 +170,7 @@ class QdrantStore(VectorStore):
                 collection_name=self.collection_name,
                 points=[models.PointStruct(
                     id=self._generate_id(question),
-                    vector=vector.tolist(),
+                    vector=vector,
                     payload=self._payload_to_dict(payload)
                 )]
             )
@@ -186,7 +187,7 @@ class QdrantStore(VectorStore):
             
             results = self.client.search(
                 collection_name=self.collection_name,
-                query_vector=vector.tolist(),
+                query_vector=vector,
                 limit=limit
             )
             

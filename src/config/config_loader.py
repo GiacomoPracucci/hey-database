@@ -2,7 +2,7 @@ from typing import Dict, Any, Optional
 import yaml
 import os
 from dotenv import load_dotenv
-from src.config.models import AppConfig, DatabaseConfig, LLMConfig, PromptConfig, VectorStoreConfig
+from src.config.models import AppConfig, DatabaseConfig, LLMConfig, PromptConfig, VectorStoreConfig, EmbeddingConfig
 
 class ConfigLoader:
     
@@ -91,13 +91,25 @@ class ConfigLoader:
             path = path.replace('${db_schema}', context['db_schema'])
             
         collection_name = vs_data['collection_name'].replace('${db_schema}', context['db_schema'])
+        
+
+        if 'embedding' not in vs_data:
+            raise ValueError("Missing embedding configuration in vector_store config")
+            
+        embedding_data = vs_data['embedding']
+        embedding_config = EmbeddingConfig(
+            type=embedding_data['type'],
+            model_name=embedding_data['model_name'],
+            api_key=embedding_data.get('api_key')  # opzionale, richiesto solo per OpenAI
+        )
                     
         return VectorStoreConfig(
             enabled=vs_data.get('enabled', False),
             type=vs_data['type'],
             collection_name=collection_name,
-            path=path,       # Opzionale
-            url=vs_data.get('url'),         # Opzionale
+            path=path,      
+            url=vs_data.get('url'),
+            embedding=embedding_config,
             api_key=vs_data.get('api_key'),
-            batch_size=vs_data.get('batch_size', 100)
+            batch_size=vs_data.get('batch_size', 100),
         )
