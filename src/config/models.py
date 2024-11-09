@@ -38,8 +38,6 @@ class QueryStorePayload:
     sql_query: str
     explanation: str
     positive_votes: int
-    created_at: datetime
-    last_used: datetime
 
 @dataclass
 class VectorStoreConfig:
@@ -60,7 +58,6 @@ class SearchResult:
     explanation: str
     score: float
     positive_votes: int
-    last_used: datetime
     
 # ---------- CONFIGURAZIONE FINALE APP ----------    
 @dataclass

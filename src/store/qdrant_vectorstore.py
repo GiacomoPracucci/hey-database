@@ -47,8 +47,6 @@ class QdrantStore(VectorStore):
             "sql_query": payload.sql_query,
             "explanation": payload.explanation,
             "positive_votes": payload.positive_votes,
-            "created_at": payload.created_at.isoformat(),
-            "last_used": payload.last_used.isoformat()
         }
         
     def initialize(self) -> bool:
@@ -87,14 +85,11 @@ class QdrantStore(VectorStore):
             
             existing = self.find_exact_match(question)
             
-            current_time = datetime.now(timezone.utc)
-            
             if existing:
                 logger.debug(f"Trovata entry esistente con ID {existing.id}")
                 point = existing
                 payload = point.payload
                 payload["positive_votes"] += 1
-                payload["last_used"] = current_time.isoformat()
                 
                 logger.debug(f"Aggiornamento voti a {payload['positive_votes']}")
             else:
@@ -104,9 +99,7 @@ class QdrantStore(VectorStore):
                     question=question,
                     sql_query=sql_query,
                     explanation=explanation,
-                    positive_votes=1,
-                    created_at=current_time,
-                    last_used=current_time
+                    positive_votes=1
                 )
                 
             success = self.client.upsert(
@@ -150,8 +143,7 @@ class QdrantStore(VectorStore):
                     sql_query=point.payload["sql_query"],
                     explanation=point.payload["explanation"],
                     score=1.0,  # match esatto = score 1
-                    positive_votes=point.payload["positive_votes"],
-                    last_used=datetime.fromisoformat(point.payload["last_used"])
+                    positive_votes=point.payload["positive_votes"]
                 )
             return None
                 
@@ -170,9 +162,7 @@ class QdrantStore(VectorStore):
                 question=question,
                 sql_query=sql_query,
                 explanation=explanation,
-                positive_votes=0,
-                created_at=current_time,
-                last_used=current_time
+                positive_votes=0
             )
             
             self.client.upsert(
@@ -205,9 +195,7 @@ class QdrantStore(VectorStore):
                     question=r.payload["question"],
                     sql_query=r.payload["sql_query"],
                     explanation=r.payload["explanation"],
-                    score=r.score,
-                    positive_votes=r.payload["positive_votes"],
-                    last_used=datetime.fromisoformat(r.payload["last_used"])
+                    score=r.score
                 )
                 for r in results
             ]
@@ -223,75 +211,6 @@ class QdrantStore(VectorStore):
         # NAMESPACE_DNS è solo un namespace arbitrario ma costante
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, question))
     
-    def debug_list_all_entries(self) -> None:
-        """Metodo di debug per listare tutte le entry nel vector store"""
-        try:
-            results = self.client.scroll(
-                collection_name=self.collection_name,
-                limit=100  # o il numero che preferisci
-            )[0]
-            
-            logger.debug(f"Contenuto del vector store ({len(results)} entries):")
-            for point in results:
-                logger.debug(f"ID: {point.id}")
-                logger.debug(f"Question: {point.payload['question']}")
-                logger.debug(f"Votes: {point.payload['positive_votes']}")
-                logger.debug("---")
-                
-        except Exception as e:
-            logger.error(f"Errore nel listare le entries: {str(e)}")
-            
-    def update_last_used(self, question: str) -> bool:
-        """Aggiorna il timestamp di ultimo utilizzo"""
-        def update(payload):
-            payload["last_used"] = datetime.now(timezone.utc).isoformat()
-        
-        return self._update_payload(question, update)
-    
-    def _update_payload(self, question: str, updater_func) -> bool:
-        """Helper per aggiornare il payload di un punto con match esatto sulla domanda.
-        
-        Args:
-            question: La domanda da cercare
-            updater_func: Funzione che riceve il payload e lo aggiorna
-            
-        Returns:
-            bool: True se l'aggiornamento ha successo, False altrimenti
-        """
-        try:
-            results = self.client.scroll(
-                collection_name=self.collection_name,
-                scroll_filter=models.Filter(
-                    must=[
-                        models.FieldCondition(
-                            key="question",
-                            match=models.MatchValue(value=question)
-                        )
-                    ]
-                ),
-                limit=1
-            )[0]
-            
-            if not results:
-                return False
-                
-            point = results[0]
-            payload = point.payload
-            updater_func(payload)
-            
-            self.client.upsert(
-                collection_name=self.collection_name,
-                points=[models.PointStruct(
-                    id=point.id,
-                    vector=point.vector,
-                    payload=payload
-                )]
-            )
-            return True
-            
-        except Exception as e:
-            print(f"Errore nell'aggiornamento del payload: {str(e)}")
-            return False
 
     def close(self) -> None:
         """Chiude la connessione al vector store"""

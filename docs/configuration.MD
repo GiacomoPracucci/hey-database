@@ -29,21 +29,21 @@ The configuration system is designed to provide a flexible and maintainable way 
     This is the main configuration file where you specify all application settings:  
     ```yaml
     database:
-    type: postgres  # or mysql, snowflake
-    host: localhost
-    port: 5432
-    database: postgres
-    user: postgres
-    password: ${POSTGRES_PWD}
-    schema: video_games
+        type: postgres  # or mysql, snowflake
+        host: localhost
+        port: 5432
+        database: postgres
+        user: postgres
+        password: ${POSTGRES_PWD}
+        schema: video_games
 
     llm:
-    type: ollama    # or openai
-    base_url: http://localhost:11434
-    model: llama2
-    # For OpenAI:
-    # api_key: ${OPENAI_API_KEY}
-    # model: gpt-4
+        type: ollama    # or openai
+        base_url: http://localhost:11434
+        model: llama2
+        # For OpenAI:
+        # api_key: ${OPENAI_API_KEY}
+        # model: gpt-4
 
     debug: true
     ```
@@ -81,10 +81,10 @@ The configuration system is designed to provide a flexible and maintainable way 
     Creates service instances based on configuration:   
     ```python
     class ServiceFactory:
-    @staticmethod
-    def create_db_connector(config: DatabaseConfig)
-    @staticmethod
-    def create_llm_handler(config: LLMConfig)
-    @staticmethod
-    def create_metadata_retriever(config: DatabaseConfig, db)
+        @staticmethod
+        def create_db_connector(config: DatabaseConfig)
+        @staticmethod
+        def create_llm_handler(config: LLMConfig)
+        @staticmethod
+        def create_metadata_retriever(config: DatabaseConfig, db)
     ```

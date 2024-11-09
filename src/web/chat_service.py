@@ -46,14 +46,13 @@ class ChatService:
                 
                 if exact_match:
                     logger.debug("Found exact match in vector store")
-                    self.vector_store.update_last_used(exact_match.question)
                     
                     stored_result = self.response_handler.process_response(
                         f"""```sql
                         {exact_match.sql_query}
                         ```
                         
-                        Explanation: {exact_match.explanation}
+                        {exact_match.explanation}
                         """
                     )
                     

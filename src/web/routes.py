@@ -49,13 +49,6 @@ def create_routes(app, chat_service):
             logger.exception(f"Errore nell'endpoint feedback: {str(e)}")
             return jsonify({"success": False, "error": str(e)}), 500
     
-    @chat_bp.route('/api/debug/vectorstore', methods=['GET'])
-    def debug_vectorstore():
-        """Endpoint di debug per vedere il contenuto del vector store"""
-        if chat_service.vector_store:
-            chat_service.vector_store.debug_list_all_entries()
-        return jsonify({"message": "Check logs for vector store content"})
-    
     @chat_bp.route('/api/chat', methods=['POST'])
     def chat():
         """Chat endpoint"""
