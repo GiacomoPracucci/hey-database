@@ -11,9 +11,26 @@ from src.llm_input.prompt_generator import PromptGenerator
 from src.web.chat_service import ChatService
 
 class ServiceFactory:
+    """ Factory class responsible for creating and configuring all major components of the application.
+    It implements the Factory pattern to handle the creation of complex objects while keeping the code modular and testable.
+    """
     
     @staticmethod
     def create_db_connector(config):
+        """ Creates and configures the appropriate connector for the database specified in the configuration.
+        This method implements a differentiated connection strategy for different types of databases,
+        handling the configuration specifics of each (e.g., additional parameters for Snowflake).
+        
+        Args:
+            config: Database configuration containing connection type and parameters
+            
+        Returns:
+            A configured instance of the appropriate database connector
+        
+        Raises:
+            ValueError: If the specified database type is not supported   
+        """
+        
         db_types = {
             'postgres': PostgresManager,
             'mysql': MySQLManager,
@@ -46,6 +63,21 @@ class ServiceFactory:
             
     @staticmethod
     def create_metadata_retriever(config, db):
+        """ Creates the appropriate metadata retriever for the specified database.
+        The retriever is responsible for extracting the database schema information
+        (tables, columns, relationships) needed to generate accurate SQL queries.
+        
+        Args:
+            config: Database configuration
+            db: Instance of the database connector that has already been initialized
+
+        Returns:
+            A configured instance of the appropriate metadata retriever
+
+        Raises:
+            ValueError: If the database type does not have a supported retriever
+        """
+        
         retriever_types = {
             'postgres': PostgresMetadataRetriever,
             'mysql': MySQLMetadataRetriever,
@@ -60,6 +92,19 @@ class ServiceFactory:
     
     @staticmethod
     def create_llm_handler(config):
+        """ Creates and configures the appropriate handler for the specified language model provider.
+        Manages configuration for both cloud (OpenAI) and local (Ollama) models, setting the appropriate default parameters when needed.
+        
+        Args:
+            config: Configuration of the language model
+
+        Returns:
+            A configured instance of the appropriate LLM handler
+
+        Raises:
+            ValueError: If the type of LLM is not supported or necessary parameters are missing
+        """
+        
         if config.type == 'openai':
             if not config.api_key:
                 raise ValueError("OpenAI API key is required")
@@ -77,6 +122,26 @@ class ServiceFactory:
         
     @staticmethod
     def create_chat_service(app_config):
+        """ Main method that orchestrates the creation and initialization of all components required
+        for the chat service. This is the main entry point for application configuration.
+        
+        The method follows these critical steps:
+        1. Creates and verifies the database connection
+        2. Initialize the language model
+        3. Configures metadata retriever for database introspection
+        4. Prepares the prompt generator that will combine metadata with user requests
+        5. Assembles all components into a working chat service
+        
+        Args:
+            app_config: Complete application configuration (database, LLM, prompts)
+
+        Returns:
+            A fully configured instance of ChatService ready to process requests
+
+        Raises:
+            RuntimeError: If the connection to the database fails
+            ValueError: If the configuration is invalid or necessary components are missing
+        """
         
         db = ServiceFactory.create_db_connector(app_config.database)
         if not db.connect():
