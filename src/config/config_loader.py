@@ -82,11 +82,21 @@ class ConfigLoader:
         if not vs_data.get('enabled', False):
             return None
         
+        # contesto per la sostituzione delle variabili nel config.yaml
+        context = {
+            'db_schema': config_data['database']['schema']
+        }
+        path = vs_data.get('path')
+        if path:
+            path = path.replace('${db_schema}', context['db_schema'])
+            
+        collection_name = vs_data['collection_name'].replace('${db_schema}', context['db_schema'])
+                    
         return VectorStoreConfig(
             enabled=vs_data.get('enabled', False),
             type=vs_data['type'],
-            collection_name=vs_data['collection_name'],
-            path=vs_data.get('path'),       # Opzionale
+            collection_name=collection_name,
+            path=path,       # Opzionale
             url=vs_data.get('url'),         # Opzionale
             api_key=vs_data.get('api_key'),
             batch_size=vs_data.get('batch_size', 100)

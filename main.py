@@ -29,10 +29,6 @@ def create_app():
     static_dir = os.path.join(project_root, 'src', 'web', 'static')
     config_path = os.path.join(project_root, 'config.yaml')
     
-    # Crea un path univoco per questa istanza
-    temp_path = os.path.join(tempfile.gettempdir(), f"qdrant_{uuid.uuid4()}")
-    os.environ['QDRANT_PATH'] = temp_path
-    
     config = ConfigLoader.load_config(config_path)
     
     app = Flask(__name__, 
@@ -43,20 +39,7 @@ def create_app():
     
     try:
         chat_service = ServiceFactory.create_chat_service(config)
-        app.chat_service = chat_service
-        
-        import atexit
-        
-        @atexit.register
-        def cleanup():
-            if hasattr(app, 'chat_service'):
-                if hasattr(app.chat_service, 'vector_store') and app.chat_service.vector_store:
-                    app.chat_service.vector_store.close()
-                if hasattr(app.chat_service, 'db'):
-                    app.chat_service.db.close()
-        
         create_routes(app, chat_service)
-        
     except Exception as e:
         print(f"Failed to initialize service: {e}")
         raise
@@ -65,4 +48,4 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, use_reloader=False)

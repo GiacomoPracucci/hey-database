@@ -29,7 +29,7 @@ vector_store:
   enabled: true
   type: qdrant
   collection_name: ${db_schema}_store
-  path: ${QDRANT_PATH}
+  path: ./data/${db_schema}_store
   #url: http://localhost:6333
   # api_key: optional
   batch_size: 100
