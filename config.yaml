@@ -26,9 +26,10 @@ prompt:
   max_sample_rows: 3
 
 vector_store:
+  enabled: true
   type: qdrant
   collection_name: ${db_schema}_store
-  path: src/store/data/${db_schema}_store
+  path: ${QDRANT_PATH}
   #url: http://localhost:6333
   # api_key: optional
   batch_size: 100

@@ -1,7 +1,6 @@
 from typing import List, Optional
 from datetime import datetime, timezone
-import time
-import hashlib
+import uuid
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams
@@ -194,30 +193,12 @@ class QdrantStore(VectorStore):
             print(f"Errore nella ricerca: {str(e)}")
             return []
         
-    def increment_votes(self, question: str) -> bool:
-        """Incrementa il contatore dei voti positivi"""
-        def update(payload):
-            payload["positive_votes"] += 1
-            payload["last_used"] = datetime.now(timezone.utc).isoformat()
         
-        return self._update_payload(question, update)
-        
-    def update_last_used(self, question: str) -> bool:
-        """Aggiorna il timestamp di ultimo utilizzo"""
-        def update(payload):
-            payload["last_used"] = datetime.now(timezone.utc).isoformat()
-        
-        return self._update_payload(question, update)
-        
-        
-
-            
     def _generate_id(self, question: str) -> str:
-        """Genera un ID combinando timestamp e hash"""
-        timestamp = int(time.time() * 1000)  # millisecondi
-        question_hash = hashlib.md5(question.encode('utf-8')).hexdigest()[:8]
-        return f"{timestamp}-{question_hash}"
-
+        """Genera un UUID v5 deterministico basato sulla domanda"""
+        # Usiamo UUID v5 che genera un UUID deterministico basato su namespace + nome
+        # NAMESPACE_DNS è solo un namespace arbitrario ma costante
+        return str(uuid.uuid5(uuid.NAMESPACE_DNS, question))
 
     def close(self) -> None:
         """Chiude la connessione al vector store"""

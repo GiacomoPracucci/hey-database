@@ -22,6 +22,6 @@ class VectorStore(ABC):
         pass
     
     @abstractmethod
-    def search_similar_questions(self, question: str, limit: int = 3) -> List[SearchResult]:
+    def search_similar(self, question: str, limit: int = 3) -> List[SearchResult]:
         """Cerca domande simili nel vectorstore"""
         pass

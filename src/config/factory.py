@@ -151,6 +151,7 @@ class ServiceFactory:
             if store.initialize():
                 return store
             raise RuntimeError("Failed to initialize vector store")
+        return None
                 
         
     @staticmethod
@@ -183,10 +184,15 @@ class ServiceFactory:
         llm = ServiceFactory.create_llm_handler(app_config.llm)
         metadata_retriever = ServiceFactory.create_metadata_retriever(app_config.database, db)
         
+        # Creiamo il vector store se configurato
+        vector_store = None
+        if app_config.vector_store:
+            vector_store = ServiceFactory.create_vector_store(app_config.vector_store)
+        
         prompt_generator = PromptGenerator(
             metadata_retriever=metadata_retriever,
             schema_name=app_config.database.schema,
             prompt_config=app_config.prompt
         )        
         
-        return ChatService(db, llm, metadata_retriever, prompt_generator)
+        return ChatService(db, llm, metadata_retriever, prompt_generator, vector_store)

@@ -23,6 +23,11 @@ def create_routes(app, chat_service):
     def feedback():
         """Endpoint per gestire il feedback positivo dell'utente"""
         try:
+            if not chat_service.vector_store:
+                return jsonify({
+                    "success": False, 
+                    "error": "Vector store non configurato"
+                }), 500
             data = request.get_json()
             
             if not data or not all(key in data for key in ['question', 'sql_query', 'explanation']):

@@ -44,6 +44,7 @@ class QueryStorePayload:
 @dataclass
 class VectorStoreConfig:
     """Configurazione standard per il vector store"""
+    enabled: bool
     type: str # qdrant, ecc
     collection_name: str
     path: Optional[str] # path per lo storage locale
