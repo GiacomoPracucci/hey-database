@@ -30,7 +30,7 @@ class ChatService:
         self.llm_manager = llm_manager
         self.metadata_retriever = metadata_retriever
         self.prompt_generator = prompt_generator
-        self.response_handler = ResponseHandler(self.db)
+        self.response_handler = ResponseHandler(self.db, self.metadata_retriever.schema)
     
     def process_message(self, message: str) -> dict:
         """ Elabora un messaggio dell'utente, interroga il modello e restituisce i risultati formattati"""

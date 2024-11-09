@@ -8,8 +8,9 @@ class ResponseHandler:
     """Processa la risposta generata dal LLM, formattandola ed estraendo query SQL e spiegazione + ci aggiunge i risultati dell'estrazione. 
     L'output di questa classe è ciò che vediamo in webapp in risposta alla nostra domanda"""
     
-    def __init__(self, db): 
+    def __init__(self, db, schema): 
         self.db = db    
+        self.schema = schema
     
     def process_response(self, response: str) -> Dict[str, Any]:
         """Analizza la risposta del modello, estrae la query SQL, la esegue e fornisce i risultati.
@@ -168,9 +169,10 @@ class ResponseHandler:
         if not any(keyword in query.lower() for keyword in ['select', 'with']):
             raise ValueError("La query non contiene SELECT o WITH")
             
-        if 'video_games.' not in query:
+        schema_prefix = f"{self.schema}."
+        if schema_prefix not in query:
             # aggiungi automaticamente lo schema se mancante
-            query = query.replace('FROM ', 'FROM video_games.')
+            query = query.replace('FROM ', f'FROM {schema_prefix}')
             
         return query
     
