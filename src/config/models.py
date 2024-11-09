@@ -36,6 +36,7 @@ class QueryStorePayload:
     """Rappresenta il payload standard per ogni record nel vector store"""
     question: str
     sql_query: str
+    explanation: str
     positive_votes: int
     created_at: datetime
     last_used: datetime
@@ -54,6 +55,7 @@ class SearchResult:
     """Rappresenta un risultato della ricerca in un vectorstore"""
     question: str
     sql_query: str
+    explanation: str
     score: float
     positive_votes: int
     last_used: datetime

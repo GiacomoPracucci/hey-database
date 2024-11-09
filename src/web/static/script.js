@@ -72,10 +72,66 @@ document.addEventListener('DOMContentLoaded', () => {
                     const queryContainer = document.createElement('div');
                     queryContainer.className = 'sql-query-container';
                     
-                    // Toolbar per il bottone di copia
+                    // Toolbar per i bottoni
                     const toolbar = document.createElement('div');
                     toolbar.className = 'sql-query-toolbar';
+                    
+                    // Bottone di copia
                     toolbar.appendChild(createCopyButton(content.query));
+                    
+                    // Bottone di feedback
+                    const feedbackButton = document.createElement('button');
+                    feedbackButton.className = 'feedback-button';
+                    feedbackButton.innerHTML = '<i class="fas fa-thumbs-up"></i>';
+                    feedbackButton.title = 'Segnala risposta corretta';
+                    
+                    feedbackButton.addEventListener('click', async () => {
+                        try {
+                            const response = await fetch('/api/feedback', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    question: userInput.value,  // Prendiamo la domanda dall'input utente
+                                    sql_query: content.query,
+                                    explanation: content.explanation
+                                })
+                            });
+    
+                            if (response.ok) {
+                                // Disabilita il bottone e cambia stile
+                                feedbackButton.classList.add('voted');
+                                feedbackButton.disabled = true;
+                                feedbackButton.title = 'Risposta segnalata come corretta';
+                                
+                                // Toast di conferma
+                                const toast = document.createElement('div');
+                                toast.className = 'toast success';
+                                toast.textContent = 'Grazie per il feedback!';
+                                document.body.appendChild(toast);
+                                
+                                // Rimuovi il toast dopo 3 secondi
+                                setTimeout(() => {
+                                    toast.remove();
+                                }, 3000);
+                            }
+                        } catch (err) {
+                            console.error('Errore nell\'invio del feedback:', err);
+                            
+                            // Toast di errore
+                            const toast = document.createElement('div');
+                            toast.className = 'toast error';
+                            toast.textContent = 'Errore nell\'invio del feedback';
+                            document.body.appendChild(toast);
+                            
+                            setTimeout(() => {
+                                toast.remove();
+                            }, 3000);
+                        }
+                    });
+                    
+                    toolbar.appendChild(feedbackButton);
                     queryContainer.appendChild(toolbar);
                     
                     // Box della query

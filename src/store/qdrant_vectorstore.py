@@ -36,6 +36,7 @@ class QdrantStore(VectorStore):
         return {
             "question": payload.question,
             "sql_query": payload.sql_query,
+            "explanation": payload.explanation,
             "positive_votes": payload.positive_votes,
             "created_at": payload.created_at.isoformat(),
             "last_used": payload.last_used.isoformat()
@@ -61,7 +62,7 @@ class QdrantStore(VectorStore):
             print(f"Errore nell'inizializzazione della collection: {str(e)}")
             return False
         
-    def handle_positive_feedback(self, question: str, sql_query: str) -> bool:
+    def handle_positive_feedback(self, question: str, sql_query: str, explanation: str) -> bool:
         """Gestisce il feedback positivo dell'utente per una coppia domanda-risposta.
         Se la coppia esiste, incrementa il contatore. Se non esiste, crea una nuova entry.
         
@@ -108,6 +109,7 @@ class QdrantStore(VectorStore):
                 payload = QueryStorePayload(
                     question=question,
                     sql_query=sql_query,
+                    explanation=explanation,
                     positive_votes=1,  # Inizia da 1 perché è un feedback positivo
                     created_at=current_time,
                     last_used=current_time
@@ -128,7 +130,7 @@ class QdrantStore(VectorStore):
                 return False
                 
             
-    def add_entry(self, question: str, sql_query: str) -> bool:
+    def add_entry(self, question: str, sql_query: str, explanation: str) -> bool:
         """Aggiunge una nuova entry nel vector store"""
         try:
             vector = self.embedding_model.encode(question)
@@ -137,6 +139,7 @@ class QdrantStore(VectorStore):
             payload = QueryStorePayload(
                 question=question,
                 sql_query=sql_query,
+                explanation=explanation,
                 positive_votes=0,
                 created_at=current_time,
                 last_used=current_time
@@ -171,6 +174,7 @@ class QdrantStore(VectorStore):
                 SearchResult(
                     question=r.payload["question"],
                     sql_query=r.payload["sql_query"],
+                    explanation=r.payload["explanation"],
                     score=r.score,
                     positive_votes=r.payload["positive_votes"],
                     last_used=datetime.fromisoformat(r.payload["last_used"])
@@ -198,50 +202,7 @@ class QdrantStore(VectorStore):
         return self._update_payload(question, update)
         
         
-    def _update_payload(self, question: str, updater_func) -> bool:
-        """Helper per aggiornare il payload di un punto con match esatto sulla domanda.
-        
-        Args:
-            question: La domanda da cercare
-            updater_func: Funzione che riceve il payload e lo aggiorna
-            
-        Returns:
-            bool: True se l'aggiornamento ha successo, False altrimenti
-        """
-        try:
-            results = self.client.scroll(
-                collection_name=self.collection_name,
-                scroll_filter=models.Filter(
-                    must=[
-                        models.FieldCondition(
-                            key="question",
-                            match=models.MatchValue(value=question)
-                        )
-                    ]
-                ),
-                limit=1
-            )[0]
-            
-            if not results:
-                return False
-                
-            point = results[0]
-            payload = point.payload
-            updater_func(payload)
-            
-            self.client.upsert(
-                collection_name=self.collection_name,
-                points=[models.PointStruct(
-                    id=point.id,
-                    vector=point.vector,
-                    payload=payload
-                )]
-            )
-            return True
-            
-        except Exception as e:
-            print(f"Errore nell'aggiornamento del payload: {str(e)}")
-            return False
+
             
     def _generate_id(self, question: str) -> str:
         """Genera un ID combinando timestamp e hash"""

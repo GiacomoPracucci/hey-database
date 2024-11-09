@@ -386,3 +386,61 @@ textarea:focus {
     0%, 80%, 100% { transform: translateY(0); }
     40% { transform: translateY(-6px); }
 }
+
+
+/* Stile per il bottone di feedback */
+.feedback-button {
+    background: none;
+    border: none;
+    color: #3498db;
+    cursor: pointer;
+    padding: 4px 8px;
+    margin-left: 8px;
+    transition: all 0.3s ease;
+}
+
+.feedback-button:hover {
+    color: #2980b9;
+    transform: scale(1.1);
+}
+
+.feedback-button.voted {
+    color: #2ecc71;
+    cursor: default;
+}
+
+.feedback-button:disabled {
+    opacity: 0.7;
+}
+
+/* Stile per i toast */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 24px;
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+}
+
+.toast.success {
+    background-color: #2ecc71;
+}
+
+.toast.error {
+    background-color: #e74c3c;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

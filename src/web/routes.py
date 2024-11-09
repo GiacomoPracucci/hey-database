@@ -18,6 +18,30 @@ def create_routes(app, chat_service):
         """Index Page"""
         logger.debug("Rendering index page")
         return render_template('index.html')
+
+    @chat_bp.route('/api/feedback', methods=['POST'])
+    def feedback():
+        """Endpoint per gestire il feedback positivo dell'utente"""
+        try:
+            data = request.get_json()
+            
+            if not data or not all(key in data for key in ['question', 'sql_query', 'explanation']):
+                return jsonify({"success": False, "error": "Dati mancanti"}), 400
+                
+            success = chat_service.vector_store.handle_positive_feedback(
+                question=data['question'],
+                sql_query=data['sql_query'],
+                explanation=data['explanation']
+            )
+            
+            if success:
+                return jsonify({"success": True})
+            else:
+                return jsonify({"success": False, "error": "Errore nel salvataggio del feedback"}), 500
+                
+        except Exception as e:
+            logger.exception(f"Errore nell'endpoint feedback: {str(e)}")
+            return jsonify({"success": False, "error": str(e)}), 500
     
     @chat_bp.route('/api/chat', methods=['POST'])
     def chat():
