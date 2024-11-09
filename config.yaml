@@ -13,12 +13,13 @@ database:
   # role: analyst
 
 llm:
-  type: ollama    # o openai
-  base_url: http://localhost:11434
-  model: llama3.1
+  type: openai    # openai, ollama
+  # Configurazioni per ollama
+  #base_url: http://localhost:11434
+  #model: llama3.1
   # Configurazioni per OpenAI
-  # api_key: ${OPENAI_API_KEY}
-  # model: gpt-4
+  api_key: ${OPENAI_API_KEY}
+  model: gpt-4o
 
 prompt:
   include_sample_data: true
