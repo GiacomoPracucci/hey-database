@@ -1,8 +1,8 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import yaml
 import os
 from dotenv import load_dotenv
-from src.config.models import AppConfig, DatabaseConfig, LLMConfig, PromptConfig
+from src.config.models import AppConfig, DatabaseConfig, LLMConfig, PromptConfig, VectorStoreConfig
 
 class ConfigLoader:
     @staticmethod
@@ -39,10 +39,13 @@ class ConfigLoader:
             max_sample_rows=config_data.get('prompt', {}).get('max_sample_rows', 3)
         )
         
+        vector_store_config = ConfigLoader._load_vector_store_config(config_data)
+        
         return AppConfig(
             database=db_config,
             llm=llm_config,
             prompt=prompt_config,
+            vector_store=vector_store_config,
             debug=config_data.get('debug', False)
         )
     
@@ -57,3 +60,18 @@ class ConfigLoader:
             env_var = config[2:-1]
             return os.getenv(env_var, '')
         return config
+    
+    @staticmethod
+    def _load_vector_store_config(config_data: dict) -> Optional[VectorStoreConfig]:
+        """Carica la configurazione del vectorstore se presente"""
+        if 'vector_store' not in config_data:
+            return None
+        
+        vs_data = config_data['vector_store']
+        return VectorStoreConfig(
+            type=vs_data['type'],
+            url=vs_data['url'],
+            collection_name=vs_data['collection_name'],
+            api_key=vs_data.get('api_key'),
+            batch_size=vs_data.get('batch_size', 100)
+        )

@@ -8,6 +8,7 @@ from src.dbcontext.snowflake_metadata_retriever import SnowflakeMetadataRetrieve
 from src.openai_.openai_handler import OpenAIHandler
 from src.ollama_.ollama_handler import OllamaHandler
 from src.llm_input.prompt_generator import PromptGenerator
+from src.store.qdrant_store import QdrantStore
 from src.web.chat_service import ChatService
 
 class ServiceFactory:
@@ -119,6 +120,32 @@ class ServiceFactory:
             )
         else:
             raise ValueError(f"LLM type {config.type} not supported")
+        
+    @staticmethod
+    def create_vector_store(config):
+        """Crea e configura il vector store appropriato.
+        
+        Args:
+            config: Configurazione del vector store
+            
+        Returns:
+            VectorStore: Istanza configurata del vector store o None se non supportato
+        """
+        if not config:
+            return None
+        
+        if config.type == 'qdrant':
+            store = QdrantStore(
+                url=config.url,
+                collection_name=config.collection_name,
+                api_key=config.api_key
+            )
+            if store.initialize():
+                return store
+            raise RuntimeError("Failed to initialize vector store")
+        else:
+            raise ValueError(f"Vector store type {config.type} not supported")
+                
         
     @staticmethod
     def create_chat_service(app_config):

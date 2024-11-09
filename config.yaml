@@ -25,4 +25,11 @@ prompt:
   include_sample_data: true
   max_sample_rows: 3
 
+vector_store:
+  type: qdrant
+  url: http://localhost:6333
+  collection_name: video_games_store
+  # api_key: optional
+  batch_size: 100
+
 debug: true
