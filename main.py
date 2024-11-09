@@ -1,6 +1,6 @@
 import os
 import sys
-import time
+import logging
 import tempfile
 import uuid
 from pathlib import Path
@@ -9,6 +9,16 @@ from flask import Flask
 from src.config.config_loader import ConfigLoader
 from src.config.factory import ServiceFactory 
 from src.web.routes import create_routes
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger('hey-database')
 
 def create_app():
     project_root = Path(__file__).resolve().parent

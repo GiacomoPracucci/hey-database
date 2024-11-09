@@ -72,6 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const queryContainer = document.createElement('div');
                     queryContainer.className = 'sql-query-container';
                     
+                    // Salviamo la domanda originale come attributo del container
+                    queryContainer.dataset.originalQuestion = content.original_question;
+                    
                     // Toolbar per i bottoni
                     const toolbar = document.createElement('div');
                     toolbar.className = 'sql-query-toolbar';
@@ -93,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     'Content-Type': 'application/json'
                                 },
                                 body: JSON.stringify({
-                                    question: userInput.value,  // Prendiamo la domanda dall'input utente
+                                    question: content.original_question, // Usiamo la domanda originale dal content
                                     sql_query: content.query,
                                     explanation: content.explanation
                                 })
@@ -230,16 +233,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const message = userInput.value.trim();
         if (!message) return;
         
-        // Disabilita input e bottone
         userInput.disabled = true;
         sendButton.disabled = true;
         
-        // Aggiunge il messaggio dell'utente
         addMessage(message, 'user');
         userInput.value = '';
         adjustTextareaHeight();
         
-        // Aggiunge l'indicatore di caricamento
         addLoadingIndicator();
         
         try {
@@ -253,22 +253,21 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            // Rimuove l'indicatore di caricamento
-            removeLoadingIndicator();
+            // Aggiungiamo delay solo se la risposta viene dal vector store
+            if (data.from_vector_store) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
             
-            // Aggiunge la risposta del bot
+            removeLoadingIndicator();
             addMessage(data, 'bot');
             
         } catch (error) {
-            // Rimuove l'indicatore di caricamento
             removeLoadingIndicator();
-            
             addMessage({
                 success: false,
                 error: 'Errore di comunicazione con il server'
             }, 'bot');
         } finally {
-            // Riabilita input e bottone
             userInput.disabled = false;
             sendButton.disabled = false;
             userInput.focus();

@@ -1,5 +1,6 @@
 from typing import List, Optional
 from datetime import datetime, timezone
+import logging
 import uuid
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
@@ -7,6 +8,7 @@ from qdrant_client.http.models import Distance, VectorParams
 from sentence_transformers import SentenceTransformer
 from src.config.models import QueryStorePayload, SearchResult
 from src.store.base_vectorstore import VectorStore
+logger = logging.getLogger('hey-database')
 
 class QdrantStore(VectorStore):
     """Implementazione del vectorstore Qdrant"""
@@ -81,7 +83,51 @@ class QdrantStore(VectorStore):
             bool: True se l'operazione ha successo, False altrimenti
         """
         try:
-            # cerca se esiste già una entry con questa domanda
+            logger.debug(f"Ricevuto feedback positivo per la domanda: {question}")
+            
+            existing = self.find_exact_match(question)
+            
+            current_time = datetime.now(timezone.utc)
+            
+            if existing:
+                logger.debug(f"Trovata entry esistente con ID {existing.id}")
+                point = existing
+                payload = point.payload
+                payload["positive_votes"] += 1
+                payload["last_used"] = current_time.isoformat()
+                
+                logger.debug(f"Aggiornamento voti a {payload['positive_votes']}")
+            else:
+                logger.debug("Creazione nuova entry")
+                vector = self.embedding_model.encode(question)
+                payload = QueryStorePayload(
+                    question=question,
+                    sql_query=sql_query,
+                    explanation=explanation,
+                    positive_votes=1,
+                    created_at=current_time,
+                    last_used=current_time
+                )
+                
+            success = self.client.upsert(
+                collection_name=self.collection_name,
+                points=[models.PointStruct(
+                    id=self._generate_id(question),
+                    vector=vector.tolist(),
+                    payload=self._payload_to_dict(payload)
+                )]
+            )
+            logger.debug(f"Upsert completato con successo: {success}")
+            return success
+        
+        except Exception as e:
+                logger.error(f"Errore nella gestione del feedback: {str(e)}")
+                return False
+
+    def find_exact_match(self, question: str) -> Optional[SearchResult]:
+        """Cerca una corrispondenza esatta della domanda nel database"""
+        logger.debug(f"Cercando match esatto per: {question}")
+        try:
             results = self.client.scroll(
                 collection_name=self.collection_name,
                 scroll_filter=models.Filter(
@@ -93,48 +139,25 @@ class QdrantStore(VectorStore):
                     ]
                 ),
                 limit=1
-            )[0]
+            )[0]  # scroll returns (results, next_page_offset)
             
-            current_time = datetime.now(timezone.utc)
-            
-            if results:  # se esiste, aggiorna solo i voti e il timestamp
+            logger.debug(f"Risultati trovati: {len(results)}")
+            if results:
                 point = results[0]
-                payload = point.payload
-                payload["positive_votes"] += 1
-                payload["last_used"] = current_time.isoformat()
+                logger.debug(f"Match trovato con payload: {point.payload}")
+                return SearchResult(
+                    question=point.payload["question"],
+                    sql_query=point.payload["sql_query"],
+                    explanation=point.payload["explanation"],
+                    score=1.0,  # match esatto = score 1
+                    positive_votes=point.payload["positive_votes"],
+                    last_used=datetime.fromisoformat(point.payload["last_used"])
+                )
+            return None
                 
-                self.client.upsert(
-                    collection_name=self.collection_name,
-                    points=[models.PointStruct(
-                        id=point.id,
-                        vector=point.vector,
-                        payload=payload
-                    )]
-                )
-            else:  # se non esiste, crea una nuova entry
-                vector = self.embedding_model.encode(question)
-                payload = QueryStorePayload(
-                    question=question,
-                    sql_query=sql_query,
-                    explanation=explanation,
-                    positive_votes=1,  # Inizia da 1 perché è un feedback positivo
-                    created_at=current_time,
-                    last_used=current_time
-                )
-                
-                self.client.upsert(
-                    collection_name=self.collection_name,
-                    points=[models.PointStruct(
-                        id=self._generate_id(question),
-                        vector=vector.tolist(),
-                        payload=self._payload_to_dict(payload)
-                    )]
-                )
-            return True
-        
         except Exception as e:
-                print(f"Errore nella gestione del feedback: {str(e)}")
-                return False
+            logger.error(f"Errore nella ricerca esatta: {str(e)}")
+            return None
                 
             
     def add_entry(self, question: str, sql_query: str, explanation: str) -> bool:
@@ -199,6 +222,76 @@ class QdrantStore(VectorStore):
         # Usiamo UUID v5 che genera un UUID deterministico basato su namespace + nome
         # NAMESPACE_DNS è solo un namespace arbitrario ma costante
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, question))
+    
+    def debug_list_all_entries(self) -> None:
+        """Metodo di debug per listare tutte le entry nel vector store"""
+        try:
+            results = self.client.scroll(
+                collection_name=self.collection_name,
+                limit=100  # o il numero che preferisci
+            )[0]
+            
+            logger.debug(f"Contenuto del vector store ({len(results)} entries):")
+            for point in results:
+                logger.debug(f"ID: {point.id}")
+                logger.debug(f"Question: {point.payload['question']}")
+                logger.debug(f"Votes: {point.payload['positive_votes']}")
+                logger.debug("---")
+                
+        except Exception as e:
+            logger.error(f"Errore nel listare le entries: {str(e)}")
+            
+    def update_last_used(self, question: str) -> bool:
+        """Aggiorna il timestamp di ultimo utilizzo"""
+        def update(payload):
+            payload["last_used"] = datetime.now(timezone.utc).isoformat()
+        
+        return self._update_payload(question, update)
+    
+    def _update_payload(self, question: str, updater_func) -> bool:
+        """Helper per aggiornare il payload di un punto con match esatto sulla domanda.
+        
+        Args:
+            question: La domanda da cercare
+            updater_func: Funzione che riceve il payload e lo aggiorna
+            
+        Returns:
+            bool: True se l'aggiornamento ha successo, False altrimenti
+        """
+        try:
+            results = self.client.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="question",
+                            match=models.MatchValue(value=question)
+                        )
+                    ]
+                ),
+                limit=1
+            )[0]
+            
+            if not results:
+                return False
+                
+            point = results[0]
+            payload = point.payload
+            updater_func(payload)
+            
+            self.client.upsert(
+                collection_name=self.collection_name,
+                points=[models.PointStruct(
+                    id=point.id,
+                    vector=point.vector,
+                    payload=payload
+                )]
+            )
+            return True
+            
+        except Exception as e:
+            print(f"Errore nell'aggiornamento del payload: {str(e)}")
+            return False
 
     def close(self) -> None:
         """Chiude la connessione al vector store"""

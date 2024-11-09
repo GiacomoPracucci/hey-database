@@ -5,8 +5,7 @@ from src.llm_input.prompt_generator import PromptGenerator
 from src.llm_output.response_handler import ResponseHandler
 from src.connettori.base_connector import DatabaseConnector
 from src.store.base_vectorstore import VectorStore
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hey-database')
 
 class ChatService:
     """Servizio che gestisce la logica della chat"""
@@ -43,25 +42,29 @@ class ChatService:
         try:
             # prima verifica se abbiamo una risposta simile nel vector store
             if self.vector_store:
-                similar_results = self.vector_store.search_similar(message, limit=1)
-                if similar_results and similar_results[0].score > 0.98:  # soglia di similarità alta
-                    logger.debug("Found similar question in vector store")
-                    # aggiorna il timestamp di ultimo utilizzo
-                    self.vector_store.update_last_used(similar_results[0].question)
-                    # esegue la query salvata invece di generarne una nuova
+                exact_match = self.vector_store.find_exact_match(message)
+                
+                if exact_match:
+                    logger.debug("Found exact match in vector store")
+                    self.vector_store.update_last_used(exact_match.question)
+                    
                     stored_result = self.response_handler.process_response(
                         f"""```sql
-                        {similar_results[0].sql_query}
+                        {exact_match.sql_query}
                         ```
                         
-                        Explanation: {similar_results[0].explanation}
+                        Explanation: {exact_match.explanation}
                         """
                     )
                     
                     if stored_result["success"]:
-                        logger.debug("Successfully executed stored query")
+                        logger.debug("Successfully used stored query")
+                        stored_result["original_question"] = message
+                        stored_result["from_vector_store"] = True
                         return stored_result
-            
+                    
+                logger.debug("No exact match found, using LLM")
+                
             # se non troviamo una risposta simile o il vector store non è configurato,
             # procediamo con la generazione normale
             prompt = self.prompt_generator.generate_prompt(message)
@@ -77,7 +80,9 @@ class ChatService:
                 if isinstance(results.get("results"), DataFrame):
                     results["results"] = results["results"].to_dict('records')
                 if isinstance(results.get("preview"), DataFrame):
-                    results["preview"] = results["preview"].to_dict('records')
+                    results["preview"] = results["preview"].to_dict('records') 
+                results["original_question"] = message
+                results["from_vector_store"] = False
             
             return results
             

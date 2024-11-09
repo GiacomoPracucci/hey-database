@@ -23,14 +23,13 @@ def create_routes(app, chat_service):
     def feedback():
         """Endpoint per gestire il feedback positivo dell'utente"""
         try:
-            if not chat_service.vector_store:
-                return jsonify({
-                    "success": False, 
-                    "error": "Vector store non configurato"
-                }), 500
+            
+            logger.debug("Ricevuta richiesta di feedback")
             data = request.get_json()
+            logger.debug(f"Dati ricevuti: {data}")
             
             if not data or not all(key in data for key in ['question', 'sql_query', 'explanation']):
+                logger.error("Dati mancanti nella richiesta")
                 return jsonify({"success": False, "error": "Dati mancanti"}), 400
                 
             success = chat_service.vector_store.handle_positive_feedback(
@@ -38,6 +37,8 @@ def create_routes(app, chat_service):
                 sql_query=data['sql_query'],
                 explanation=data['explanation']
             )
+            
+            logger.debug(f"Feedback processato con successo: {success}")
             
             if success:
                 return jsonify({"success": True})
@@ -47,6 +48,13 @@ def create_routes(app, chat_service):
         except Exception as e:
             logger.exception(f"Errore nell'endpoint feedback: {str(e)}")
             return jsonify({"success": False, "error": str(e)}), 500
+    
+    @chat_bp.route('/api/debug/vectorstore', methods=['GET'])
+    def debug_vectorstore():
+        """Endpoint di debug per vedere il contenuto del vector store"""
+        if chat_service.vector_store:
+            chat_service.vector_store.debug_list_all_entries()
+        return jsonify({"message": "Check logs for vector store content"})
     
     @chat_bp.route('/api/chat', methods=['POST'])
     def chat():
