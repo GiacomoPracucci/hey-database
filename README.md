@@ -3,7 +3,8 @@
 A Flask-based web application that lets users query a video games database using natural language.  
 The app translates user questions into SQL queries using LLMs (supports both OpenAI and Ollama models) and returns formatted results.
 
-![heydatabase](https://github.com/user-attachments/assets/006a1674-5699-46c8-90d6-7cb0ab327b9c)
+![heydatabase1](https://github.com/user-attachments/assets/edd0992a-a5b5-4498-b8b4-1748d030869b)
+
 
 
 ## 🚀 Features
