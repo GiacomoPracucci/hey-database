@@ -13,20 +13,28 @@ class QdrantStore(VectorStore):
     """Implementazione del vectorstore Qdrant"""
     
     def __init__(self,
-                 url: str,
-                 collection_name: str,
-                 api_key: Optional[str] = None,
-                 embedding_model: str = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+                collection_name: str,
+                path: Optional[str] = None,
+                url: Optional[str] = None,
+                api_key: Optional[str] = None,
+                embedding_model: str = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
                  ) -> None:
         """ Inizializza il client Qdrant
         
         Args:
-            url: URL del server Qdrant
-            collection_name: Nome della collezione da utilizzare
-            api_key: API key opzionale per l'autenticazione (per qdrant cloud)
-            embedding_model: Modello da utilizzare per generare gli embedding
+            collection_name: Nome della collezione
+            path: Path per storage locale (opzionale)
+            url: URL del server remoto (opzionale)
+            api_key: API key per server remoto (opzionale)
+            embedding_model: Modello per generare gli embedding
         """
-        self.client = QdrantClient(url=url, api_key=api_key)
+        if path:
+            self.client = QdrantClient(path=path)
+        elif url:
+            self.client = QdrantClient(url=url, api_key=api_key)
+        else:
+            raise ValueError("Neither path nor url specified")
+
         self.collection_name = collection_name
         self.embedding_model = SentenceTransformer(embedding_model)
         self.vector_size = self.embedding_model.get_sentence_embedding_dimension()

@@ -5,12 +5,36 @@ from dotenv import load_dotenv
 from src.config.models import AppConfig, DatabaseConfig, LLMConfig, PromptConfig, VectorStoreConfig
 
 class ConfigLoader:
+    
+    @staticmethod
+    def _resolve_refs(config: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+        """Risolve i riferimenti interni nel dizionario di configurazione"""
+        if isinstance(config, dict):
+            return {k: ConfigLoader._resolve_refs(v, context) for k, v in config.items()}
+        elif isinstance(config, list):
+            return [ConfigLoader._resolve_refs(v, context) for v in config]
+        elif isinstance(config, str) and config.startswith('${') and config.endswith('}'):
+            var_name = config[2:-1]
+            # prima cerca nelle variabili di contesto
+            if var_name in context:
+                return context[var_name]
+            # poi nelle variabili d'ambiente
+            return os.getenv(var_name, '')
+        return config
+    
+    
     @staticmethod
     def load_config(config_path: str) -> AppConfig:
         
         load_dotenv()
         with open(config_path, 'r') as f:
             config_data = yaml.safe_load(f)
+
+        context = {
+            'db_schema': config_data['database']['schema']
+        }
+            
+        config_data = ConfigLoader._resolve_refs(config_data, context)
             
         config_data = ConfigLoader._resolve_env_vars(config_data)
         
@@ -48,18 +72,6 @@ class ConfigLoader:
             vector_store=vector_store_config,
             debug=config_data.get('debug', False)
         )
-    
-    @staticmethod
-    def _resolve_env_vars(config: Dict[str, Any]) -> Dict[str, Any]:
-        """Sostituisce i riferimenti alle variabili d'ambiente nel dizionario di configurazione"""
-        if isinstance(config, dict):
-            return {k: ConfigLoader._resolve_env_vars(v) for k, v in config.items()}
-        elif isinstance(config, list):
-            return [ConfigLoader._resolve_env_vars(v) for v in config]
-        elif isinstance(config, str) and config.startswith('${') and config.endswith('}'):
-            env_var = config[2:-1]
-            return os.getenv(env_var, '')
-        return config
     
     @staticmethod
     def _load_vector_store_config(config_data: dict) -> Optional[VectorStoreConfig]:

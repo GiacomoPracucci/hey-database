@@ -45,8 +45,9 @@ class QueryStorePayload:
 class VectorStoreConfig:
     """Configurazione standard per il vector store"""
     type: str # qdrant, ecc
-    url: str
     collection_name: str
+    path: Optional[str] # path per lo storage locale
+    url: Optional[str] # url per server remoto
     api_key: Optional[str] = None
     batch_size: int = 100
     

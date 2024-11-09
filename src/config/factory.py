@@ -131,20 +131,26 @@ class ServiceFactory:
         Returns:
             VectorStore: Istanza configurata del vector store o None se non supportato
         """
-        if not config:
-            return None
-        
         if config.type == 'qdrant':
-            store = QdrantStore(
-                url=config.url,
-                collection_name=config.collection_name,
-                api_key=config.api_key
-            )
+            # se è specificato un path, usiamo lo storage locale
+            if config.path:
+                store = QdrantStore(
+                    path=config.path,
+                    collection_name=config.collection_name
+                )
+            # altrimenti usiamo l'URL del server
+            elif config.url:
+                store = QdrantStore(
+                    url=config.url,
+                    collection_name=config.collection_name,
+                    api_key=config.api_key
+                )
+            else:
+                raise ValueError("Neither path nor url specified for Qdrant")
+                
             if store.initialize():
                 return store
             raise RuntimeError("Failed to initialize vector store")
-        else:
-            raise ValueError(f"Vector store type {config.type} not supported")
                 
         
     @staticmethod

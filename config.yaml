@@ -6,7 +6,7 @@ database:
   database: postgres
   user: postgres
   password: ${POSTGRES_PWD}  # Prende il valore dalla variabile d'ambiente
-  schema: video_games
+  schema: &db_schema video_games
   # Configurazioni opzionali per Snowflake
   # warehouse: compute_wh
   # account: xy12345.eu-central-1
@@ -27,8 +27,9 @@ prompt:
 
 vector_store:
   type: qdrant
-  url: http://localhost:6333
-  collection_name: video_games_store
+  collection_name: ${db_schema}_store
+  path: src/store/data/${db_schema}_store
+  #url: http://localhost:6333
   # api_key: optional
   batch_size: 100
 
