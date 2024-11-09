@@ -8,7 +8,7 @@ from src.dbcontext.snowflake_metadata_retriever import SnowflakeMetadataRetrieve
 from src.openai_.openai_handler import OpenAIHandler
 from src.ollama_.ollama_handler import OllamaHandler
 from src.llm_input.prompt_generator import PromptGenerator
-from src.store.qdrant_store import QdrantStore
+from src.store.qdrant_vectorstore import QdrantStore
 from src.web.chat_service import ChatService
 
 class ServiceFactory:

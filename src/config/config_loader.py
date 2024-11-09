@@ -35,8 +35,6 @@ class ConfigLoader:
         }
             
         config_data = ConfigLoader._resolve_refs(config_data, context)
-            
-        config_data = ConfigLoader._resolve_env_vars(config_data)
         
         db_config = DatabaseConfig(
             type=config_data['database']['type'],
@@ -75,15 +73,16 @@ class ConfigLoader:
     
     @staticmethod
     def _load_vector_store_config(config_data: dict) -> Optional[VectorStoreConfig]:
-        """Carica la configurazione del vectorstore se presente"""
+        """Carica la configurazione del vector store se presente"""
         if 'vector_store' not in config_data:
             return None
         
         vs_data = config_data['vector_store']
         return VectorStoreConfig(
             type=vs_data['type'],
-            url=vs_data['url'],
             collection_name=vs_data['collection_name'],
+            path=vs_data.get('path'),       # Opzionale
+            url=vs_data.get('url'),         # Opzionale
             api_key=vs_data.get('api_key'),
             batch_size=vs_data.get('batch_size', 100)
         )
