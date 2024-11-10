@@ -70,7 +70,13 @@ class ChatService:
             logger.debug(f"Generated prompt: {prompt}")
 
             llm_response = self.llm_manager.get_completion(prompt)
+            
             logger.debug(f"LLM response: {llm_response}")
+            
+            logger.debug(f"Raw LLM response: {llm_response}")
+        
+            if not llm_response:
+                raise RuntimeError("LLM returned empty response")
 
             results = self.response_handler.process_response(llm_response)
             logger.debug(f"Query results: {results}")

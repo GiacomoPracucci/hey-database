@@ -164,8 +164,7 @@ hey-database/
     ├───embedding/ # Embedding models classes
     ├───llm_input/ # LLM prompt generator
     ├───llm_output/ # LLM response handler
-    ├───ollama_/ # call to local model handler
-    ├───openai_/ # API call Handler
+    ├───llm_handler/ # handlers for local and openai chat models
     ├───store/ # vectorstore for query caching
     └───web/ # Web-related components
         │   chat_service.py

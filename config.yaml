@@ -13,20 +13,20 @@ database:
   # role: analyst
 
 llm:
-  type: openai    # openai, ollama
+  type: ollama    # openai, ollama
   # Configurazioni per ollama
-  #base_url: http://localhost:11434
-  #model: llama3.1
+  base_url: http://localhost:11434
+  model: llama3.1
   # Configurazioni per OpenAI
-  api_key: ${OPENAI_API_KEY}
-  model: gpt-4o
+  #api_key: ${OPENAI_API_KEY}
+  #model: gpt-4o
 
 prompt:
   include_sample_data: true
   max_sample_rows: 3
 
 vector_store:
-  enabled: true
+  enabled: false
   type: qdrant
   collection_name: ${db_schema}_store
   path: ./data/${db_schema}_store

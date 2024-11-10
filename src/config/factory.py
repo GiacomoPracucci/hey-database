@@ -8,12 +8,15 @@ from src.connettori.snowflake import SnowflakeManager
 from src.dbcontext.postgres_metadata_retriever import PostgresMetadataRetriever
 from src.dbcontext.mysql_metadata_retriever import MySQLMetadataRetriever
 from src.dbcontext.snowflake_metadata_retriever import SnowflakeMetadataRetriever
-from src.openai_.openai_handler import OpenAIHandler
-from src.ollama_.ollama_handler import OllamaHandler
+from src.llm_handler.openai_handler import OpenAIHandler
+from src.llm_handler.ollama_handler import OllamaHandler
 from src.llm_input.prompt_generator import PromptGenerator
 from src.store.qdrant_vectorstore import QdrantStore
 from src.web.chat_service import ChatService
 from src.embedding.base_embedding_model import EmbeddingModel
+
+import logging
+logger = logging.getLogger('hey-database')
 
 class ServiceFactory:
     """ Factory class responsible for creating and configuring all major components of the application.
@@ -110,20 +113,30 @@ class ServiceFactory:
             ValueError: If the type of LLM is not supported or necessary parameters are missing
         """
         
-        if config.type == 'openai':
-            if not config.api_key:
-                raise ValueError("OpenAI API key is required")
-            return OpenAIHandler(
-                api_key=config.api_key,
-                chat_model=config.model or "gpt-4o"
-            )    
-        elif config.type == 'ollama':
-            return OllamaHandler(
-                base_url=config.base_url or "http://localhost:11434",
-                model=config.model or "llama2"
-            )
-        else:
-            raise ValueError(f"LLM type {config.type} not supported")
+        try:
+            if config.type == 'openai':
+                if not config.api_key:
+                    raise ValueError("OpenAI API key is required")
+                handler = OpenAIHandler(
+                    api_key=config.api_key,
+                    chat_model=config.model or "gpt-4o"
+                )
+                logger.debug("Successfully created OpenAI handler")
+                return handler
+            elif config.type == 'ollama':
+                handler = OllamaHandler(
+                    base_url=config.base_url or "http://localhost:11434",
+                    model=config.model or "llama3.1"
+                )
+                logger.debug("Successfully created Ollama handler")
+                # verifica che l'handler sia stato creato correttamente
+                test_response = handler.get_completion("test")
+                if test_response is None:
+                    logger.error("Ollama handler created but not responding")
+                return handler
+        except Exception as e:
+            logger.exception(f"Error creating LLM handler: {e}")
+            raise
         
     @staticmethod
     def create_vector_store(config):

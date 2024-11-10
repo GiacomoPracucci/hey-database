@@ -59,8 +59,6 @@ class OllamaHandler:
                        system_prompt: str = None,
                        temperature: float = 0.2,
                        max_tokens: int = 1000,
-                       top_p: float = 0.9,
-                       stream: bool = False
                        ) -> Union[str, Generator[str, None, None], None]:
         """Ottiene una risposta dal modello.
         
@@ -78,32 +76,37 @@ class OllamaHandler:
         data = {
             "model": self.model,
             "prompt": prompt,
-            "stream": stream,
+            "stream": False,
             "options": {
                 "temperature": temperature,
-                "num_predict": max_tokens,
-                "top_p": top_p
+                "num_predict": max_tokens
             }
         }
         
         if system_prompt:
             data["system"] = system_prompt
             
-        if stream:
-            return self._stream_response(data)
-            
         response = self._make_request("api/generate", data=data)
         return response.get("response") if response else None
     
     
-    def _stream_response(self, data: Dict) -> Generator[str, None, None]:
-        """Gestisce lo streaming della risposta dal modello.
+    def get_chat_stream(self,
+                       prompt: str,
+                       system_prompt: str = None,
+                       temperature: float = 0.2
+                       ) -> Generator[str, None, None]:
+        """Get streaming response from Ollama API"""
+        data = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": True,
+            "options": {
+                "temperature": temperature
+            }
+        }
         
-        Args:
-            data (Dict): Dati della richiesta
-            
-        Yields:
-            str: Frammenti della risposta in streaming"""
+        if system_prompt:
+            data["system"] = system_prompt
             
         try:
             response = requests.post(
@@ -119,8 +122,9 @@ class OllamaHandler:
                         yield json_response["response"]
                         
         except Exception as e:
-            print(f"Errore nello streaming della risposta: {str(e)}")
+            print(f"Error in response streaming: {str(e)}")
             yield None
+            
             
     def list_models(self) -> Union[List[Dict], None]:
         """ Ottiene la lista dei modelli disponibili localmente """
