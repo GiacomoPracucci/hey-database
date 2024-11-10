@@ -6,39 +6,42 @@ The app translates user questions into SQL queries using LLMs (supports both Ope
 ![heydatabase1](https://github.com/user-attachments/assets/edd0992a-a5b5-4498-b8b4-1748d030869b)
 
 
-## 🚀 Features
+## 🚀 Key Features
 
-- Natural language to SQL translation  
-- Support for both OpenAI and Ollama LLMs  
-- Real-time query execution  
-- Interactive chat interface  
-- Query explanation for better understanding  
-- Error handling with detailed feedback
-- Multiple database support (PostgreSQL, MySQL, Snowflake)
-- Query caching with vector store:
-   - Store and retrieve similar queries
-   - Supports multiple embedding models (OpenAI, HuggingFace)
-- User feedback system:
-   - Thumbs up for correct queries
-   - Automatic storage of validated queries
+- Natural language to SQL conversion
+- Support for multiple database types (PostgreSQL, MySQL, Snowflake)
+- Query caching using vector store
+- Multiple LLM provider support (OpenAI, Ollama)
+- Web interface with real-time feedback
 
-## 🛠️ Tech Stack
+## ⚙️ Core Components
 
-- Backend: Python, Flask
-- Frontend: HTML, CSS, JavaScript
-- Databases:   
-   - PostgreSQL  
-   - MySQL  
-   - Snowflake  
-- LLM Integration:  
-   - OpenAI API  
-   - Ollama (local models)  
-- Vector Store:
-   - Qdrant for query storage
-- Embedding Models:
-   - HuggingFace Sentence Transformers
-   - OpenAI Embeddings
-- Database Access: SQLAlchemy  
+1. `Database Connectors` (src/connettori/)
+
+   - Handle database connections and query execution
+   - Support for PostgreSQL, MySQL, and Snowflake
+   - Abstract base class for easy extension to other databases
+
+
+2. `LLM Handlers` (src/openai_/, src/ollama_/)
+
+   - Manage communication with LLM providers
+   - Support for OpenAI and Ollama
+   - Configurable parameters for response generation
+
+
+3. `Vector Store` (src/store/)
+
+   - Caches successful queries for faster responses
+   - Uses Qdrant for vector similarity search
+   - Supports both local and remote storage
+
+
+4. `Web Interface` (src/web/)
+
+   - Flask-based web server
+   - Real-time chat interface
+   - Support for feedback and query rating
 
 ## 📋 Prerequisites
 
