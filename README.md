@@ -23,7 +23,7 @@ The app translates user questions into SQL queries using LLMs (supports both Ope
    - Abstract base class for easy extension to other databases
 
 
-2. `LLM Handlers` (src/openai_/, src/ollama_/)
+2. `LLM Handlers` (src/llm_handler/)
 
    - Manage communication with LLM providers
    - Support for OpenAI and Ollama
