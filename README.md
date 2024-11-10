@@ -6,7 +6,6 @@ The app translates user questions into SQL queries using LLMs (supports both Ope
 ![heydatabase1](https://github.com/user-attachments/assets/edd0992a-a5b5-4498-b8b4-1748d030869b)
 
 
-
 ## 🚀 Features
 
 - Natural language to SQL translation  
@@ -150,68 +149,30 @@ python main.py
 ## 🔍 Project Structure:
 ```
 hey-database/
-│   .gitignore
-│   config.yaml
-│   LICENSE
-│   main.py
-│   README.md
-│   requirements.txt
-|   .env # you have to create and populate it
-│
-├───data
+│   config.yaml # from here you set the app
+│   main.py # Application entry point
+|   .env # Environment variables (you have to create it and populate with credentials)
+│   requirements.txt # Python dependencies
+├───data/
 │   └─── your vectorstores
+├───docs/ # documentation for moving through the codebase
 │
-├───docs
-│       add_components.MD
-│       configuration.MD
-│       query_caching_doc_0911.MD
-│
-└───src
-    ├───config
-    │   │   config_loader.py
-    │   │   factory.py
-    │   │   models.py
-    │
-    ├───connettori
-    │   │   base_connector.py
-    │   │   mysql.py
-    │   │   postgres.py
-    │   │   snowflake.py
-    │
-    ├───dbcontext
-    │   │   base_metadata_retriever.py
-    │   │   mysql_metadata_retriever.py
-    │   │   postgres_metadata_retriever.py
-    │   │   snowflake_metadata_retriever.py
-    │
-    ├───embedding
-    │   │   base_embedding_model.py
-    │   │   huggingface_embedding.py
-    │   │   openai_embedding.py
-    │
-    ├───llm_input
-    │   │   prompt_generator.py
-    ├───llm_output
-    │   │   response_handler.py
-    ├───ollama_
-    │   │   ollama_handler.py
-    │
-    ├───openai_
-    │   │   openai_handler.py
-    ├───store
-    │   │   base_vectorstore.py
-    │   │   qdrant_vectorstore.py
-    └───web
+└───src/
+    ├───config/
+    ├───connettori/ # Database connectors
+    ├───dbcontext/ # Database context retrievers
+    ├───embedding/ # Embedding models classes
+    ├───llm_input/ # LLM prompt generator
+    ├───llm_output/ # LLM response handler
+    ├───ollama_/ # call to local model handler
+    ├───openai_/ # API call Handler
+    ├───store/ # vectorstore for query caching
+    └───web/ # Web-related components
         │   chat_service.py
-        │   routes.py
-        │
-        ├───static
-        │       script.js
-        │       style.css
-        │
-        ├───templates
-        │       base.html
-        │       index.html
+        │   routes.py # Flask routes
+        ├───static/ # CSS, JS files
+        ├───templates/ # HTML templates
+        └────────────
 ```
 
 ## 🤝 Contributing
