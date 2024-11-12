@@ -88,7 +88,7 @@ class QdrantStore(VectorStore):
             existing = self.find_exact_match(question)
             
             if existing:
-                logger.debug(f"Trovata entry esistente con ID {existing.id}")
+                logger.debug(f"Trovata entry esistente")
                 point = existing
                 payload = point.payload
                 payload["positive_votes"] += 1
