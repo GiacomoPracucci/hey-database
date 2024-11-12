@@ -23,7 +23,6 @@ def create_routes(app, chat_service):
     def feedback():
         """Endpoint per gestire il feedback positivo dell'utente"""
         try:
-            
             logger.debug("Ricevuta richiesta di feedback")
             data = request.get_json()
             logger.debug(f"Dati ricevuti: {data}")
@@ -31,7 +30,16 @@ def create_routes(app, chat_service):
             if not data or not all(key in data for key in ['question', 'sql_query', 'explanation']):
                 logger.error("Dati mancanti nella richiesta")
                 return jsonify({"success": False, "error": "Dati mancanti"}), 400
-                
+            
+            # verifica se il vector store è abilitato
+            if not chat_service.vector_store:
+                logger.warning("Tentativo di feedback con vector store disabilitato")
+                return jsonify({
+                    "success": False, 
+                    "error": "vector_store_disabled",
+                    "message": "Il Vector Store non è abilitato. Abilitalo per utilizzare questa funzionalità."
+                }), 400
+            
             success = chat_service.vector_store.handle_positive_feedback(
                 question=data['question'],
                 sql_query=data['sql_query'],

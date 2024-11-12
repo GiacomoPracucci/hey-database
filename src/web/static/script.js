@@ -41,6 +41,56 @@ document.addEventListener('DOMContentLoaded', () => {
         return button;
     }
 
+    function showToast(type, message, icon = null) {
+        // Rimuovi eventuali toast esistenti
+        const existingToasts = document.querySelectorAll('.toast');
+        existingToasts.forEach(toast => toast.remove());
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        let iconHtml = '';
+        if (icon) {
+            iconHtml = `<i class="fas ${icon}"></i>`;
+        }
+        
+        toast.innerHTML = `${iconHtml}${message}`;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    async function handleFeedback(button, data) {
+        try {
+            const response = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+    
+            if (response.ok) {
+                button.classList.add('voted');
+                button.disabled = true;
+                button.title = 'Risposta segnalata come corretta';
+                showToast('success', 'Grazie per il feedback!', 'fa-check');
+            } else {
+                const responseData = await response.json();
+                if (responseData.error === 'vector_store_disabled') {
+                    showToast('warning', 'Il Vector Store non è abilitato. Abilitalo per utilizzare questa funzionalità.', 'fa-exclamation-triangle');
+                } else {
+                    showToast('error', 'Errore nell\'invio del feedback', 'fa-times');
+                }
+            }
+        } catch (err) {
+            console.error('Errore nell\'invio del feedback:', err);
+            showToast('error', 'Errore nell\'invio del feedback', 'fa-times');
+        }
+    }
+
     function addMessage(content, type = 'user') {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
@@ -89,49 +139,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     feedbackButton.title = 'Segnala risposta corretta';
                     
                     feedbackButton.addEventListener('click', async () => {
-                        try {
-                            const response = await fetch('/api/feedback', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    question: content.original_question, // Usiamo la domanda originale dal content
-                                    sql_query: content.query,
-                                    explanation: content.explanation
-                                })
-                            });
-    
-                            if (response.ok) {
-                                // Disabilita il bottone e cambia stile
-                                feedbackButton.classList.add('voted');
-                                feedbackButton.disabled = true;
-                                feedbackButton.title = 'Risposta segnalata come corretta';
-                                
-                                // Toast di conferma
-                                const toast = document.createElement('div');
-                                toast.className = 'toast success';
-                                toast.textContent = 'Grazie per il feedback!';
-                                document.body.appendChild(toast);
-                                
-                                // Rimuovi il toast dopo 3 secondi
-                                setTimeout(() => {
-                                    toast.remove();
-                                }, 3000);
-                            }
-                        } catch (err) {
-                            console.error('Errore nell\'invio del feedback:', err);
-                            
-                            // Toast di errore
-                            const toast = document.createElement('div');
-                            toast.className = 'toast error';
-                            toast.textContent = 'Errore nell\'invio del feedback';
-                            document.body.appendChild(toast);
-                            
-                            setTimeout(() => {
-                                toast.remove();
-                            }, 3000);
-                        }
+                        // Chiamiamo la funzione handleFeedback passando il bottone e i dati necessari
+                        await handleFeedback(feedbackButton, {
+                            question: content.original_question,
+                            sql_query: content.query,
+                            explanation: content.explanation
+                        });
                     });
                     
                     toolbar.appendChild(feedbackButton);
