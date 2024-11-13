@@ -86,16 +86,20 @@ class QdrantStore(VectorStore):
             logger.debug(f"Ricevuto feedback positivo per la domanda: {question}")
             
             existing = self.find_exact_match(question)
+            vector = self.embedding_model.encode(question)
             
             if existing:
                 logger.debug(f"Trovata entry esistente")
-                point = existing
-                payload = point.payload
-                payload["positive_votes"] += 1
-                logger.debug(f"Aggiornamento voti a {payload['positive_votes']}")
+                payload = QueryStorePayload(
+                    question=existing.question,
+                    sql_query=existing.sql_query,
+                    explanation=existing.explanation,
+                    positive_votes=existing.positive_votes + 1
+                )
+                logger.debug(f"Aggiornamento voti a {payload.positive_votes}")
             else:
                 logger.debug("Creazione nuova entry")
-                vector = self.embedding_model.encode(question)
+
                 payload = QueryStorePayload(
                     question=question,
                     sql_query=sql_query,
