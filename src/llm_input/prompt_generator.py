@@ -38,12 +38,11 @@ Your task is:
 1. Generate a valid SQL query that answers the user's question
 2. Provide a brief explanation of the results
 
-Response format:
-```sql
-SELECT column_names
-FROM table_names
-WHERE conditions;
-```
+You must respond with a JSON object in the following format:
+{{
+    "query": "YOUR SQL QUERY HERE",
+    "explanation": "Brief explanation of what the query does and what results to expect"
+}}
 
 Important:
 - Always insert schema name "{self.schema_name}" before the tables
@@ -51,13 +50,12 @@ Important:
 - The query must be executable
 - Use the table DDL information to ensure correct column names and types
 - Follow the foreign key relationships when joining tables
+- If you do not have the necessary information to respond or if the requested data does not appear to be in the DB:
+    - Explain in the explanation field why the request cannot be fulfilled
+    - generate a simple SQL query to extract generic data from a single table (with a limit 5)
+    - Explain what the sample data shows
 
-After the query, provide:
-Explanation: [Brief explanation of what the query does and what results to expect]
-
-if you do not have the necessary information to respond or if the requested data does not appear to be in the DB, 
-generate a simple SQL query to extract generic data from a single table (with a limit 5) and inform the user in the explanation 
-that you cannot fulfill their request, concisely explaining the reason.
+Response must be valid JSON - do not include any other text or markdown formatting. 
         """)
         
         # aggiunge info sullo schema del database

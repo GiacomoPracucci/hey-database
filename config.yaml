@@ -13,20 +13,19 @@ database:
   # role: analyst
 
 llm:
-  type: openai    # openai, ollama
+  type: ollama    # openai, ollama
   # Configurazioni per ollama
-  #base_url: http://localhost:11434
-  #model: llama3.2
+  base_url: http://localhost:11434
+  model: llama3.2
   # Configurazioni per OpenAI
-  api_key: ${OPENAI_API_KEY}
-  model: gpt-4o
+  #api_key: ${OPENAI_API_KEY}
 
 prompt:
   include_sample_data: true
   max_sample_rows: 3
 
 vector_store:
-  enabled: true
+  enabled: false
   type: qdrant
   collection_name: ${db_schema}_store
   path: ./data/${db_schema}_store
@@ -36,6 +35,6 @@ vector_store:
   embedding:
     type: huggingface # type: openai, huggingface
     model_name: sentence-transformers/multi-qa-MiniLM-L6-cos-v1  # sentence-transformers/multi-qa-MiniLM-L6-cos-v1 , text-embedding-3-small text-embedding-3-large
-    api_key: ${OPENAI_API_KEY} # Per OpenAI
+    #api_key: ${OPENAI_API_KEY} # Per OpenAI
 
 debug: true
