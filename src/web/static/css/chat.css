@@ -1,37 +1,6 @@
-:root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --background-color: #f5f6fa;
-    --message-bg: #ffffff;
-    --bot-message-bg: #f8f9fa;
-    --border-color: #e9ecef;
-    --text-color: #2c3e50;
-    --error-color: #e74c3c;
-    --success-color: #2ecc71;
-}
+/* static/css/chat.css */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    line-height: 1.6;
-}
-
-
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    height: 100vh;
-}
-
+/* Container della chat */
 .chat-container {
     display: flex;
     flex-direction: column;
@@ -59,6 +28,7 @@ body {
     opacity: 0.8;
 }
 
+/* Area messaggi */
 .chat-messages {
     flex: 1;
     overflow-y: auto;
@@ -93,8 +63,11 @@ body {
 .message.bot .message-content {
     background-color: var(--bot-message-bg);
     border-radius: 12px 12px 12px 0;
+    max-width: 80%;
+    overflow-wrap: break-word;
 }
 
+/* Stili SQL query */
 .sql-query {
     background-color: #2f3542;
     color: #ffffff;
@@ -103,46 +76,29 @@ body {
     margin: 8px 0;
     font-family: 'Courier New', Courier, monospace;
     white-space: pre-wrap;
-    /* Assicura che il container si adatti al contenuto */
     width: 100%;
-    overflow-x: auto;  /* Aggiunge scroll orizzontale solo se necessario */
+    overflow-x: auto;
 }
 
-/* Stile per il contenuto della query */
 .sql-query pre {
     margin: 0;
-    white-space: pre-wrap;       /* Permette il wrapping del testo */
-    word-wrap: break-word;       /* Spezza le parole lunghe se necessario */
-    word-break: break-all;       /* Spezza le parole in qualsiasi punto se necessario */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
 .sql-query code {
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9em;
-    /* Rimuovi white-space: pre perché viene gestito dal pre parent */
     display: block;
     width: 100%;
 }
 
-/* Se vuoi che il box si adatti al contenuto ma non diventi troppo largo */
-.message.bot .message-content {
-    max-width: 80%;         /* o qualsiasi larghezza massima desideri */
-    overflow-wrap: break-word;
-}
+.sql-query .keyword { color: #ff79c6; }
+.sql-query .table { color: #8be9fd; }
+.sql-query .function { color: #50fa7b; }
 
-/* Aggiungi stili per evidenziare le parole chiave SQL (opzionale) */
-.sql-query .keyword {
-    color: #ff79c6;
-}
-
-.sql-query .table {
-    color: #8be9fd;
-}
-
-.sql-query .function {
-    color: #50fa7b;
-}
-
+/* Tabella risultati */
 .results-container {
     margin-top: 12px;
     overflow-x: auto;
@@ -173,6 +129,7 @@ body {
     background-color: #f8f9fa;
 }
 
+/* Input area */
 .chat-input-container {
     padding: 20px;
     background-color: white;
@@ -202,6 +159,7 @@ textarea:focus {
     border-color: var(--secondary-color);
 }
 
+/* Pulsanti e controlli */
 .send-button {
     padding: 12px 20px;
     background-color: var(--secondary-color);
@@ -224,16 +182,49 @@ textarea:focus {
     cursor: not-allowed;
 }
 
-.error-message {
-    color: var(--error-color);
+.feedback-button {
+    background: none;
+    border: none;
+    color: #3498db;
+    cursor: pointer;
+    padding: 4px 8px;
+    margin-left: 8px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 14px;
 }
 
-.typing-indicator {
+.feedback-button:hover {
+    color: #2980b9;
+    transform: scale(1.1);
+}
+
+.feedback-button.voted {
+    color: #2ecc71;
+    cursor: default;
+}
+
+.feedback-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Indicatori e messaggi di stato */
+.typing-indicator-container {
     display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+.typing-indicator {
+    display: inline-flex;
     gap: 4px;
-    padding: 8px 12px;
-    margin-top: 8px;
+    padding: 12px 24px;
+    background-color: #f8f9fa;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .typing-indicator span {
@@ -253,22 +244,7 @@ textarea:focus {
     40% { transform: translateY(-6px); }
 }
 
-/* Stili per i messaggi del bot */
-.message.bot ul {
-    margin: 8px 0;
-    padding-left: 20px;
-}
-
-.message.bot li {
-    margin: 4px 0;
-}
-
-.explanation {
-    margin: 8px 0;
-    font-style: italic;
-    color: #666;
-}
-
+/* Messaggi di errore */
 .error-container {
     background-color: #fff5f5;
     border: 1px solid #feb2b2;
@@ -287,6 +263,8 @@ textarea:focus {
 
 .error-message {
     flex: 1;
+    color: var(--error-color);
+    font-size: 14px;
 }
 
 .error-title {
@@ -325,15 +303,14 @@ textarea:focus {
     font-family: monospace;
 }
 
-
-/* Modifica il messaggio di benvenuto */
+/* Messaggio di benvenuto */
 .message.bot.welcome {
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     margin: 2rem auto;
-    max-width: 1200px;  /* o la larghezza che preferisci */
+    max-width: 1200px;
 }
 
 .message.bot.welcome .message-content {
@@ -354,116 +331,18 @@ textarea:focus {
     color: #2c3e50;
 }
 
-/* Stile per l'indicatore di caricamento nella chat */
-.typing-indicator-container {
-    display: flex;
-    justify-content: center;
-    margin: 1rem 0;
+/* Stili messaggi bot generici */
+.message.bot ul {
+    margin: 8px 0;
+    padding-left: 20px;
 }
 
-.typing-indicator {
-    display: inline-flex;
-    gap: 4px;
-    padding: 12px 24px;
-    background-color: #f8f9fa;
-    border-radius: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.message.bot li {
+    margin: 4px 0;
 }
 
-.typing-indicator span {
-    width: 8px;
-    height: 8px;
-    background-color: var(--secondary-color);
-    border-radius: 50%;
-    animation: bounce 1.4s infinite ease-in-out;
-    opacity: 0.6;
-}
-
-.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes bounce {
-    0%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-6px); }
-}
-
-
-/* Stile per i toast */
-/* Stile aggiornato per i toast */
-.toast {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 24px;
-    padding: 12px 24px;
-    border-radius: 8px;
-    color: white;
-    font-size: 14px;
-    z-index: 1000;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    animation: slideDown 0.3s ease;
-    min-width: 200px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.toast.success {
-    background-color: #2ecc71;
-}
-
-.toast.error {
-    background-color: #e74c3c;
-}
-
-.toast.warning {
-    background-color: #f1c40f;
-    color: #2c3e50;
-}
-
-.toast i {
-    font-size: 16px;
-}
-
-@keyframes slideDown {
-    from {
-        transform: translate(-50%, -100%);
-        opacity: 0;
-    }
-    to {
-        transform: translate(-50%, 0);
-        opacity: 1;
-    }
-}
-
-/* Aggiornamento stile per il feedback button */
-.feedback-button {
-    background: none;
-    border: none;
-    color: #3498db;
-    cursor: pointer;
-    padding: 4px 8px;
-    margin-left: 8px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 14px;
-}
-
-.feedback-button:hover {
-    color: #2980b9;
-    transform: scale(1.1);
-}
-
-.feedback-button.voted {
-    color: #2ecc71;
-    cursor: default;
-}
-
-.feedback-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+.explanation {
+    margin: 8px 0;
+    font-style: italic;
+    color: #666;
 }

@@ -7,6 +7,7 @@ from flask import Flask
 from src.config.config_loader import ConfigLoader
 from src.config.factory import ServiceFactory 
 from src.web.routes import create_routes
+from src.web.schema_routes import create_schema_routes
 
 
 logging.basicConfig(
@@ -37,7 +38,18 @@ def create_app():
     
     try:
         chat_service = ServiceFactory.create_chat_service(config)
-        create_routes(app, chat_service)
+        
+        create_routes(app, chat_service) # blueprint della chat
+        create_schema_routes(app, chat_service.metadata_retriever) # blueprint dello schema er
+        
+        # route principale
+        @app.route('/')
+        def index():
+            """route principale che reindirizza alla chat"""
+            from flask import redirect, url_for
+            return redirect(url_for('chat.index'))
+        
+        
     except Exception as e:
         print(f"Failed to initialize service: {e}")
         raise

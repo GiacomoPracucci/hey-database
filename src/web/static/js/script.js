@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleFeedback(button, data) {
         try {
-            const response = await fetch('/api/feedback', {
+            const response = await fetch('/chat/api/feedback', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addLoadingIndicator();
         
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch('/chat/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

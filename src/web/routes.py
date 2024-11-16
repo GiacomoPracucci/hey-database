@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hey-database')
 logger.setLevel(logging.DEBUG)
 
 def create_routes(app, chat_service):
@@ -17,7 +17,7 @@ def create_routes(app, chat_service):
     def index():
         """Index Page"""
         logger.debug("Rendering index page")
-        return render_template('index.html')
+        return render_template('chat/index.html')
 
     @chat_bp.route('/api/feedback', methods=['POST'])
     def feedback():
@@ -86,6 +86,6 @@ def create_routes(app, chat_service):
             logger.exception(f"Error in chat endpoint: {str(e)}")
             return jsonify({"success": False, "error": str(e)}), 500
 
-    app.register_blueprint(chat_bp)
+    app.register_blueprint(chat_bp, url_prefix='/chat')
     
     return app

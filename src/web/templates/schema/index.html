@@ -1,0 +1,116 @@
+{# templates/schema/index.html #}
+{% extends "base.html" %}
+
+{% block extra_css %}
+{# aggiungimao qui i CSS specifici per la visualizzazione dello schema #}
+<style>
+    .schema-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        height: calc(100vh - 8rem);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .schema-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .schema-title {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+    }
+
+    .schema-controls {
+        display: flex;
+        gap: 10px;
+    }
+
+    .schema-button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        background: var(--secondary-color);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .schema-button:hover {
+        background: #2980b9;
+    }
+
+    .schema-content {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+    }
+
+    .loading-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .error-message {
+        color: var(--error-color);
+        padding: 20px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="schema-container">
+    <div class="schema-header">
+        <h1 class="schema-title">Database Schema</h1>
+        <div class="schema-controls">
+            <button class="schema-button" id="zoomInBtn">
+                <i class="fas fa-search-plus"></i>
+                <span>Zoom In</span>
+            </button>
+            <button class="schema-button" id="zoomOutBtn">
+                <i class="fas fa-search-minus"></i>
+                <span>Zoom Out</span>
+            </button>
+            <button class="schema-button" id="resetBtn">
+                <i class="fas fa-undo"></i>
+                <span>Reset</span>
+            </button>
+        </div>
+    </div>
+    
+    <div class="schema-content">
+        <div id="schemaViewer"></div>
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <p>Loading schema...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// placeholder JavaScript
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Schema viewer initialized');
+});
+</script>
+{% endblock %}

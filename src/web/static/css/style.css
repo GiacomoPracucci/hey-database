@@ -1,0 +1,166 @@
+/* static/css/style.css */
+
+/* Variabili CSS globali */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --background-color: #f5f6fa;
+    --message-bg: #ffffff;
+    --bot-message-bg: #f8f9fa;
+    --border-color: #e9ecef;
+    --text-color: #2c3e50;
+    --error-color: #e74c3c;
+    --success-color: #2ecc71;
+}
+
+/* Reset e stili base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Layout container principale */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    height: 100vh;
+}
+
+/* Stili della navigazione */
+.main-nav {
+    background-color: var(--primary-color);
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+}
+
+.brand-text {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-link i {
+    font-size: 1.1rem;
+}
+
+/* Layout principale */
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 20px;
+    height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
+/* Toast notifications */
+.toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 24px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: slideDown 0.3s ease;
+    min-width: 200px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.toast.success {
+    background-color: #2ecc71;
+}
+
+.toast.error {
+    background-color: #e74c3c;
+}
+
+.toast.warning {
+    background-color: #f1c40f;
+    color: #2c3e50;
+}
+
+.toast i {
+    font-size: 16px;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translate(-50%, -100%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+/* Media query per responsive */
+@media (max-width: 768px) {
+    .nav-link span {
+        display: none;
+    }
+    
+    .nav-link {
+        padding: 0.5rem;
+    }
+    
+    .nav-link i {
+        font-size: 1.2rem;
+    }
+}
