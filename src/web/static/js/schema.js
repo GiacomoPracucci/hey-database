@@ -96,13 +96,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getTableRelationships(tableName) {
-        if (!globalSchemaData || !globalSchemaData.relationships) {
+        console.log('Getting relationships for:', tableName);
+        if (!globalSchemaData || !Array.isArray(globalSchemaData.tables)) {
             return [];
         }
         
         const relationships = [];
-        globalSchemaData.relationships.forEach(rel => {
-            if (rel.fromTable === tableName) {
+        
+        // Cerca la tabella corrente
+        const currentTable = globalSchemaData.tables.find(t => t.name === tableName);
+        
+        // Aggiungi relazioni in uscita
+        if (currentTable && Array.isArray(currentTable.relationships)) {
+            currentTable.relationships.forEach(rel => {
                 relationships.push({
                     type: 'outgoing',
                     from: tableName,
@@ -110,18 +116,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     columns: `${rel.fromColumn} → ${rel.toColumn}`,
                     relationType: rel.type
                 });
-            }
-            if (rel.toTable === tableName) {
-                relationships.push({
-                    type: 'incoming',
-                    from: rel.fromTable,
-                    to: tableName,
-                    columns: `${rel.fromColumn} → ${rel.toColumn}`,
-                    relationType: rel.type
+            });
+        }
+        
+        // Cerca relazioni in entrata da altre tabelle
+        globalSchemaData.tables.forEach(table => {
+            if (Array.isArray(table.relationships)) {
+                table.relationships.forEach(rel => {
+                    if (rel.toTable === tableName) {
+                        relationships.push({
+                            type: 'incoming',
+                            from: table.name,
+                            to: tableName,
+                            columns: `${rel.fromColumn} → ${rel.toColumn}`,
+                            relationType: rel.type
+                        });
+                    }
                 });
             }
         });
         
+        console.log('Found relationships:', relationships);
         return relationships;
     }
 
@@ -267,28 +282,26 @@ LIMIT 5;</code></pre>
                     tableData: table
                 }
             });
+    
+            // Aggiungi le relazioni di questa tabella
+            if (Array.isArray(table.relationships)) {
+                table.relationships.forEach((rel, index) => {
+                    elements.push({
+                        group: 'edges',
+                        data: {
+                            id: `edge-${table.name}-${index}`,
+                            source: table.name,
+                            target: rel.toTable,
+                            relationship: rel.type,
+                            fromColumn: rel.fromColumn,
+                            toColumn: rel.toColumn
+                        }
+                    });
+                });
+            }
         });
     
-        // Archi (relazioni)
-        if (Array.isArray(schemaData.relationships)) {
-            console.log('Processing relationships:', schemaData.relationships);  // debug
-            schemaData.relationships.forEach((rel, index) => {
-                elements.push({
-                    group: 'edges',
-                    data: {
-                        id: `edge-${index}`,
-                        source: rel.fromTable,
-                        target: rel.toTable,
-                        relationship: rel.type,
-                        // Aggiungiamo anche le informazioni sulle colonne
-                        fromColumn: rel.fromColumn,
-                        toColumn: rel.toColumn
-                    }
-                });
-            });
-        }
-    
-        console.log('Created elements:', elements);  // debug
+        console.log('Created elements with relationships:', elements);
         return elements;
     }
 
@@ -303,12 +316,18 @@ LIMIT 5;</code></pre>
                 throw new Error(`Failed to load schema data: ${response.statusText}`);
             }
             const result = await response.json();
-            globalSchemaData = result.data; // Salviamo i dati globalmente
+            console.log('Raw API response:', result);  // Debug 1
+    
+            globalSchemaData = result.data;
+            console.log('Stored globalSchemaData:', globalSchemaData);  // Debug 2
+            console.log('Relationships in globalSchemaData:', globalSchemaData.relationships);  // Debug 3
             
             const elements = createGraphElements(globalSchemaData);
+            console.log('Created elements:', elements);  // Debug 4
             
             cy.elements().remove();
             cy.add(elements);
+            console.log('Current graph elements:', cy.elements().jsons());  // Debug 5
             
             const layout = cy.layout({
                 name: 'dagre',
@@ -336,8 +355,6 @@ LIMIT 5;</code></pre>
                     Failed to load schema: ${error.message}
                 </div>
             `;
-        } finally {
-            loadingIndicator.style.display = 'none';
         }
     }
 
