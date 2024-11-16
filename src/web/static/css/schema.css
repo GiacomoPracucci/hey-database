@@ -173,3 +173,155 @@
     color: #666;
     font-size: 11px;
 }
+
+/* Panel dei Dettagli */
+.table-details {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    width: 400px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.details-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+.details-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.close-btn {
+    cursor: pointer;
+    font-size: 24px;
+    color: #666;
+    transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+    color: #e74c3c;
+}
+
+.details-content {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.section {
+    margin-bottom: 25px;
+}
+
+.section:last-child {
+    margin-bottom: 0;
+}
+
+.section h4 {
+    margin: 0 0 10px 0;
+    color: var(--primary-color);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.details-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: left;
+}
+
+.details-table th,
+.details-table td {
+    padding: 8px 12px;
+    border: 1px solid #eee;
+}
+
+.details-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Badge per i flag delle colonne */
+.badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.badge.pk {
+    background: #e74c3c;
+    color: white;
+}
+
+.badge.fk {
+    background: #3498db;
+    color: white;
+}
+
+.badge.required {
+    background: #f1c40f;
+    color: #2c3e50;
+}
+
+/* Relationships section */
+.relationships-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.relationship-item {
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.relationship-arrow {
+    color: #95a5a6;
+    margin: 0 8px;
+}
+
+/* Sample Query section */
+.query-container {
+    background: #2c3e50;
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.query-container pre {
+    margin: 0;
+    color: #fff;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+}
+
+/* Transition for panel visibility */
+.table-details.hidden {
+    transform: translateX(120%);
+    opacity: 0;
+}

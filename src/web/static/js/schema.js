@@ -94,39 +94,142 @@ document.addEventListener('DOMContentLoaded', () => {
         return lines.join('\n');
     }
 
-    function setupInteractivity(cy) {
-        // Evidenzia le relazioni al passaggio del mouse su un nodo
+    function getTableRelationships(tableName, schemaData) {
+        const relationships = [];
+        
+        schemaData.relationships.forEach(rel => {
+            if (rel.fromTable === tableName) {
+                relationships.push({
+                    type: 'outgoing',
+                    from: tableName,
+                    to: rel.toTable,
+                    columns: `${rel.fromColumn} → ${rel.toColumn}`,
+                    relationType: rel.type
+                });
+            }
+            if (rel.toTable === tableName) {
+                relationships.push({
+                    type: 'incoming',
+                    from: rel.fromTable,
+                    to: tableName,
+                    columns: `${rel.fromColumn} → ${rel.toColumn}`,
+                    relationType: rel.type
+                });
+            }
+        });
+        
+        return relationships;
+    }
+
+    function formatRelationship(rel) {
+        const arrow = rel.type === 'outgoing' ? '→' : '←';
+        const direction = rel.type === 'outgoing' ? 
+            `${rel.from} ${arrow} ${rel.to}` :
+            `${rel.from} ${arrow} ${rel.to}`;
+        
+        return `
+            <div class="relationship-item">
+                <div>${direction}</div>
+                <small>Columns: ${rel.columns}</small>
+                <small>Type: ${rel.relationType}</small>
+            </div>
+        `;
+    }
+
+    function updateTableDetails(node, schemaData) {
+        const table = node.data('tableData');
+        const detailsPanel = document.getElementById('tableDetails');
+        const detailsTitle = detailsPanel.querySelector('.details-title');
+        const detailsContent = detailsPanel.querySelector('.details-content');
+        const relationships = getTableRelationships(table.name, schemaData);
+        
+        // Aggiorna il titolo
+        detailsTitle.textContent = table.name;
+        
+        // Aggiorna il contenuto
+        detailsContent.innerHTML = `
+            <div class="section">
+                <h4>Columns</h4>
+                <table class="details-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Properties</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${table.columns.map(col => `
+                            <tr>
+                                <td>${col.name}</td>
+                                <td><code>${col.type}</code></td>
+                                <td>
+                                    ${col.isPrimaryKey ? '<span class="badge pk">PK</span>' : ''}
+                                    ${col.isForeignKey ? '<span class="badge fk">FK</span>' : ''}
+                                    ${!col.isNullable ? '<span class="badge required">Required</span>' : ''}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="section">
+                <h4>Relationships</h4>
+                <div class="relationships-list">
+                    ${relationships.length ? 
+                        relationships.map(rel => formatRelationship(rel)).join('') :
+                        '<div class="relationship-item">No relationships found</div>'
+                    }
+                </div>
+            </div>
+            
+            <div class="section">
+                <h4>Sample Query</h4>
+                <div class="query-container">
+                    <pre><code>SELECT *
+FROM ${table.name}
+LIMIT 5;</code></pre>
+                </div>
+            </div>
+        `;
+        
+        detailsPanel.classList.remove('hidden');
+    }
+
+
+    function setupInteractivity(cy, schemaData) {
+        // Event listeners esistenti per hover
         cy.on('mouseover', 'node', function(e) {
             const node = e.target;
             const connectedEdges = node.connectedEdges();
             const connectedNodes = connectedEdges.connectedNodes();
             
-            // Fade out elementi non connessi
             cy.elements()
               .difference(connectedEdges.union(connectedNodes).union(node))
               .addClass('faded');
             
-            // Evidenzia elementi connessi
             connectedEdges.addClass('highlighted');
             connectedNodes.addClass('highlighted');
         });
 
-        // Rimuove l'evidenziazione quando il mouse esce dal nodo
         cy.on('mouseout', 'node', function(e) {
             cy.elements().removeClass('faded highlighted');
         });
 
-        // Click su un edge per vedere i dettagli della relazione
-        cy.on('click', 'edge', function(e) {
-            const edge = e.target;
-            const rel = edge.data();
-            console.log('Relationship:', {
-                from: rel.source,
-                to: rel.target,
-                type: rel.relationship
-            });
-            // In futuro qui mostreremo un tooltip con i dettagli della relazione
+        // Aggiungi click handler per i nodi
+        cy.on('click', 'node', function(e) {
+            const node = e.target;
+            updateTableDetails(node, schemaData);
         });
+
+        // Handler per la chiusura del pannello dettagli
+        const closeButton = document.querySelector('.table-details .close-button');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                document.getElementById('tableDetails').classList.add('hidden');
+            });
+        }
     }
 
     async function loadSchemaData() {
@@ -180,6 +283,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return elements;
     }
 
+
+
     async function initializeGraph() {
         const loadingIndicator = document.getElementById('loadingIndicator');
         loadingIndicator.style.display = 'flex';
@@ -191,7 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
             cy.elements().remove();
             cy.add(elements);
             
-            // Applica il layout
             const layout = cy.layout({
                 name: 'dagre',
                 rankDir: 'TB',
@@ -204,10 +308,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             layout.run();
             
-            // Configura l'interattività
-            setupInteractivity(cy);
+            // Passa schemaData a setupInteractivity
+            setupInteractivity(cy, schemaData);
             
-            // Centra e adatta la vista
             setTimeout(() => {
                 cy.fit(50);
                 cy.center();
