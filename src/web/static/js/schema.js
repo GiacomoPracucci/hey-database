@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const schemaViewer = document.getElementById('schemaViewer');
+    let globalSchemaData = null;
     
     const cy = cytoscape({
         container: schemaViewer,
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             {
                 // Stile per i nodi quando ci passi sopra il mouse
-                selector: 'node:hover',
+                selector: ':hover',
                 style: {
                     'border-width': 3,
                     'border-color': '#3498db',
@@ -44,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             {
                 // Stile per le relazioni quando ci passi sopra il mouse
-                selector: 'edge:hover',
+                selector: 'edge:active',
                 style: {
                     'width': 4,
                     'line-color': '#3498db',
@@ -94,10 +95,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return lines.join('\n');
     }
 
-    function getTableRelationships(tableName, schemaData) {
-        const relationships = [];
+    function getTableRelationships(tableName) {
+        if (!globalSchemaData || !globalSchemaData.relationships) {
+            return [];
+        }
         
-        schemaData.relationships.forEach(rel => {
+        const relationships = [];
+        globalSchemaData.relationships.forEach(rel => {
             if (rel.fromTable === tableName) {
                 relationships.push({
                     type: 'outgoing',
@@ -136,12 +140,12 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    function updateTableDetails(node, schemaData) {
+    function updateTableDetails(node) {
         const table = node.data('tableData');
         const detailsPanel = document.getElementById('tableDetails');
         const detailsTitle = detailsPanel.querySelector('.details-title');
         const detailsContent = detailsPanel.querySelector('.details-content');
-        const relationships = getTableRelationships(table.name, schemaData);
+        const relationships = getTableRelationships(table.name);
         
         // Aggiorna il titolo
         detailsTitle.textContent = table.name;
@@ -198,8 +202,8 @@ LIMIT 5;</code></pre>
     }
 
 
-    function setupInteractivity(cy, schemaData) {
-        // Event listeners esistenti per hover
+    function setupInteractivity(cy) {
+        // Hover effects
         cy.on('mouseover', 'node', function(e) {
             const node = e.target;
             const connectedEdges = node.connectedEdges();
@@ -217,13 +221,13 @@ LIMIT 5;</code></pre>
             cy.elements().removeClass('faded highlighted');
         });
 
-        // Aggiungi click handler per i nodi
+        // Click su nodo per mostrare i dettagli
         cy.on('click', 'node', function(e) {
             const node = e.target;
-            updateTableDetails(node, schemaData);
+            updateTableDetails(node);
         });
 
-        // Handler per la chiusura del pannello dettagli
+        // Handler per chiusura pannello dettagli
         const closeButton = document.querySelector('.table-details .close-button');
         if (closeButton) {
             closeButton.addEventListener('click', () => {
@@ -250,9 +254,9 @@ LIMIT 5;</code></pre>
         if (!schemaData || !Array.isArray(schemaData.tables)) {
             throw new Error('Invalid schema data structure');
         }
-
+    
         const elements = [];
-
+    
         // Nodi (tabelle)
         schemaData.tables.forEach(table => {
             elements.push({
@@ -260,13 +264,14 @@ LIMIT 5;</code></pre>
                 data: {
                     id: table.name,
                     label: formatTableLabel(table),
-                    tableData: table // Manteniamo i dati originali per riferimento futuro
+                    tableData: table
                 }
             });
         });
-
+    
         // Archi (relazioni)
         if (Array.isArray(schemaData.relationships)) {
+            console.log('Processing relationships:', schemaData.relationships);  // debug
             schemaData.relationships.forEach((rel, index) => {
                 elements.push({
                     group: 'edges',
@@ -274,15 +279,18 @@ LIMIT 5;</code></pre>
                         id: `edge-${index}`,
                         source: rel.fromTable,
                         target: rel.toTable,
-                        relationship: rel.type
+                        relationship: rel.type,
+                        // Aggiungiamo anche le informazioni sulle colonne
+                        fromColumn: rel.fromColumn,
+                        toColumn: rel.toColumn
                     }
                 });
             });
         }
-
+    
+        console.log('Created elements:', elements);  // debug
         return elements;
     }
-
 
 
     async function initializeGraph() {
@@ -290,8 +298,14 @@ LIMIT 5;</code></pre>
         loadingIndicator.style.display = 'flex';
         
         try {
-            const schemaData = await loadSchemaData();
-            const elements = createGraphElements(schemaData);
+            const response = await fetch('/schema/api/metadata');
+            if (!response.ok) {
+                throw new Error(`Failed to load schema data: ${response.statusText}`);
+            }
+            const result = await response.json();
+            globalSchemaData = result.data; // Salviamo i dati globalmente
+            
+            const elements = createGraphElements(globalSchemaData);
             
             cy.elements().remove();
             cy.add(elements);
@@ -308,8 +322,7 @@ LIMIT 5;</code></pre>
             
             layout.run();
             
-            // Passa schemaData a setupInteractivity
-            setupInteractivity(cy, schemaData);
+            setupInteractivity(cy);
             
             setTimeout(() => {
                 cy.fit(50);
