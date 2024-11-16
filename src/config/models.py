@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import Optional
 from datetime import datetime
 
+from src.config.languages import SupportedLanguage
+
 # ---------- DB ----------
 @dataclass
 class DatabaseConfig:
@@ -23,6 +25,7 @@ class LLMConfig:
     api_key: Optional[str] = None
     model: Optional[str] = None
     base_url: Optional[str] = None # parametro opzionale per modelli locali (localhost su cui girano)
+    language: SupportedLanguage = SupportedLanguage.get_default()
     
 # --------- EMBEDDING ----------
 @dataclass

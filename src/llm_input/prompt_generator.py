@@ -1,3 +1,4 @@
+from src.config.languages import SupportedLanguage
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -7,16 +8,20 @@ class PromptGenerator:
     Il prompt viene costruito estraendo metadati dallo schema che si deve interrogare, usando gli appositi retriever dei DB.
     """
     
-    def __init__(self, metadata_retriever, schema_name: str, prompt_config):
+    def __init__(self, metadata_retriever, schema_name: str, prompt_config, language: SupportedLanguage = SupportedLanguage.get_default()):
         """Inizializza il gestore dei prompt.
         
         Args:
             metadata_retriever: Istanza dell'estrattore delle info del db (schema, tabelle, DDL)
+            schema_name: Nome dello schema del database
+            prompt_config: Configurazione del prompt
+            language: Lingua in cui il modello dovrebbe rispondere
         """
         
         self.metadata_retriever = metadata_retriever
         self.schema_name = schema_name
         self.prompt_config = prompt_config
+        self.language = language
 
 
     def generate_prompt(self, user_question: str) -> str:
@@ -64,8 +69,8 @@ Response must be valid JSON - do not include any other text or markdown formatti
         if self.prompt_config.include_sample_data:
             prompt_parts.append(self._format_sample_data(self.prompt_config.max_sample_rows))
 
-        prompt_parts.append("\nRispondi in lingua Italiana.")
-        prompt_parts.append("\nDOMANDA DELL'UTENTE:")
+        prompt_parts.append(f"\nAnswer in {self.language.value} language.")
+        prompt_parts.append("\nUSER QUESTION:")
         prompt_parts.append(user_question)
         
         return "\n\n".join(prompt_parts)

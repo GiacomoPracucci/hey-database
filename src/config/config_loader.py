@@ -2,7 +2,12 @@ from typing import Dict, Any, Optional
 import yaml
 import os
 from dotenv import load_dotenv
+from src.config.languages import SupportedLanguage
 from src.config.models import AppConfig, DatabaseConfig, LLMConfig, PromptConfig, VectorStoreConfig, EmbeddingConfig
+import logging
+
+logger = logging.getLogger('hey-database')
+
 
 class ConfigLoader:
     
@@ -49,11 +54,20 @@ class ConfigLoader:
             role=config_data['database'].get('role')
         )
         
+        language_str = config_data['llm'].get('language', SupportedLanguage.get_default().value)
+        if not SupportedLanguage.is_supported(language_str):
+            logger.warning(
+                f"Lingua '{language_str}' non supportata. "
+                f"Lingue supportate: {', '.join(SupportedLanguage.get_supported_languages())}. "
+                f"Verrà utilizzata la lingua di default ({SupportedLanguage.get_default().value})"
+            )
+        
         llm_config = LLMConfig(
             type=config_data['llm']['type'],
             api_key=config_data['llm'].get('api_key'),
             model=config_data['llm'].get('model'),
-            base_url=config_data['llm'].get('base_url')            
+            base_url=config_data['llm'].get('base_url'),
+            language=SupportedLanguage.from_string(language_str)            
         )
 
         prompt_config = PromptConfig(
