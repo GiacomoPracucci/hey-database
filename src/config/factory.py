@@ -10,6 +10,7 @@ from src.dbcontext.mysql_metadata_retriever import MySQLMetadataRetriever
 from src.dbcontext.snowflake_metadata_retriever import SnowflakeMetadataRetriever
 from src.llm_handler.openai_handler import OpenAIHandler
 from src.llm_handler.ollama_handler import OllamaHandler
+from src.llm_handler.anthropic_handler import AnthropicHandler
 from src.llm_input.prompt_generator import PromptGenerator
 from src.store.qdrant_vectorstore import QdrantStore
 from src.web.chat_service import ChatService
@@ -123,16 +124,21 @@ class ServiceFactory:
                 )
                 logger.debug("Successfully created OpenAI handler")
                 return handler
+            elif config.type == 'anthropic':
+                if not config.api_key:
+                    raise ValueError("Anthropic API key is required")
+                handler = AnthropicHandler(
+                    api_key=config.api_key,
+                    chat_model=config.model or "claude-3-5-sonnet-latest"
+                )
+                logger.debug("Successfully created Anthropic handler")
+                return handler
             elif config.type == 'ollama':
                 handler = OllamaHandler(
                     base_url=config.base_url or "http://localhost:11434",
                     model=config.model or "llama3.1"
                 )
-                logger.debug("Successfully created Ollama handler")
-                # verifica che l'handler sia stato creato correttamente
-                test_response = handler.get_completion("test")
-                if test_response is None:
-                    logger.error("Ollama handler created but not responding")
+                logger.debug("Successfully created Ollama handler") 
                 return handler
         except Exception as e:
             logger.exception(f"Error creating LLM handler: {e}")
