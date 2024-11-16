@@ -72,6 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     });
 
+    function logObject(obj) {
+        console.log(JSON.stringify(obj, null, 2));
+    }
+
     function formatTableLabel(table) {
         const lines = [];
         
@@ -95,8 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return lines.join('\n');
     }
 
+ 
     function getTableRelationships(tableName) {
-        console.log('Getting relationships for:', tableName);
         if (!globalSchemaData || !Array.isArray(globalSchemaData.tables)) {
             return [];
         }
@@ -113,8 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     type: 'outgoing',
                     from: tableName,
                     to: rel.toTable,
-                    columns: `${rel.fromColumn} → ${rel.toColumn}`,
-                    relationType: rel.type
+                    fromColumns: rel.fromColumns,
+                    toColumns: rel.toColumns
                 });
             });
         }
@@ -128,15 +132,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             type: 'incoming',
                             from: table.name,
                             to: tableName,
-                            columns: `${rel.fromColumn} → ${rel.toColumn}`,
-                            relationType: rel.type
+                            fromColumns: rel.fromColumns,
+                            toColumns: rel.toColumns
                         });
                     }
                 });
             }
         });
         
-        console.log('Found relationships:', relationships);
         return relationships;
     }
 
@@ -149,8 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
             <div class="relationship-item">
                 <div>${direction}</div>
-                <small>Columns: ${rel.columns}</small>
-                <small>Type: ${rel.relationType}</small>
+                <small>Columns: ${rel.fromColumns.join(', ')} → ${rel.toColumns.join(', ')}</small>
+                <small>Type: N-1</small>
             </div>
         `;
     }
@@ -269,6 +272,7 @@ LIMIT 5;</code></pre>
         if (!schemaData || !Array.isArray(schemaData.tables)) {
             throw new Error('Invalid schema data structure');
         }
+        console.log('Raw schemaData:', JSON.stringify(schemaData, null, 2));
     
         const elements = [];
     
@@ -308,7 +312,7 @@ LIMIT 5;</code></pre>
 
     async function initializeGraph() {
         const loadingIndicator = document.getElementById('loadingIndicator');
-        loadingIndicator.style.display = 'flex';
+        loadingIndicator.style.display = 'flex';  // Mostra il loading all'inizio
         
         try {
             const response = await fetch('/schema/api/metadata');
@@ -316,18 +320,12 @@ LIMIT 5;</code></pre>
                 throw new Error(`Failed to load schema data: ${response.statusText}`);
             }
             const result = await response.json();
-            console.log('Raw API response:', result);  // Debug 1
-    
             globalSchemaData = result.data;
-            console.log('Stored globalSchemaData:', globalSchemaData);  // Debug 2
-            console.log('Relationships in globalSchemaData:', globalSchemaData.relationships);  // Debug 3
             
             const elements = createGraphElements(globalSchemaData);
-            console.log('Created elements:', elements);  // Debug 4
             
             cy.elements().remove();
             cy.add(elements);
-            console.log('Current graph elements:', cy.elements().jsons());  // Debug 5
             
             const layout = cy.layout({
                 name: 'dagre',
@@ -346,6 +344,7 @@ LIMIT 5;</code></pre>
             setTimeout(() => {
                 cy.fit(50);
                 cy.center();
+                loadingIndicator.style.display = 'none';  // Nascondi il loading dopo il fit e center
             }, 100);
             
         } catch (error) {
@@ -355,6 +354,8 @@ LIMIT 5;</code></pre>
                     Failed to load schema: ${error.message}
                 </div>
             `;
+        } finally {
+            loadingIndicator.style.display = 'none';  // Assicurati che venga nascosto anche in caso di errore
         }
     }
 
