@@ -1,6 +1,3 @@
-# questo script contiene i modelli per i metadati dello schema
-# TODO essendo ormai molti i modelli dovremmo creare uno script per ogni categoria e non avere tutto in models.py
-
 from dataclasses import dataclass
 from typing import List, Optional
 

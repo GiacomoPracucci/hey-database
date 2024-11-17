@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional
 import sqlalchemy as sa
 from sqlalchemy import inspect, text
-from src.config.schema_metadata import (
+from src.config.models.er_metadata import (
     ERColumn, ERRelationship, ERTable, ERDiagram
 )
-from src.utils.caching import SchemaCache
+
 
 @dataclass
 class TableMetadata:
