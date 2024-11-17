@@ -200,7 +200,8 @@ class QdrantStore(VectorStore):
                     question=r.payload["question"],
                     sql_query=r.payload["sql_query"],
                     explanation=r.payload["explanation"],
-                    score=r.score
+                    score=r.score,
+                    positive_votes=r.payload.get("positive_votes", 0)
                 )
                 for r in results
             ]

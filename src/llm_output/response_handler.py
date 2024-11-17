@@ -77,32 +77,28 @@ class ResponseHandler:
     
 
     def parse_llm_response(self, response: str) -> Dict[str, str]:
-        """ Analizza la risposta del modello e estrae la query SQL e la spiegazione.
-        
-        Args:
-            response (str): Risposta dal modello
-            
-        Returns:
-            Dict[str, str]: Dizionario con query e spiegazione
-        """
         """Parse the JSON response from LLM.
         
         Args:
             response: JSON string from LLM
             
         Returns:
-            Dict containing query and explanation
-        """
+            Dict[str, str]: Dictionary with query and explanation"""
         try:
             # Remove any potential markdown or extra text
-            response = response.strip()
-            if "```json" in response:
-                response = response.split("```json")[1].split("```")[0]
-            elif "```" in response:
-                response = response.split("```")[1].split("```")[0]
-            
-            return json.loads(response)
-            
+            if isinstance(response, str):
+                # Se è una stringa, tenta il parsing JSON
+                response = response.strip()
+                if "```json" in response:
+                    response = response.split("```json")[1].split("```")[0]
+                elif "```" in response:
+                    response = response.split("```")[1].split("```")[0]
+                
+                return json.loads(response)
+            elif isinstance(response, dict):
+                # Se è già un dizionario, ritornalo direttamente
+                return response
+                
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON response: {str(e)}")
             return {

@@ -44,23 +44,20 @@ class ChatService:
             if self.vector_store:
                 exact_match = self.vector_store.find_exact_match(message)
                 
-                if exact_match:
-                    logger.debug("Found exact match in vector store")
-                    
-                    stored_result = self.response_handler.process_response(
-                        f"""```sql
-                        {exact_match.sql_query}
-                        ```
-                        
-                        {exact_match.explanation}
-                        """
-                    )
-                    
-                    if stored_result["success"]:
-                        logger.debug("Successfully used stored query")
-                        stored_result["original_question"] = message
-                        stored_result["from_vector_store"] = True
-                        return stored_result
+            if exact_match is not None: 
+                logger.debug("Found exact match in vector store")
+                #  dizionario nel formato atteso dal ResponseHandler
+                stored_response = {
+                    "query": exact_match.sql_query.strip(),
+                    "explanation": exact_match.explanation
+                }
+                
+                # ResponseHandler per processare la risposta cached
+                result = self.response_handler.process_response(stored_response)
+                if result["success"]:
+                    result["from_vector_store"] = True
+                    result["original_question"] = message
+                    return result
                     
                 logger.debug("No exact match found, using LLM")
                 
