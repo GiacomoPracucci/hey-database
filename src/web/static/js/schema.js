@@ -287,7 +287,7 @@ LIMIT 5;</code></pre>
                 }
             });
     
-            // Aggiungi le relazioni di questa tabella
+            // relazioni tabella
             if (Array.isArray(table.relationships)) {
                 table.relationships.forEach((rel, index) => {
                     elements.push({
@@ -355,7 +355,7 @@ LIMIT 5;</code></pre>
                 </div>
             `;
         } finally {
-            loadingIndicator.style.display = 'none';  // Assicurati che venga nascosto anche in caso di errore
+            loadingIndicator.style.display = 'none'; 
         }
     }
 

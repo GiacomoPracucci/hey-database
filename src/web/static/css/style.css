@@ -94,7 +94,7 @@ body {
 
 /* Layout principale */
 .main-content {
-    max-width: 1200px;
+    max-width: 1200px; /* 90%*/
     margin: 0 auto;
     padding: 2rem 20px;
     height: calc(100vh - 4rem);
