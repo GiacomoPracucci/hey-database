@@ -26,7 +26,7 @@ prompt:
   max_sample_rows: 3
 
 vector_store:
-  enabled: false
+  enabled: true
   type: qdrant
   collection_name: ${db_schema}_store
   path: ./data/${db_schema}_store

@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger('hey-database')
 logger.setLevel(logging.DEBUG)
 
-def create_routes(app, chat_service):
+def create_chat_routes(app, chat_service):
     """ Crea e configuraz le routes dell'app
     
     Args:

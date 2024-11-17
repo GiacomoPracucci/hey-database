@@ -6,7 +6,7 @@ from pathlib import Path
 from flask import Flask
 from src.config.config_loader import ConfigLoader
 from src.config.factory import ServiceFactory 
-from src.web.routes import create_routes
+from src.web.chat_routes import create_chat_routes
 from src.web.schema_routes import create_schema_routes
 
 
@@ -39,7 +39,7 @@ def create_app():
     try:
         chat_service = ServiceFactory.create_chat_service(config)
         
-        create_routes(app, chat_service) # blueprint della chat
+        create_chat_routes(app, chat_service) # blueprint della chat
         create_schema_routes(app, chat_service.metadata_retriever) # blueprint dello schema er
         
         # route principale
