@@ -3,7 +3,14 @@ import yaml
 import os
 from dotenv import load_dotenv
 from src.config.languages import SupportedLanguage
-from src.config.models import AppConfig, DatabaseConfig, LLMConfig, PromptConfig, VectorStoreConfig, EmbeddingConfig
+from src.config.models.app import AppConfig
+from src.config.models.db import DatabaseConfig
+from src.config.models.llm import LLMConfig
+from src.config.models.prompt import PromptConfig
+from src.config.models.vector_store import VectorStoreConfig
+from src.config.models.embedding import EmbeddingConfig
+
+
 import logging
 
 logger = logging.getLogger('hey-database')

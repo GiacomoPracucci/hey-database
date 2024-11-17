@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from src.config.models import SearchResult
+from src.config.models.vector_store import SearchResult
 
 class VectorStore(ABC):
     """Interfaccia base per i vectorstore"""
