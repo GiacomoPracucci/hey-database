@@ -43,6 +43,21 @@
     margin-bottom: 8px;
 }
 
+.message {
+    animation: messageSlideIn 0.3s ease forwards;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .message.user {
     justify-content: flex-end;
 }
@@ -52,6 +67,15 @@
     padding: 12px 16px;
     border-radius: 12px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message-content {
+    transition: transform 0.2s ease;
+}
+
+.message-content:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .message.user .message-content {
