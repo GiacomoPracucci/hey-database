@@ -8,28 +8,45 @@ document.addEventListener('DOMContentLoaded', () => {
             {
                 selector: 'node',
                 style: {
-                    'background-color': '#f8f9fa',
+                    'background-color': '#ffffff',
                     'border-width': 2,
-                    'border-color': '#2c3e50',
-                    'width': '250px',
-                    'shape': 'rectangle',
+                    'border-color': '#3498db',
+                    'width': '180px',
+                    'height': '60px',
+                    'shape': 'roundrectangle',
                     'content': 'data(label)',
-                    'text-wrap': 'wrap',
-                    'text-max-width': '230px',
-                    'font-family': 'monospace',
-                    'font-size': '12px',
-                    'padding': '15px',
                     'text-valign': 'center',
                     'text-halign': 'center',
+                    'font-family': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif',
+                    'font-size': '14px',
+                    'font-weight': '500',
+                    'text-wrap': 'wrap',
+                    'text-max-width': '160px',
+                    'padding': '10px',
+                    'color': '#2c3e50',
+                    'text-outline-color': '#ffffff',
+                    'text-outline-width': 1,
+                    'box-shadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    'overlay-opacity': 0
                 }
             },
             {
-                // Stile per i nodi quando ci passi sopra il mouse
-                selector: ':hover',
+                selector: 'node:hover',
                 style: {
                     'border-width': 3,
-                    'border-color': '#3498db',
-                    'background-color': '#ecf0f1'
+                    'border-color': '#2980b9',
+                    'background-color': '#f8f9fa',
+                    'transition-property': 'border-width, border-color, background-color',
+                    'transition-duration': '0.2s'
+                }
+            },
+            {
+                selector: 'node:selected',
+                style: {
+                    'border-width': 3,
+                    'border-color': '#2980b9',
+                    'background-color': '#ebf5fb',
+                    'box-shadow': '0 0 0 4px rgba(52, 152, 219, 0.2)'
                 }
             },
             {
@@ -40,33 +57,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     'target-arrow-color': '#95a5a6',
                     'target-arrow-shape': 'triangle',
                     'curve-style': 'bezier',
-                    'arrow-scale': 1.5
+                    'arrow-scale': 1.5,
+                    'line-style': 'solid',
+                    'target-distance-from-node': '10px',
+                    'source-distance-from-node': '10px'
                 }
             },
             {
-                // Stile per le relazioni quando ci passi sopra il mouse
-                selector: 'edge:active',
+                selector: 'edge:hover',
                 style: {
-                    'width': 4,
+                    'width': 3,
                     'line-color': '#3498db',
-                    'target-arrow-color': '#3498db'
+                    'target-arrow-color': '#3498db',
+                    'transition-property': 'width, line-color, target-arrow-color',
+                    'transition-duration': '0.2s',
+                    'z-index': 999
                 }
             },
             {
-                // Stile per evidenziare elementi connessi
                 selector: '.highlighted',
                 style: {
-                    'border-color': '#3498db',
+                    'border-color': '#2980b9',
                     'border-width': 3,
                     'line-color': '#3498db',
-                    'target-arrow-color': '#3498db'
+                    'target-arrow-color': '#3498db',
+                    'z-index': 999,
+                    'transition-property': 'all',
+                    'transition-duration': '0.2s'
                 }
             },
             {
-                // Stile per elementi non evidenziati
                 selector: '.faded',
                 style: {
-                    'opacity': 0.4
+                    'opacity': 0.4,
+                    'transition-property': 'opacity',
+                    'transition-duration': '0.2s'
                 }
             }
         ]
@@ -81,19 +106,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Nome della tabella in maiuscolo
         lines.push(table.name.toUpperCase());
-        lines.push('═'.repeat(30)); // Separatore più evidente
+        lines.push('─'.repeat(16)); // Separatore più corto
         
-        // Aggiunge le colonne con dettagli
+        // Aggiunge solo le colonne che sono chiavi primarie o chiavi esterne
         table.columns.forEach(col => {
-            const flags = [];
-            if (col.isPrimaryKey) flags.push('🔑');  // Chiave primaria
-            if (col.isForeignKey) flags.push('🔗');  // Foreign key
-            if (!col.isNullable) flags.push('*');   // Required
-            
-            // Formatta: nome [tipo] flags
-            const type = col.type.replace(/\([^)]*\)/g, ''); // Rimuove dimensioni dal tipo (es. VARCHAR(50) -> VARCHAR)
-            const flagText = flags.length ? ` ${flags.join(' ')}` : '';
-            lines.push(`${col.name} [${type}]${flagText}`);
+            if (col.isPrimaryKey || col.isForeignKey) {
+                const flags = [];
+                if (col.isPrimaryKey) flags.push('🔑');  // Chiave primaria
+                if (col.isForeignKey) flags.push('🔗');  // Foreign key
+                
+                // Formatta: nome [tipo] flags
+                let type = col.type.replace(/\([^)]*\)/g, '').substring(0, 4); // Rimuove dimensioni dal tipo (es. VARCHAR(50) -> VARCHAR)
+                const flagText = flags.length ? ` ${flags.join(' ')}` : '';
+                lines.push(`${col.name} [${type}]${flagText}`);
+            }
         });
         
         return lines.join('\n');
@@ -268,11 +294,11 @@ LIMIT 5;</code></pre>
         }
     }
 
+    // Il resto delle funzioni rimane lo stesso, ma aggiorniamo la creazione degli elementi
     function createGraphElements(schemaData) {
         if (!schemaData || !Array.isArray(schemaData.tables)) {
             throw new Error('Invalid schema data structure');
         }
-        console.log('Raw schemaData:', JSON.stringify(schemaData, null, 2));
     
         const elements = [];
     
@@ -284,35 +310,36 @@ LIMIT 5;</code></pre>
                     id: table.name,
                     label: formatTableLabel(table),
                     tableData: table
-                }
+                },
+                classes: ['table-node']
             });
     
-            // relazioni tabella
+            // Relazioni
             if (Array.isArray(table.relationships)) {
                 table.relationships.forEach((rel, index) => {
                     elements.push({
                         group: 'edges',
                         data: {
-                            id: `edge-${table.name}-${index}`,
+                            id: `edge-${table.name}-${rel.toTable}-${index}`,
                             source: table.name,
                             target: rel.toTable,
                             relationship: rel.type,
-                            fromColumn: rel.fromColumn,
-                            toColumn: rel.toColumn
+                            fromColumns: rel.fromColumns,
+                            toColumns: rel.toColumns
                         }
                     });
                 });
             }
         });
     
-        console.log('Created elements with relationships:', elements);
         return elements;
     }
 
 
+
     async function initializeGraph() {
         const loadingIndicator = document.getElementById('loadingIndicator');
-        loadingIndicator.style.display = 'flex';  // Mostra il loading all'inizio
+        loadingIndicator.style.display = 'flex';
         
         try {
             const response = await fetch('/schema/api/metadata');
@@ -330,10 +357,12 @@ LIMIT 5;</code></pre>
             const layout = cy.layout({
                 name: 'dagre',
                 rankDir: 'TB',
-                rankSep: 80,
-                nodeSep: 50,
+                rankSep: 100,
+                nodeSep: 80,
                 padding: 50,
-                animate: false,
+                animate: true,
+                animationDuration: 500,
+                animationEasing: 'ease-in-out',
                 nodeDimensionsIncludeLabels: true
             });
             
@@ -344,8 +373,8 @@ LIMIT 5;</code></pre>
             setTimeout(() => {
                 cy.fit(50);
                 cy.center();
-                loadingIndicator.style.display = 'none';  // Nascondi il loading dopo il fit e center
-            }, 100);
+                loadingIndicator.style.display = 'none';
+            }, 600);
             
         } catch (error) {
             console.error('Error in graph initialization:', error);
@@ -354,8 +383,6 @@ LIMIT 5;</code></pre>
                     Failed to load schema: ${error.message}
                 </div>
             `;
-        } finally {
-            loadingIndicator.style.display = 'none'; 
         }
     }
 
