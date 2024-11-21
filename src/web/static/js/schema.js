@@ -216,10 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function logObject(obj) {
-        console.log(JSON.stringify(obj, null, 2));
-    }
-
     function formatTableLabel(table) {
         const lines = [];
         lines.push(table.name.toUpperCase());

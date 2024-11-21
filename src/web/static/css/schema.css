@@ -1,7 +1,5 @@
 /* static/css/schema.css */
 
-
-
 .schema-container {
     display: flex;
     flex-direction: column;
@@ -16,11 +14,17 @@
     padding: 20px;
     background-color: var(--primary-color);
     color: white;
+    text-align: center; /* Aggiunto questo */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Aggiunto questo */
 }
 
 .schema-title {
     font-size: 24px;
     margin-bottom: 16px;
+    text-align: center; /* Aggiunto questo */
+    width: 100%; /* Aggiunto questo */
 }
 
 .schema-controls {
@@ -28,6 +32,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 16px;
+    width: 100%; /* Aggiunto questo per mantenere i controlli larghi */
 }
 
 .search-container {
