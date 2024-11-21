@@ -182,6 +182,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function setupZoomControls(cy) {
+        // Zoom step (quanto zoom per click - 1.2 significa 20% in più o in meno)
+        const ZOOM_STEP = 1.2;
+        
+        // Zoom In
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            cy.animate({
+                zoom: cy.zoom() * ZOOM_STEP,
+                duration: 200,
+                easing: 'ease-out'
+            });
+        });
+        
+        // Zoom Out
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            cy.animate({
+                zoom: cy.zoom() / ZOOM_STEP,
+                duration: 200,
+                easing: 'ease-out'
+            });
+        });
+        
+        // Fit to View
+        document.getElementById('zoomFit').addEventListener('click', () => {
+            cy.animate({
+                fit: {
+                    padding: 50
+                },
+                duration: 300,
+                easing: 'ease-out'
+            });
+        });
+    }
+
     function logObject(obj) {
         console.log(JSON.stringify(obj, null, 2));
     }
@@ -449,7 +483,8 @@ LIMIT 5;</code></pre>
             layout.run();
             
             setupInteractivity(cy);
-            setupSearch(); // Aggiungiamo l'inizializzazione della ricerca
+            setupSearch();
+            setupZoomControls(cy);
             
             setTimeout(() => {
                 cy.fit(50);
