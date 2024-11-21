@@ -93,9 +93,94 @@ document.addEventListener('DOMContentLoaded', () => {
                     'transition-property': 'opacity',
                     'transition-duration': '0.2s'
                 }
+            },
+            // Aggiungiamo gli stili per i risultati della ricerca
+            {
+                selector: '.search-match',
+                style: {
+                    'border-color': '#3498db',  
+                    'border-width': 3,
+                    'background-color': '#ebf5fb', 
+                    'z-index': 1000,
+                    'transition-property': 'all',
+                    'transition-duration': '0.2s'
+                }
             }
         ]
     });
+
+    // Funzione di ricerca
+    function searchTables(searchTerm) {
+        if (!searchTerm) {
+            // Reset della visualizzazione se la ricerca è vuota
+            cy.elements().removeClass('faded highlighted search-match');
+            cy.elements().style('opacity', 1);
+            return;
+        }
+
+        searchTerm = searchTerm.toLowerCase();
+        
+        // Trova i nodi che corrispondono al termine di ricerca
+        const matchingNodes = cy.nodes().filter(node => {
+            const tableData = node.data('tableData');
+            if (!tableData) return false;
+            
+            // Cerca nel nome della tabella
+            if (tableData.name.toLowerCase().includes(searchTerm)) return true;
+            
+            // Cerca nei nomi delle colonne e nei tipi
+            return tableData.columns.some(col => 
+                col.name.toLowerCase().includes(searchTerm) ||
+                col.type.toLowerCase().includes(searchTerm)
+            );
+        });
+
+        if (matchingNodes.length > 0) {
+            // Evidenzia i nodi corrispondenti e le loro relazioni
+            cy.elements().addClass('faded').style('opacity', 0.2);
+            matchingNodes.removeClass('faded').addClass('search-match').style('opacity', 1);
+            
+            // Evidenzia anche le relazioni dirette tra i nodi corrispondenti
+            const connectedEdges = matchingNodes.edgesWith(matchingNodes);
+            connectedEdges.removeClass('faded').style('opacity', 1);
+            
+            // Centra la vista sui nodi trovati
+            cy.animate({
+                fit: {
+                    eles: matchingNodes,
+                    padding: 50
+                },
+                duration: 500,
+                easing: 'ease-out'
+            });
+        }
+    }
+
+    // Setup del campo di ricerca
+    function setupSearch() {
+        // Usiamo l'input esistente nell'HTML
+        const searchInput = document.getElementById('schemaSearch');
+        
+        if (searchInput) {
+            // Event listener con debounce per la ricerca
+            let debounceTimer;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    searchTables(e.target.value.trim());
+                }, 300);
+            });
+
+            // Event listener per il reset della ricerca con il tasto ESC
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    searchInput.value = '';
+                    searchTables('');
+                    searchInput.blur();
+                }
+            });
+        }
+    }
 
     function logObject(obj) {
         console.log(JSON.stringify(obj, null, 2));
@@ -103,20 +188,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function formatTableLabel(table) {
         const lines = [];
-        
-        // Nome della tabella in maiuscolo
         lines.push(table.name.toUpperCase());
-        lines.push('─'.repeat(16)); // Separatore più corto
+        lines.push('─'.repeat(16));
         
-        // Aggiunge solo le colonne che sono chiavi primarie o chiavi esterne
         table.columns.forEach(col => {
             if (col.isPrimaryKey || col.isForeignKey) {
                 const flags = [];
-                if (col.isPrimaryKey) flags.push('🔑');  // Chiave primaria
-                if (col.isForeignKey) flags.push('🔗');  // Foreign key
+                if (col.isPrimaryKey) flags.push('🔑');
+                if (col.isForeignKey) flags.push('🔗');
                 
-                // Formatta: nome [tipo] flags
-                let type = col.type.replace(/\([^)]*\)/g, '').substring(0, 4); // Rimuove dimensioni dal tipo (es. VARCHAR(50) -> VARCHAR)
+                let type = col.type.replace(/\([^)]*\)/g, '').substring(0, 12);
                 const flagText = flags.length ? ` ${flags.join(' ')}` : '';
                 lines.push(`${col.name} [${type}]${flagText}`);
             }
@@ -124,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         return lines.join('\n');
     }
-
  
     function getTableRelationships(tableName) {
         if (!globalSchemaData || !Array.isArray(globalSchemaData.tables)) {
@@ -369,6 +449,7 @@ LIMIT 5;</code></pre>
             layout.run();
             
             setupInteractivity(cy);
+            setupSearch(); // Aggiungiamo l'inizializzazione della ricerca
             
             setTimeout(() => {
                 cy.fit(50);
