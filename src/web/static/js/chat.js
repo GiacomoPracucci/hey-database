@@ -5,6 +5,101 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('sendButton');
     const typingIndicator = document.getElementById('typingIndicator');
 
+    // Costante per la chiave di storage
+    const CHAT_STORAGE_KEY = 'chat_messages';
+
+    // Funzione per salvare i messaggi nel localStorage
+    function saveChatMessages() {
+        const messages = Array.from(chatMessages.children)
+            .filter(msg => !msg.classList.contains('welcome') && !msg.classList.contains('typing-indicator-container'))
+            .map(msg => {
+                const isUser = msg.classList.contains('user');
+                const content = msg.querySelector('.message-content');
+                
+                if (isUser) {
+                    return {
+                        type: 'user',
+                        content: content.textContent
+                    };
+                } else {
+                    // Per i messaggi del bot, dobbiamo verificare se è un errore o una risposta normale
+                    const errorContainer = content.querySelector('.error-container');
+                    if (errorContainer) {
+                        // È un messaggio di errore
+                        return {
+                            type: 'bot',
+                            isError: true,
+                            error: content.querySelector('.error-details').textContent,
+                            query: content.querySelector('.error-query code')?.textContent || null
+                        };
+                    } else {
+                        // È una risposta normale del bot
+                        const queryContainer = content.querySelector('.sql-query-container');
+                        return {
+                            type: 'bot',
+                            isError: false,
+                            query: queryContainer?.querySelector('.sql-query code')?.textContent || null,
+                            explanation: content.querySelector('.explanation')?.textContent || null,
+                            originalQuestion: queryContainer?.dataset.originalQuestion || null,
+                            results: extractTableData(content.querySelector('.results-table'))
+                        };
+                    }
+                }
+            });
+        
+        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+    }
+
+    // Helper per estrarre i dati della tabella
+    function extractTableData(table) {
+        if (!table) return null;
+        
+        const results = [];
+        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
+        
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const row = {};
+            Array.from(tr.children).forEach((td, index) => {
+                row[headers[index]] = td.textContent;
+            });
+            results.push(row);
+        });
+        
+        return results;
+    }
+
+    // Funzione per ripristinare i messaggi dal localStorage
+    function restoreChatMessages() {
+        const savedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
+        if (!savedMessages) return;
+
+        try {
+            const messages = JSON.parse(savedMessages);
+            messages.forEach(msg => {
+                if (msg.type === 'user') {
+                    addMessage(msg.content, 'user');
+                } else if (msg.isError) {
+                    addMessage({
+                        success: false,
+                        error: msg.error,
+                        query: msg.query
+                    }, 'bot');
+                } else {
+                    addMessage({
+                        success: true,
+                        query: msg.query,
+                        explanation: msg.explanation,
+                        original_question: msg.originalQuestion,
+                        results: msg.results
+                    }, 'bot');
+                }
+            });
+        } catch (error) {
+            console.error('Error restoring chat messages:', error);
+            localStorage.removeItem(CHAT_STORAGE_KEY);
+        }
+    }
+
     // Gestisce l'altezza dinamica della textarea
     function adjustTextareaHeight() {
         userInput.style.height = 'auto';
@@ -24,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.innerHTML = '<i class="fas fa-check"></i>';
                 button.classList.add('copied');
                 
-                // Ripristina l'icona dopo 2 secondi
                 setTimeout(() => {
                     button.innerHTML = '<i class="fas fa-copy"></i>';
                     button.classList.remove('copied');
@@ -42,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showToast(type, message, icon = null) {
-        // Rimuovi eventuali toast esistenti
         const existingToasts = document.querySelectorAll('.toast');
         existingToasts.forEach(toast => toast.remove());
         
@@ -100,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
         if (type === 'bot') {
             if (!content.success) {
-                // Visualizzazione dell'errore
                 contentDiv.innerHTML = `
                     <div class="error-container">
                         <div class="error-icon">❌</div>
@@ -117,29 +209,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             } else {
-                // Visualizzazione normale della risposta
                 if (content.query) {
                     const queryContainer = document.createElement('div');
                     queryContainer.className = 'sql-query-container';
                     
-                    // Salviamo la domanda originale come attributo del container
                     queryContainer.dataset.originalQuestion = content.original_question;
                     
-                    // Toolbar per i bottoni
                     const toolbar = document.createElement('div');
                     toolbar.className = 'sql-query-toolbar';
                     
-                    // Bottone di copia
                     toolbar.appendChild(createCopyButton(content.query));
                     
-                    // Bottone di feedback
                     const feedbackButton = document.createElement('button');
                     feedbackButton.className = 'feedback-button';
                     feedbackButton.innerHTML = '<i class="fas fa-thumbs-up"></i>';
                     feedbackButton.title = 'Segnala risposta corretta';
                     
                     feedbackButton.addEventListener('click', async () => {
-                        // Chiamiamo la funzione handleFeedback passando il bottone e i dati necessari
                         await handleFeedback(feedbackButton, {
                             question: content.original_question,
                             sql_query: content.query,
@@ -150,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     toolbar.appendChild(feedbackButton);
                     queryContainer.appendChild(toolbar);
                     
-                    // Box della query
                     const queryDiv = document.createElement('div');
                     queryDiv.className = 'sql-query';
                     queryDiv.innerHTML = `<pre><code>${content.query}</code></pre>`;
@@ -173,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const table = document.createElement('table');
                     table.className = 'results-table';
                     
-                    // Header
                     const thead = document.createElement('thead');
                     const headerRow = document.createElement('tr');
                     Object.keys(content.results[0]).forEach(key => {
@@ -184,7 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     thead.appendChild(headerRow);
                     table.appendChild(thead);
                     
-                    // Body
                     const tbody = document.createElement('tbody');
                     content.results.forEach(row => {
                         const tr = document.createElement('tr');
@@ -208,14 +291,11 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Salva i messaggi dopo ogni aggiunta
+        saveChatMessages();
     }
 
-    // Mostra/nasconde l'indicatore di digitazione
-    function toggleTypingIndicator(show) {
-        typingIndicator.style.display = show ? 'flex' : 'none';
-    }
-
-    // Funzione per aggiungere l'indicatore di caricamento nella chat
     function addLoadingIndicator() {
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'typing-indicator-container';
@@ -233,7 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Funzione per rimuovere l'indicatore di caricamento
     function removeLoadingIndicator() {
         const indicator = document.getElementById('typingIndicator');
         if (indicator) {
@@ -241,7 +320,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Invia il messaggio al server
     async function sendMessage() {
         const message = userInput.value.trim();
         if (!message) return;
@@ -266,7 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            // Aggiungiamo delay solo se la risposta viene dal vector store
             if (data.from_vector_store) {
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }
@@ -298,6 +375,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     userInput.addEventListener('input', adjustTextareaHeight);
+
+    // Pulisci il localStorage al caricamento della pagina (non alla navigazione)
+    if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+        localStorage.removeItem(CHAT_STORAGE_KEY);
+    } else {
+        // Ripristina i messaggi solo durante la navigazione SPA
+        restoreChatMessages();
+    }
 
     // Imposta l'altezza iniziale della textarea
     adjustTextareaHeight();

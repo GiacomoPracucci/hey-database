@@ -12,8 +12,6 @@ data/**/.lock
 **/__pycache__/
 *.pyc
 
-
-docs/sviluppi.MD
-docs/per_proseguire/
+docs/sviluppi/
 
 test/feedback.py

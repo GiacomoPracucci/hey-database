@@ -486,7 +486,7 @@ LIMIT 5;</code></pre>
                 cy.fit(50);
                 cy.center();
                 loadingIndicator.style.display = 'none';
-            }, 600);
+            }, 50);
             
         } catch (error) {
             console.error('Error in graph initialization:', error);
