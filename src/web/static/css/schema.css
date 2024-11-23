@@ -101,27 +101,58 @@
 }
 
 /* Tabella dei dettagli */
+
+.table-wrapper {
+    border: 1px solid var(--border-default);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
 .details-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;    /* Cambiato da collapse a separate per permettere i bordi arrotondati */
+    border-spacing: 0;           /* Rimuove gli spazi tra le celle */
     font-size: 0.875rem;
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-default);
+    border-radius: 6px;          /* In linea con gli altri bordi arrotondati dell'app */
+    overflow: hidden;
+}
+
+.details-table th:first-child {
+    border-top-left-radius: 6px;
+}
+
+.details-table th:last-child {
+    border-top-right-radius: 6px;
+}
+
+.details-table tr:last-child td:first-child {
+    border-bottom-left-radius: 6px;
+}
+
+.details-table tr:last-child td:last-child {
+    border-bottom-right-radius: 6px;
 }
 
 .details-table th,
 .details-table td {
     padding: 0.625rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-default);
 }
 
 .details-table th {
-    background-color: var(--background-color);
+    background-color: var(--surface-light);
     font-weight: 600;
-    text-align: left;
-    color: var(--text-color);
+    color: var(--text-primary);
+}
+
+.details-table tr:nth-child(even) {
+    background-color: var(--surface-lighter);
 }
 
 .details-table tr:hover {
-    background-color: var(--background-color);
+    background-color: var(--surface-light);
 }
 /* Badge per i flag delle colonne */
 .badge {
