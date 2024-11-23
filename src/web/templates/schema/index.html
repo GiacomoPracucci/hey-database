@@ -1,60 +1,60 @@
-{# templates/schema/index.html #}
 {% extends "base.html" %}
+
+{% block title %}Hey, Database! - Schema{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/schema.css') }}">
 {% endblock %}
 
+{% block page_title %}Entity Relationship Diagram{% endblock %}
+
+{% block navbar_actions %}
+<div class="search-field">
+    <i class="fas fa-search"></i>
+    <input type="text" id="schemaSearch" placeholder="Search tables...">
+</div>
+
+<div class="zoom-controls">
+    <button class="btn" id="zoomIn" title="Zoom In">
+        <i class="fas fa-plus"></i>
+    </button>
+    <button class="btn" id="zoomOut" title="Zoom Out">
+        <i class="fas fa-minus"></i>
+    </button>
+    <button class="btn" id="zoomFit" title="Fit to Screen">
+        <i class="fas fa-expand"></i>
+    </button>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="schema-container">
-    <div class="schema-header">
-        <h1 class="schema-title">Entity Relationship Diagram</h1>
-        
-        <div class="schema-controls">
-            <div class="search-container">
-                <input type="text" id="schemaSearch" placeholder="Search tables..." class="search-input">
-            </div>
-            
-            <div class="zoom-controls">
-                <button id="zoomIn" class="control-button">
-                    <i class="fas fa-search-plus"></i>
-                </button>
-                <button id="zoomOut" class="control-button">
-                    <i class="fas fa-search-minus"></i>
-                </button>
-                <button id="zoomFit" class="control-button">
-                    <i class="fas fa-expand"></i>
-                </button>
-            </div>
+    <div id="schemaViewer" class="schema-viewer"></div>
+    
+    <div id="tableDetails" class="table-details hidden">
+        <div class="details-header">
+            <h3 class="details-title"></h3>
+            <button class="close-button" aria-label="Close details">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
+        <div class="details-content"></div>
     </div>
-
-    <div class="schema-content">
-        <div id="schemaViewer"></div>
-        
-        <div id="tableDetails" class="table-details hidden">
-            <div class="details-header">
-                <h3 class="details-title"></h3>
-                <button class="close-button">×</button>
-            </div>
-            <div class="details-content"></div>
+    
+    <div id="loadingIndicator" class="loading-indicator">
+        <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
-        
-        <div id="loadingIndicator" class="loading-indicator">
-            <div class="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <div>Loading schema...</div>
-        </div>
+        <div class="loading-text">Loading schema...</div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.19.1/cytoscape.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.3.2/cytoscape-dagre.min.js"></script>
 <script src="{{ url_for('static', filename='js/schema.js') }}"></script>
 {% endblock %}

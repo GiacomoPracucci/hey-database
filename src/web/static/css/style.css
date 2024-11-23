@@ -1,5 +1,3 @@
-/* static/css/style.css */
-
 /* Variabili CSS globali */
 :root {
     --primary-color: #2c3e50;
@@ -11,6 +9,9 @@
     --text-color: #2c3e50;
     --error-color: #e74c3c;
     --success-color: #2ecc71;
+    --text-light: rgba(255, 255, 255, 0.9);
+    --text-muted: rgba(255, 255, 255, 0.7);
+    --hover-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Reset e stili base */
@@ -25,80 +26,208 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     line-height: 1.6;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Layout container principale */
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
     height: 100vh;
 }
 
-/* Stili della navigazione */
-.main-nav {
+/* Header principale e navigazione */
+.main-header {
     background-color: var(--primary-color);
-    padding: 1rem 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.nav-container {
-    max-width: 1200px;
+.navbar {
+    display: flex;
+    align-items: center;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0.75rem 1.5rem;
+    height: 60px;
+}
+
+/* Logo e brand */
+.navbar-brand {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-}
-
-.nav-brand {
-    display: flex;
-    align-items: center;
-}
-
-.brand-text {
-    color: white;
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-.nav-links {
-    display: flex;
-    gap: 1.5rem;
-}
-
-.nav-link {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-light);
     text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-right: 3rem;
+}
+
+.navbar-brand i {
+    margin-right: 0.50rem; /* Aggiunge spazio tra l'icona e il testo */
+}
+
+/* Navigazione principale */
+.navbar-nav {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    transition: all 0.3s ease;
+    margin-right: auto;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
 .nav-link:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-light);
+    background-color: var(--hover-color);
 }
 
 .nav-link.active {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-light);
+    background-color: var(--hover-color);
 }
 
 .nav-link i {
+    font-size: 1rem;
+}
+
+/* Area del titolo della pagina */
+.page-title {
+    color: var(--text-light);
     font-size: 1.1rem;
+    font-weight: 500;
+    margin-right: 1.5rem;
+    padding-right: 1.5rem;
+    border-right: 1px solid var(--border-color);
+}
+
+/* Area delle azioni contestuali */
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Barra degli strumenti contestuale */
+.context-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    background-color: rgba(0, 0, 0, 0.1);
+    min-height: 48px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item:not(:last-child)::after {
+    content: "/";
+    margin-left: 0.5rem;
+    color: var(--text-muted);
+}
+
+.breadcrumb-item a {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--text-light);
+}
+
+.breadcrumb-item.active {
+    color: var(--text-light);
 }
 
 /* Layout principale */
 .main-content {
-    max-width: 1200px; /* 90%*/
-    margin: 0 auto;
-    padding: 2rem 20px;
-    height: calc(100vh - 4rem);
-    overflow-y: auto;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Pulsanti e controlli comuni */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    color: var(--text-light);
+    background-color: var(--hover-color);
+}
+
+.btn i {
+    font-size: 1rem;
+}
+
+/* Campo di ricerca comune */
+.search-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background-color: var(--hover-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    min-width: 260px;
+}
+
+.search-field input {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 0.875rem;
+    width: 100%;
+}
+
+.search-field input::placeholder {
+    color: var(--text-muted);
+}
+
+.search-field input:focus {
+    outline: none;
+}
+
+.search-field i {
+    color: var(--text-muted);
+    font-size: 0.875rem;
 }
 
 /* Toast notifications */
@@ -123,11 +252,11 @@ body {
 }
 
 .toast.success {
-    background-color: #2ecc71;
+    background-color: var(--success-color);
 }
 
 .toast.error {
-    background-color: #e74c3c;
+    background-color: var(--error-color);
 }
 
 .toast.warning {
@@ -150,17 +279,25 @@ body {
     }
 }
 
-/* Media query per responsive */
+/* Media queries */
 @media (max-width: 768px) {
+    .navbar {
+        padding: 0.75rem;
+    }
+
+    .page-title {
+        display: none;
+    }
+
     .nav-link span {
         display: none;
     }
-    
-    .nav-link {
-        padding: 0.5rem;
+
+    .navbar-actions {
+        gap: 0.5rem;
     }
-    
-    .nav-link i {
-        font-size: 1.2rem;
+
+    .search-field {
+        min-width: auto;
     }
 }

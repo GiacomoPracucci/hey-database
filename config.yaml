@@ -16,7 +16,7 @@ llm:
   type: ollama    # openai, ollama
   # Configurazioni per ollama
   base_url: http://localhost:11434
-  model: llama3.2:1b
+  model: llama3.1
   language: english # sql query explanation language
   # Configurazioni per OpenAI
   #api_key: ${OPENAI_API_KEY}

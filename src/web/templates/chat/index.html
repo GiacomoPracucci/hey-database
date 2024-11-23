@@ -1,37 +1,40 @@
 {% extends "base.html" %}
 
+{% block title %}Hey, Database! - Chat{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
 {% endblock %}
 
+{% block page_title %}SQL Chat{% endblock %}
+
+{% block navbar_actions %}
+<button class="btn" id="clearChat" title="Clear Chat">
+    <i class="fas fa-trash"></i>
+    <span>Clear</span>
+</button>
+{% endblock %}
+
 {% block content %}
 <div class="chat-container">
-    <div class="chat-header">
-        <h1>SQL Chatbot</h1>
-    </div>
-
-    <div class="chat-messages" id="chatMessages">
-        <!-- Messaggio di benvenuto con la nuova classe -->
+    <div id="chatMessages" class="chat-messages">
         <div class="message bot welcome">
             <div class="message-content">
-                <p>👋 Ciao! Sono un chatbot specializzato in query SQL.</p>
-                <p>Puoi chiedermi informazioni sul database dei videogiochi, ad esempio:</p>
+                <h3>👋 Welcome to your SQL Assistant!</h3>
+                <p>I'm here to help you explore and query the database.</p>
                 <ul>
-                    <li>"Mostrami i primi 5 giochi del database"</li>
-                    <li>"Quali sono i generi più popolari?"</li>
-                    <li>"Quali giochi sono stati pubblicati nel 2020?"</li>
+                    <li>Ask for information about available data</li>
+                    <li>Request specific SQL queries</li>
+                    <li>Explore relationships between tables</li>
                 </ul>
+                <p class="hint">💡 Tip: start by asking "Show me available tables" or "What data can I query?"</p>
             </div>
         </div>
     </div>
-
+    
     <div class="chat-input-container">
         <div class="input-wrapper">
-            <textarea 
-                id="userInput" 
-                placeholder="Scrivi la tua domanda qui..."
-                rows="1"
-            ></textarea>
+            <textarea id="userInput" placeholder="Write your question here..." rows="1"></textarea>
             <button id="sendButton" class="send-button">
                 <i class="fas fa-paper-plane"></i>
             </button>

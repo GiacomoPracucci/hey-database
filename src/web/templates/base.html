@@ -3,33 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>hey-database</title>
+    <title>{% block title %}hey-database{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav class="main-nav">
-        <div class="nav-container">
-            <div class="nav-brand">
+    <header class="main-header">
+        <!-- Navbar principale -->
+        <nav class="navbar">
+            <!-- Brand -->
+            <a href="/" class="navbar-brand">
+                <i class="fas fa-database"></i>
                 <span class="brand-text">Hey, Database!</span>
+            </a>
+
+            <!-- Navigazione principale -->
+            <div class="navbar-nav">
+                <div class="nav-item">
+                    <a href="{{ url_for('chat.index') }}" class="nav-link {% if request.endpoint == 'chat.index' %}active{% endif %}">
+                        <i class="fas fa-comments"></i>
+                        <span>Chat</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('schema.view') }}" class="nav-link {% if request.endpoint == 'schema.view' %}active{% endif %}">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Schema</span>
+                    </a>
+                </div>
             </div>
-            <div class="nav-links">
-                <a href="{{ url_for('chat.index') }}" class="nav-link {% if request.endpoint == 'chat.index' %}active{% endif %}">
-                    <i class="fas fa-comments"></i>
-                    <span>Chat</span>
-                </a>
-                <a href="{{ url_for('schema.view') }}" class="nav-link {% if request.endpoint == 'schema.view' %}active{% endif %}">
-                    <i class="fas fa-project-diagram"></i>
-                    <span>Schema</span>
-                </a>
+
+            <!-- Titolo della pagina corrente -->
+            <div class="page-title">
+                {% block page_title %}{% endblock %}
             </div>
-        </div>
-    </nav>
+
+            <!-- Azioni contestuali -->
+            <div class="navbar-actions">
+                {% block navbar_actions %}{% endblock %}
+            </div>
+        </nav>
+
+        <!-- Toolbar contestuale (opzionale) -->
+        {% block context_toolbar %}{% endblock %}
+    </header>
 
     <main class="main-content">
         {% block content %}{% endblock %}
     </main>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -212,6 +212,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (content.query) {
                     const queryContainer = document.createElement('div');
                     queryContainer.className = 'sql-query-container';
+
+                    const sqlLabel = document.createElement('span');
+                    sqlLabel.className = 'sql-label';
+                    sqlLabel.textContent = 'SQL';
+                    queryContainer.appendChild(sqlLabel);
                     
                     queryContainer.dataset.originalQuestion = content.original_question;
                     
