@@ -2,21 +2,21 @@
 .schema-container {
     position: relative;
     height: 100%;
-    background-color: var(--message-bg);
+    background-color: var(--schema-viewer-background);
     margin: 0 auto;
     max-width: 1600px;
     width: 100%;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--schema-container-shadow);
     border-radius: 8px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--schema-viewer-border);
 }
 
 /* Viewer dello schema */
 .schema-viewer {
     width: 100%;
     height: 100%;
-    background-color: var(--message-bg);
-    border-radius: 8px; /* Per mantenere i bordi arrotondati coerenti */
+    background-color: var(--schema-viewer-background);
+    border-radius: 8px;
 }
 
 /* Pannello dei dettagli */
@@ -25,13 +25,13 @@
     right: 1.5rem;
     top: 1.5rem;
     width: 400px;
-    background: var(--message-bg);
+    background: var(--details-panel-background);
     border-radius: 8px;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--details-panel-shadow);
     z-index: 1000;
     opacity: 1;
     transform: translateX(0);
-    transition: all 0.3s ease;
+    transition: all var(--schema-transition-duration) ease;
 }
 
 .table-details.hidden {
@@ -45,8 +45,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-    background-color: var(--background-color);
+    border-bottom: 1px solid var(--details-header-border);
+    background-color: var(--details-header-background);
     border-radius: 8px 8px 0 0;
 }
 
@@ -54,7 +54,7 @@
     margin: 0;
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--details-title-color);
 }
 
 .close-button {
@@ -73,7 +73,7 @@
 
 .close-button:hover {
     background-color: var(--hover-color);
-    color: var(--error-color);
+    color: var(--error-base);
 }
 
 .details-content {
@@ -93,7 +93,7 @@
 
 .section h4 {
     margin: 0 0 0.75rem 0;
-    color: var(--primary-color);
+    color: var(--details-section-title-color);
     font-size: 0.875rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -135,18 +135,21 @@
 }
 
 .badge.pk {
-    background-color: var(--badge-pk-bg);
+    background-color: var(--badge-pk-background);
     color: var(--badge-pk-text);
+    border: 1px solid var(--badge-pk-border);
 }
 
 .badge.fk {
-    background-color: var(--badge-fk-bg);
+    background-color: var(--badge-fk-background);
     color: var(--badge-fk-text);
+    border: 1px solid var(--badge-fk-border);
 }
 
 .badge.required {
-    background-color: var(--badge-required-bg);
+    background-color: var(--badge-required-background);
     color: var(--badge-required-text);
+    border: 1px solid var(--badge-required-border);
 }
 
 /* Lista delle relazioni */
@@ -158,8 +161,8 @@
 
 .relationship-item {
     padding: 0.75rem;
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
+    background-color: var(--relationship-item-background);
+    border: 1px solid var(--relationship-item-border);
     border-radius: 6px;
     font-size: 0.875rem;
 }
@@ -167,18 +170,18 @@
 .relationship-item div {
     margin-bottom: 0.25rem;
     font-weight: 500;
-    color: var(--text-color);
+    color: var(--relationship-title-color);
 }
 
 .relationship-item small {
     display: block;
-    color: var(--text-muted);
+    color: var(--relationship-detail-color);
     font-size: 0.8125rem;
 }
 
 /* Query di esempio */
 .query-container {
-    background-color: var(--primary-color);
+    background-color: var(--query-container-background);
     border-radius: 6px;
     overflow: hidden;
 }
@@ -186,7 +189,7 @@
 .query-container pre {
     margin: 0;
     padding: 1rem;
-    color: var(--text-light);
+    color: var(--query-container-text);
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.875rem;
     line-height: 1.5;
@@ -204,38 +207,41 @@
     align-items: center;
     gap: 1rem;
     z-index: 1000;
+    background-color: var(--loading-indicator-background);
 }
 
 .loading-text {
-    color: var(--text-color);
+    color: var(--loading-text-color);
     font-size: 0.875rem;
 }
 
 /* Stili per i nodi del grafo */
 .cytoscape-node {
-    background-color: var(--message-bg);
-    border: 2px solid var(--primary-color);
+    background-color: var(--schema-node-background);
+    border: 2px solid var(--schema-node-border);
     padding: 0.75rem;
     width: 180px;
     font-size: 0.875rem;
     border-radius: 6px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--schema-node-shadow);
 }
+
 .cytoscape-node:hover {
-    box-shadow: var(--shadow-md);
+    border-color: var(--schema-node-border-hover);
+    box-shadow: var(--schema-node-shadow-hover);
 }
 
 .node-title {
     font-weight: 600;
-    color: var(--primary-color);
     margin-bottom: 0.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
+    color: var(--schema-node-title-color);
+    border-bottom: 1px solid var(--schema-node-border);
 }
 
 .node-content {
     font-size: 0.8125rem;
-    color: var(--text-color);
+    color: var(--schema-node-text-color);
 }
 
 
@@ -252,24 +258,32 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--zoom-control-color);
+    background-color: var(--zoom-control-background);
+    border: 1px solid var(--zoom-control-border);
 }
 
 .zoom-controls .btn i {
     font-size: 0.875rem;
 }
 
+.zoom-controls .btn:hover {
+    background-color: var(--zoom-control-hover-background);
+    color: var(--zoom-control-hover-color);
+}
+
 /* Barra di ricerca nella navbar */
 .search-field {
-    background-color: var(--hover-color);
-    border: 1px solid var(--border-color);
+    background-color: var(--schema-search-background);
+    border: 1px solid var(--schema-search-border);
 }
 
 .search-field input {
-    color: var(--text-light);
+    color: var(--schema-search-text);
 }
 
 .search-field input::placeholder {
-    color: var(--text-muted);
+    color: var(--schema-search-placeholder);
 }
 
 /* Evidenziazione ricerca */
@@ -280,13 +294,13 @@
 
 /* Effetti di transizione per gli elementi del grafo */
 .faded {
-    opacity: 0.3;
-    transition: opacity 0.2s ease;
+    opacity: var(--schema-element-fade-opacity);
+    transition: opacity var(--schema-transition-duration) ease;
 }
 
 .highlighted {
-    border-color: var(--secondary-color);
-    transition: all 0.2s ease;
+    border-color: var(--schema-highlight-color);
+    transition: all var(--schema-transition-duration) ease;
 }
 
 /* Responsiveness */
