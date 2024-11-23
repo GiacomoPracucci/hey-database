@@ -23,21 +23,21 @@ def create_chat_routes(app, chat_service):
     def feedback():
         """Endpoint per gestire il feedback positivo dell'utente"""
         try:
-            logger.debug("Ricevuta richiesta di feedback")
+            logger.debug("Received feedback request")
             data = request.get_json()
-            logger.debug(f"Dati ricevuti: {data}")
+            logger.debug(f"Received data: {data}")
             
             if not data or not all(key in data for key in ['question', 'sql_query', 'explanation']):
-                logger.error("Dati mancanti nella richiesta")
-                return jsonify({"success": False, "error": "Dati mancanti"}), 400
+                logger.error("Missing data in request")
+                return jsonify({"success": False, "error": "Missing data"}), 400
             
             # verifica se il vector store è abilitato
             if not chat_service.vector_store:
-                logger.warning("Tentativo di feedback con vector store disabilitato")
+                logger.warning("Attempted feedback with vector store disabled")
                 return jsonify({
                     "success": False, 
                     "error": "vector_store_disabled",
-                    "message": "Il Vector Store non è abilitato. Abilitalo per utilizzare questa funzionalità."
+                    "message": "Please, enable vectorstore in config.yaml to use this feature."
                 }), 400
             
             success = chat_service.vector_store.handle_positive_feedback(
@@ -51,10 +51,10 @@ def create_chat_routes(app, chat_service):
             if success:
                 return jsonify({"success": True})
             else:
-                return jsonify({"success": False, "error": "Errore nel salvataggio del feedback"}), 500
+                return jsonify({"success": False, "error": "Error saving feedback"}), 500
                 
         except Exception as e:
-            logger.exception(f"Errore nell'endpoint feedback: {str(e)}")
+            logger.exception(f"Error in feedback endpoint: {str(e)}")
             return jsonify({"success": False, "error": str(e)}), 500
     
     @chat_bp.route('/api/chat', methods=['POST'])

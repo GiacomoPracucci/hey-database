@@ -219,19 +219,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 button.classList.add('voted');
                 button.disabled = true;
-                button.title = 'Risposta segnalata come corretta';
-                showToast('success', 'Grazie per il feedback!', 'fa-check');
+                button.title = 'Response marked as correct';
+                showToast('success', 'Thank you for your feedback!', 'fa-check');
             } else {
                 const responseData = await response.json();
                 if (responseData.error === 'vector_store_disabled') {
-                    showToast('warning', 'Il Vector Store non è abilitato. Abilitalo per utilizzare questa funzionalità.', 'fa-exclamation-triangle');
+                    showToast('warning', 'Please, enable vectorstore in config.yaml to use this feature', 'fa-exclamation-triangle');
                 } else {
                     showToast('error', 'Errore nell\'invio del feedback', 'fa-times');
                 }
             }
         } catch (err) {
-            console.error('Errore nell\'invio del feedback:', err);
-            showToast('error', 'Errore nell\'invio del feedback', 'fa-times');
+            console.error('Error submitting feedback:', err);
+            showToast('error', 'Error submitting feedback', 'fa-times');
         }
     }
 
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const feedbackButton = document.createElement('button');
                     feedbackButton.className = 'feedback-button';
                     feedbackButton.innerHTML = '<i class="fas fa-thumbs-up"></i>';
-                    feedbackButton.title = 'Segnala risposta corretta';
+                    feedbackButton.title = 'Mark as correct answer';
                     
                     feedbackButton.addEventListener('click', async () => {
                         await handleFeedback(feedbackButton, {

@@ -40,6 +40,7 @@ class ChatService:
         """ Elabora un messaggio dell'utente, interroga il modello e restituisce i risultati formattati"""
         logger.debug(f"Processing message: {message}")
         try:
+            exact_match = None
             # prima verifica se abbiamo una risposta simile nel vector store
             if self.vector_store:
                 exact_match = self.vector_store.find_exact_match(message)
