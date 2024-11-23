@@ -100,6 +100,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Funzione per resettare la chat
+    function clearChat() {
+        // Rimuove tutti i messaggi tranne il messaggio di benvenuto
+        const welcomeMessage = chatMessages.querySelector('.message.bot.welcome');
+        const typingIndicator = chatMessages.querySelector('.typing-indicator-container');
+        
+        // Salva i riferimenti ai messaggi da preservare
+        const preservedElements = [];
+        if (welcomeMessage) preservedElements.push(welcomeMessage);
+        if (typingIndicator) preservedElements.push(typingIndicator);
+        
+        // Pulisce il contenitore dei messaggi
+        chatMessages.innerHTML = '';
+        
+        // Ripristina gli elementi preservati
+        preservedElements.forEach(element => {
+            chatMessages.appendChild(element);
+        });
+        
+        // Pulisce il localStorage
+        localStorage.removeItem(CHAT_STORAGE_KEY);
+        
+        // Resetta l'input utente
+        if (userInput) {
+            userInput.value = '';
+            adjustTextareaHeight();
+        }
+        
+        // Mostra un toast di conferma
+        showToast('success', 'Chat cleared successfully', 'fa-check');
+    }
+
+    // Aggiungiamo l'event listener per il pulsante clear
+    const clearButton = document.querySelector('.navbar-actions button');
+    if (clearButton) {
+        clearButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Disabilita temporaneamente il pulsante per evitare click multipli
+            clearButton.disabled = true;
+            
+            // Esegue il clear
+            clearChat();
+            
+            // Riabilita il pulsante dopo un breve delay
+            setTimeout(() => {
+                clearButton.disabled = false;
+            }, 500);
+        });
+    }
+
     // Gestisce l'altezza dinamica della textarea
     function adjustTextareaHeight() {
         userInput.style.height = 'auto';
