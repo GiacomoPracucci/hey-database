@@ -1,17 +1,56 @@
 /* Variabili CSS globali */
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --background-color: #f5f6fa;
-    --message-bg: #ffffff;
-    --bot-message-bg: #f8f9fa;
-    --border-color: #e9ecef;
-    --text-color: #2c3e50;
-    --error-color: #e74c3c;
-    --success-color: #2ecc71;
-    --text-light: rgba(255, 255, 255, 0.9);
-    --text-muted: rgba(255, 255, 255, 0.7);
-    --hover-color: rgba(255, 255, 255, 0.1);
+    /* Colori principali del brand */
+    --primary-color: #1a365d;      /* Blu scuro per header */
+    --primary-dark: #152c4e;       /* Versione più scura per hover su elementi primary */
+    --secondary-color: #3182ce;    /* Blu medio per azioni secondarie */
+    --secondary-dark: #2c5282;     /* Versione più scura per hover su elementi secondary */
+    --accent-blue: #2b6cb0;        /* Blu per elementi di accent (messaggi utente, query SQL, bottoni) */
+    --accent-blue-dark: #245d9b;   /* Versione più scura per hover su accent */
+
+    /* Background e superfici */
+    --background-color: #f7fafc;   /* Grigio chiarissimo per sfondo principale */
+    --message-bg: #ffffff;         /* Bianco per superfici primarie */
+    --bot-message-bg: #f8fafc;     /* Grigio molto chiaro per messaggi bot */
+    
+    /* Bordi e divisori */
+    --border-color: #e2e8f0;       /* Grigio chiaro per bordi */
+    --border-hover: #cbd5e0;       /* Versione più scura per hover su bordi */
+    --sql-query-toolbar: rgba(0, 0, 0, 0.1);
+    
+    /* Testo */
+    --text-color: #2d3748;         /* Grigio scuro per testo principale */
+    --text-light: #f7fafc;         /* Bianco smoke per testo chiaro */
+    --text-muted: #a0aec0;         /* Grigio medio per testo secondario */
+    
+    /* Stati e feedback */
+    --hover-color: rgba(49, 130, 206, 0.1);  /* Blu con opacità per hover */
+    --active-color: rgba(49, 130, 206, 0.2); /* Blu più intenso per stato active */
+    --error-color: #e53e3e;        /* Rosso per errori */
+    --error-light: #feb2b2;        /* Rosso chiaro per background errori */
+    --success-color: #38a169;      /* Verde per successi */
+    --success-light: #9ae6b4;      /* Verde chiaro per background successi */
+    --warning-color: #d69e2e;      /* Giallo per warning */
+    --warning-light: #faf089;      /* Giallo chiaro per background warning */
+
+    /* Badge colori (per schema) */
+    --badge-pk-bg: #fbd5d5;        /* Background per Primary Key badge */
+    --badge-pk-text: #c53030;      /* Testo per Primary Key badge */
+    --badge-fk-bg: #bee3f8;        /* Background per Foreign Key badge */
+    --badge-fk-text: #2b6cb0;      /* Testo per Foreign Key badge */
+    --badge-required-bg: #fefcbf;  /* Background per Required badge */
+    --badge-required-text: #975a16; /* Testo per Required badge */
+
+    /* Schema colori specifici */
+    --node-border: #3182ce;        /* Colore bordo nodi schema */
+    --node-border-hover: #2b6cb0;  /* Colore bordo nodi schema hover */
+    --edge-color: #a0aec0;         /* Colore connessioni schema */
+    --edge-hover: #4299e1;         /* Colore connessioni schema hover */
+    
+    /* Ombre */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 0 1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05), 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Reset e stili base */
@@ -22,15 +61,17 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--background-color);
     color: var(--text-color);
     line-height: 1.6;
     height: 100vh;
     display: flex;
     flex-direction: column;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
-
 /* Layout container principale */
 .container {
     max-width: 1400px;
@@ -41,7 +82,7 @@ body {
 /* Header principale e navigazione */
 .main-header {
     background-color: var(--primary-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
 }
 
 .navbar {
@@ -53,7 +94,7 @@ body {
     height: 60px;
 }
 
-/* Logo e brand */
+/* Brand e logo */
 .navbar-brand {
     display: flex;
     align-items: center;
@@ -65,7 +106,8 @@ body {
 }
 
 .navbar-brand i {
-    margin-right: 0.50rem; /* Aggiunge spazio tra l'icona e il testo */
+    margin-right: 0.75rem;
+    font-size: 1.3rem;
 }
 
 /* Navigazione principale */
@@ -89,6 +131,7 @@ body {
     padding: 0.5rem 1rem;
     border-radius: 6px;
     transition: all 0.2s ease;
+    font-weight: 500;
 }
 
 .nav-link:hover {
@@ -184,6 +227,7 @@ body {
     background: none;
     color: var(--text-muted);
     font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -241,7 +285,7 @@ body {
     color: white;
     font-size: 14px;
     z-index: 1000;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-lg);
     animation: slideDown 0.3s ease;
     min-width: 200px;
     text-align: center;
@@ -279,7 +323,14 @@ body {
     }
 }
 
-/* Media queries */
+/* Area contenuto principale */
+.main-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Responsiveness */
 @media (max-width: 768px) {
     .navbar {
         padding: 0.75rem;
