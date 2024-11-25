@@ -5,13 +5,14 @@ from src.llm_input.prompt_generator import PromptGenerator
 from src.llm_output.response_handler import ResponseHandler
 from src.connettori.base_connector import DatabaseConnector
 from src.store.base_vectorstore import VectorStore
+from src.llm_handler.base_llm_handler import LLMHandler
 logger = logging.getLogger('hey-database')
 
 class ChatService:
     """Servizio che gestisce la logica della chat"""
     def __init__(self, 
                  db: DatabaseConnector,
-                 llm_manager,
+                 llm_manager: LLMHandler,
                  metadata_retriever: DatabaseMetadataRetriever,
                  prompt_generator: PromptGenerator,
                  vector_store: VectorStore = None):
@@ -60,7 +61,7 @@ class ChatService:
                     result["original_question"] = message
                     return result
                     
-                logger.debug("No exact match found, using LLM")
+            logger.debug("No exact match found, using LLM")
                 
             # se non troviamo una risposta simile o il vector store non è configurato,
             # procediamo con la generazione normale

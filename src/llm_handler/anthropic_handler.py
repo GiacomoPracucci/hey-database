@@ -1,10 +1,9 @@
 from anthropic import Anthropic
 from typing import Union, Generator
 from tenacity import retry, stop_after_attempt, wait_exponential
-import json
-from src.llm_handler.base_llm_handler import BaseLLMHandler
+from src.llm_handler.base_llm_handler import LLMHandler
 
-class AnthropicHandler(BaseLLMHandler):
+class AnthropicHandler(LLMHandler):
     """Classe per gestire le operazioni con le API di Anthropic/Claude"""
 
     def __init__(self,

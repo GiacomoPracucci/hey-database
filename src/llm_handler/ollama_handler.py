@@ -2,8 +2,10 @@ import requests
 from typing import Union, List, Dict, Any, Generator
 import json
 from tenacity import retry, stop_after_attempt, wait_exponential
+from src.llm_handler.base_llm_handler import LLMHandler
 
-class OllamaHandler:
+
+class OllamaHandler(LLMHandler):
     """Classe per gestire le operazioni con i modelli Ollama locali"""
     
     def __init__(self,

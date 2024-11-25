@@ -40,7 +40,7 @@ def create_schema_routes(app, metadata_retriever):
                     "relationships": []
                 }
                 
-                # Aggiunge le colonne
+                # colonne
                 for col in table_info.columns:
                     column_data = {
                         "name": col["name"],
@@ -50,7 +50,7 @@ def create_schema_routes(app, metadata_retriever):
                     }
                     table_data["columns"].append(column_data)
                 
-                # Aggiunge le relazioni (foreign keys)
+                # relazioni (foreign keys)
                 for fk in table_info.foreign_keys:
                     relationship = {
                         "fromColumns": fk["constrained_columns"],

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Union, Generator
 
-class BaseLLMHandler(ABC):
+class LLMHandler(ABC):
     """Base class for LLM handlers that provide unified interface for different LLM providers"""
     
     @abstractmethod
