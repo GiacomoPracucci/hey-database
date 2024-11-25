@@ -1,14 +1,18 @@
-from typing import List, Optional
-from datetime import datetime, timezone
 import logging
 import uuid
+from typing import List, Optional
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams
-from sentence_transformers import SentenceTransformer
-from src.config.models.vector_store import QueryStorePayload, SearchResult
+
 from src.store.base_vectorstore import VectorStore
 from src.embedding.base_embedding_model import EmbeddingModel
+from src.config.models.vector_store import (
+    TablePayload,
+    QueryPayload,
+    TableSearchResult,
+    QuerySearchResult
+)
 
 logger = logging.getLogger('hey-database')
 
@@ -42,15 +46,6 @@ class QdrantStore(VectorStore):
         self.collection_name = collection_name
         self.vector_size = self.embedding_model.get_embedding_dimension()
         
-    def _payload_to_dict(self, payload: QueryStorePayload) -> dict:
-        """Converte un QueryStorePayload in un dizionario per Qdrant"""
-        return {
-            "question": payload.question,
-            "sql_query": payload.sql_query,
-            "explanation": payload.explanation,
-            "positive_votes": payload.positive_votes,
-        }
-        
     def initialize(self) -> bool:
         """Inizializza la collection se non esiste"""
         try:
@@ -70,66 +65,178 @@ class QdrantStore(VectorStore):
         except Exception as e:
             print(f"Errore nell'inizializzazione della collection: {str(e)}")
             return False
-        
-    def handle_positive_feedback(self, question: str, sql_query: str, explanation: str) -> bool:
-        """Gestisce il feedback positivo dell'utente per una coppia domanda-risposta.
-        Se la coppia esiste, incrementa il contatore. Se non esiste, crea una nuova entry.
-        
-        Args:
-            question: La domanda dell'utente
-            sql_query: La query SQL generata
-            
-        Returns:
-            bool: True se l'operazione ha successo, False altrimenti
-        """
-        try:
-            logger.debug(f"Ricevuto feedback positivo per la domanda: {question}")
-            
-            existing = self.find_exact_match(question)
-            vector = self.embedding_model.encode(question)
-            
-            if existing:
-                logger.debug(f"Trovata entry esistente")
-                payload = QueryStorePayload(
-                    question=existing.question,
-                    sql_query=existing.sql_query,
-                    explanation=existing.explanation,
-                    positive_votes=existing.positive_votes + 1
-                )
-                logger.debug(f"Aggiornamento voti a {payload.positive_votes}")
-            else:
-                logger.debug("Creazione nuova entry")
 
-                payload = QueryStorePayload(
-                    question=question,
-                    sql_query=sql_query,
-                    explanation=explanation,
-                    positive_votes=1
-                )
-                
-            success = self.client.upsert(
+    def add_table(self, metadata: TablePayload) -> bool:
+        """Aggiunge o aggiorna i metadati di una tabella"""
+        try:
+            # embedding dalla descrizione e keywords
+            embedding_text = f"{metadata.table_name} {metadata.description} {' '.join(metadata.keywords)}"
+            vector = self.embedding_model.encode(embedding_text)
+            
+            # conversione del payload in dict
+            payload_dict = {
+                "type": metadata.type,
+                "embedding_source": metadata.embedding_source,
+                "table_name": metadata.table_name,
+                "description": metadata.description,
+                "keywords": metadata.keywords,
+                "columns": metadata.columns,
+                "primary_keys": metadata.primary_keys,
+                "foreign_keys": metadata.foreign_keys,
+                "row_count": metadata.row_count,
+                "importance_score": metadata.importance_score
+            }
+            
+            # upsert del punto
+            self.client.upsert(
                 collection_name=self.collection_name,
                 points=[models.PointStruct(
-                    id=self._generate_id(question),
+                    id=self._generate_table_id(metadata.table_name),
                     vector=vector,
-                    payload=self._payload_to_dict(payload)
+                    payload=payload_dict
                 )]
             )
-            logger.debug(f"Upsert completato con successo: {success}")
-            return success
+            logger.debug(f"Metadati aggiunti/aggiornati per tabella: {metadata.table_name}")
+            return True
         
         except Exception as e:
-                logger.error(f"Errore nella gestione del feedback: {str(e)}")
-                return False
-
-    def find_exact_match(self, question: str) -> Optional[SearchResult]:
-        """Cerca una corrispondenza esatta della domanda nel database"""
-        logger.debug(f"Cercando match esatto per: {question}")
+            logger.error(f"Errore nell'aggiunta dei metadati: {str(e)}")
+            return False
+        
+    def get_relevant_tables(self, query: str, limit: int = 3) -> List[TableSearchResult]:
+        """Trova le tabelle più rilevanti per una query
+        TODO implementazione base che sfrutta solo similarità del coseno, va arricchita e strutturata maggiormente
+        """
         try:
-            results = self.client.scroll(
+            vector = self.embedding_model.encode(query)
+            
+            search_result = self.client.search(
+                collection_name=self.collection_name,
+                query_vector=vector,
+                query_filter=models.Filter(
+                    must=[
+                        models.FieldCondition( # cerchiamo solo nei documenti type = "table"
+                            key="type",
+                            match=models.MatchValue(value="table")
+                        )
+                    ]
+                ),
+                limit=limit
+            )
+        
+            results = []
+            for hit in search_result:
+                payload = hit.payload
+
+                # ricotruzione dell'oggetto TableMetadataPayload
+                metadata = TablePayload(
+                    table_name=payload["table_name"],
+                    description=payload["description"],
+                    keywords=payload["keywords"],
+                    columns=payload["columns"],
+                    primary_keys=payload["primary_keys"],
+                    foreign_keys=payload["foreign_keys"],
+                    row_count=payload["row_count"],
+                    embedding_source=payload["embedding_source"],
+                    importance_score=payload.get("importance_score", 0.0)
+                )
+                
+                # keywords che hanno fatto match
+                query_words = set(query.lower().split())
+                matched_keywords = [
+                    k for k in metadata.keywords 
+                    if k.lower() in query_words
+                ]
+                
+                results.append(TableSearchResult(
+                    table_name=metadata.table_name,
+                    metadata=metadata,
+                    relevance_score=hit.score,
+                    matched_keywords=matched_keywords
+                ))
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Errore nella ricerca delle tabelle: {str(e)}")
+            return []
+        
+        
+    def add_query(self, query: QueryPayload) -> bool:
+        """Aggiunge una nuova query allo store"""
+        try:
+            vector = self.embedding_model.encode(query.question)
+            
+            payload_dict = {
+                "type": query.type,
+                "embedding_source": query.embedding_source,
+                "question": query.question,
+                "sql_query": query.sql_query,
+                "explanation": query.explanation,
+                "positive_votes": query.positive_votes
+            }
+            
+            self.client.upsert(
+                collection_name=self.collection_name,
+                points=[models.PointStruct(
+                    id=self._generate_query_id(query.question),
+                    vector=vector,
+                    payload=payload_dict
+                )]
+            )
+            return True
+            
+        except Exception as e:
+            logger.error(f"Errore nell'aggiunta della query: {str(e)}")
+            return False
+
+    def search_similar_queries(self, question: str, limit: int = 3) -> List[QuerySearchResult]:
+        """Cerca query simili nel vector store"""
+        try:
+            vector = self.embedding_model.encode(question)
+            
+            search_result = self.client.search(
+                collection_name=self.collection_name,
+                query_vector=vector,
+                query_filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="type",
+                            match=models.MatchValue(value="query")
+                        )
+                    ]
+                ),
+                limit=limit
+            )
+            
+            return [
+                QuerySearchResult(
+                    question=hit.payload["question"],
+                    sql_query=hit.payload["sql_query"],
+                    explanation=hit.payload["explanation"],
+                    score=hit.score,
+                    positive_votes=hit.payload["positive_votes"]
+                )
+                for hit in search_result
+            ]
+            
+        except Exception as e:
+            logger.error(f"Errore nella ricerca delle query: {str(e)}")
+            return []
+        
+        
+    def handle_positive_feedback(self, question: str, sql_query: str, explanation: str) -> bool:
+        """Gestisce il feedback positivo per una query"""
+        try:
+            # checkiamo se la domanda è già presente nello store
+            search_result = self.client.scroll(
                 collection_name=self.collection_name,
                 scroll_filter=models.Filter(
                     must=[
+                        models.FieldCondition(
+                            key="type",
+                            match=models.MatchValue(value="query")
+                        ),
                         models.FieldCondition(
                             key="question",
                             match=models.MatchValue(value=question)
@@ -137,87 +244,34 @@ class QdrantStore(VectorStore):
                     ]
                 ),
                 limit=1
-            )[0]  # scroll returns (results, next_page_offset)
+            )[0]
             
-            logger.debug(f"Risultati trovati: {len(results)}")
-            if results:
-                point = results[0]
-                logger.debug(f"Match trovato con payload: {point.payload}")
-                return SearchResult(
-                    question=point.payload["question"],
-                    sql_query=point.payload["sql_query"],
-                    explanation=point.payload["explanation"],
-                    score=1.0,  # match esatto = score 1
-                    positive_votes=point.payload["positive_votes"]
-                )
-            return None
-                
-        except Exception as e:
-            logger.error(f"Errore nella ricerca esatta: {str(e)}")
-            return None
-                
+            # se è già presente, semplicemente incrementiamo i voti
+            if search_result:
+                existing = search_result[0].payload
+                votes = existing["positive_votes"] + 1
+            else: # altrimenti è il primo voto
+                votes = 1
             
-    def add_entry(self, question: str, sql_query: str, explanation: str) -> bool:
-        """Aggiunge una nuova entry nel vector store"""
-        try:
-            vector = self.embedding_model.encode(question)
-            
-            current_time = datetime.now(timezone.utc)
-            payload = QueryStorePayload(
+            # crea/aggiorna in base alla situazione che si è verificata
+            query = QueryPayload(
                 question=question,
                 sql_query=sql_query,
                 explanation=explanation,
-                positive_votes=0
+                positive_votes=votes,
+                embedding_source="question"
             )
             
-            self.client.upsert(
-                collection_name=self.collection_name,
-                points=[models.PointStruct(
-                    id=self._generate_id(question),
-                    vector=vector,
-                    payload=self._payload_to_dict(payload)
-                )]
-            )
-            return True
+            return self.add_query(query)
             
         except Exception as e:
-            print(f"Errore nell'inserimento: {str(e)}")
+            logger.error(f"Errore nella gestione del feedback: {str(e)}")
             return False
-        
-    def search_similar(self, question: str, limit: int = 3) -> List[SearchResult]:
-        """Cerca domande simili utilizzando la similarity search di Qdrant"""
-        try:
-            vector = self.embedding_model.encode(question)
-            
-            results = self.client.search(
-                collection_name=self.collection_name,
-                query_vector=vector,
-                limit=limit
-            )
-            
-            return [ # restituiamo rispettando il formato definito 
-                SearchResult(
-                    question=r.payload["question"],
-                    sql_query=r.payload["sql_query"],
-                    explanation=r.payload["explanation"],
-                    score=r.score,
-                    positive_votes=r.payload.get("positive_votes", 0)
-                )
-                for r in results
-            ]
-        
-        except Exception as e:
-            print(f"Errore nella ricerca: {str(e)}")
-            return []
-        
-        
-    def _generate_id(self, question: str) -> str:
-        """Genera un UUID v5 deterministico basato sulla domanda"""
-        # Usiamo UUID v5 che genera un UUID deterministico basato su namespace + nome
-        # NAMESPACE_DNS è solo un namespace arbitrario ma costante
-        return str(uuid.uuid5(uuid.NAMESPACE_DNS, question))
-    
 
-    def close(self) -> None:
-        """Chiude la connessione al vector store"""
-        self.client.close()
+    def _generate_table_id(self, table_name: str) -> str:
+        """Genera un ID deterministico per una tabella"""
+        return f"table_{table_name}"
+    
+    def _generate_query_id(self, question: str) -> str:
+        """Genera un ID deterministico per una query"""
+        return str(uuid.uuid5(uuid.NAMESPACE_DNS, question))
