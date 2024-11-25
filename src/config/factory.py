@@ -8,6 +8,8 @@ from src.connettori.snowflake import SnowflakeManager
 from src.schema_metadata.postgres_metadata_retriever import PostgresMetadataRetriever
 from src.schema_metadata.mysql_metadata_retriever import MySQLMetadataRetriever
 from src.schema_metadata.snowflake_metadata_retriever import SnowflakeMetadataRetriever
+from src.schema_metadata.enhancer import MetadataEnhancer
+from src.llm_handler.base_llm_handler import LLMHandler
 from src.llm_handler.openai_handler import OpenAIHandler
 from src.llm_handler.ollama_handler import OllamaHandler
 from src.llm_handler.anthropic_handler import AnthropicHandler
@@ -98,7 +100,11 @@ class ServiceFactory:
         
         retriever_class = retriever_types[config.type]
         return retriever_class(db.engine, schema=config.schema)
-    
+
+    @staticmethod
+    def create_metadata_enhancer(llm_handler: LLMHandler) -> MetadataEnhancer:
+        return MetadataEnhancer(llm_handler)
+        
     @staticmethod
     def create_llm_handler(config):
         """ Creates and configures the appropriate handler for the specified language model provider.
@@ -235,6 +241,11 @@ class ServiceFactory:
         
         llm = ServiceFactory.create_llm_handler(app_config.llm)
         metadata_retriever = ServiceFactory.create_metadata_retriever(app_config.database, db)
+        
+        metadata_enhancer = ServiceFactory.create_metadata_enhancer(llm)
+        enhanced_metadata = metadata_enhancer.enhance_all_metadata(
+            metadata_retriever.get_all_tables_metadata()
+        )
         
         # Creiamo il vector store se configurato
         vector_store = None
