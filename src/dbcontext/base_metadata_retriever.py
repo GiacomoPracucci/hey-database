@@ -4,10 +4,6 @@ from typing import Dict, List, Optional
 import sqlalchemy as sa
 from sqlalchemy import inspect, text
 from src.config.models.metadata import TableMetadata
-from src.config.models.er_metadata import (
-    ERColumn, ERRelationship, ERTable, ERDiagram
-)
-
 
 class DatabaseMetadataRetriever(ABC):
     """Classe base per il recupero dei metadati del database"""
