@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from src.dbcontext.base_metadata_retriever import DatabaseMetadataRetriever
+from src.schema_metadata.base_metadata_retriever import DatabaseMetadataRetriever
 
 class MySQLMetadataRetriever(DatabaseMetadataRetriever):
     """Implementazione MySQL del retriever di metadati"""

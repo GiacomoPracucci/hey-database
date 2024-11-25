@@ -5,9 +5,9 @@ from src.embedding.openai_embedding import OpenAIEmbedding
 from src.connettori.postgres import PostgresManager
 from src.connettori.mysql import MySQLManager
 from src.connettori.snowflake import SnowflakeManager
-from src.dbcontext.postgres_metadata_retriever import PostgresMetadataRetriever
-from src.dbcontext.mysql_metadata_retriever import MySQLMetadataRetriever
-from src.dbcontext.snowflake_metadata_retriever import SnowflakeMetadataRetriever
+from src.schema_metadata.postgres_metadata_retriever import PostgresMetadataRetriever
+from src.schema_metadata.mysql_metadata_retriever import MySQLMetadataRetriever
+from src.schema_metadata.snowflake_metadata_retriever import SnowflakeMetadataRetriever
 from src.llm_handler.openai_handler import OpenAIHandler
 from src.llm_handler.ollama_handler import OllamaHandler
 from src.llm_handler.anthropic_handler import AnthropicHandler

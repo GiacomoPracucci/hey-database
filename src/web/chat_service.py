@@ -1,6 +1,6 @@
 from pandas import DataFrame
 import logging
-from src.dbcontext.base_metadata_retriever import DatabaseMetadataRetriever
+from src.schema_metadata.base_metadata_retriever import DatabaseMetadataRetriever
 from src.llm_input.prompt_generator import PromptGenerator
 from src.llm_output.response_handler import ResponseHandler
 from src.connettori.base_connector import DatabaseConnector
