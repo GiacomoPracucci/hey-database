@@ -1,12 +1,13 @@
 import logging
-import uuid
-from typing import List, Optional
+from typing import List, Optional, Dict
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams
+from dataclasses import asdict
 
 from src.store.base_vectorstore import VectorStore
 from src.embedding.base_embedding_model import EmbeddingModel
+from src.config.models.metadata import EnhancedTableMetadata
 from src.config.models.vector_store import (
     TablePayload,
     QueryPayload,
@@ -46,8 +47,8 @@ class QdrantStore(VectorStore):
         self.collection_name = collection_name
         self.vector_size = self.embedding_model.get_embedding_dimension()
         
-    def initialize(self) -> bool:
-        """Inizializza la collection se non esiste"""
+    def initialize(self, enhanced_metadata: Optional[Dict[str, EnhancedTableMetadata]] = None) -> bool:
+        """Inizializza la collection e opzionalmente carica i metadati"""
         try:
             collections = self.client.get_collections().collections
             exists = any(c.name == self.collection_name for c in collections)
@@ -60,62 +61,95 @@ class QdrantStore(VectorStore):
                         distance=Distance.COSINE
                     )
                 )
+                
+            # se ci sono metadati da salvare nello store verifichiamo se sono già presenti
+            # se non lo sono popoliamo in automatico la collection
+            if enhanced_metadata:
+                logger.debug("Starting metadata population check")
+                for table_name, metadata in enhanced_metadata.items():
+                    if not self._table_exists(table_name):
+                        logger.debug(f"Adding metadata for table: {table_name}")
+                        if not self.add_table(metadata):
+                            logger.error(f"Error adding metadata for table: {table_name}")
+                            return False
+                    else:
+                        logger.debug(f"Metadata already exists for table: {table_name}")
+            
             return True
             
         except Exception as e:
-            print(f"Errore nell'inizializzazione della collection: {str(e)}")
+            logger.error(f"Error in store initialization: {str(e)}")
+            return False
+        
+    def _table_exists(self, table_name: str) -> bool:
+        """Verifica se i metadati di una tabella esistono già nello store"""
+        try:
+            response = self.client.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="type",
+                            match=models.MatchValue(value="table")
+                        ),
+                        models.FieldCondition(
+                            key="table_name",
+                            match=models.MatchValue(value=table_name)
+                        )
+                    ]
+                ),
+                limit=1
+            )
+            return len(response[0]) > 0
+        except Exception as e:
+            logger.error(f"Error checking table existence: {str(e)}")
             return False
 
-    def add_table(self, metadata: TablePayload) -> bool:
-        """Aggiunge o aggiorna i metadati di una tabella"""
+    def add_table(self, payload_metadata: EnhancedTableMetadata) -> bool:
+        """Aggiunge o aggiorna un documento tabella nella collection
+        
+        Args:
+            payload_metadata: Metadati arricchiti della tabella
+        
+        Returns:
+            bool: True se l'operazione è andata a buon fine, False altrimenti
+        """
         try:
+            # costruiamo il payload nel formato stabilito a partire dai metadati arricchiti
+            payload = TablePayload.from_enhanced_metadata(payload_metadata)
+            
             # embedding dalla descrizione e keywords
-            embedding_text = f"{metadata.table_name} {metadata.description} {' '.join(metadata.keywords)}"
+            embedding_text = f"{payload.table_name} {payload.description} {' '.join(payload.keywords)}"
             vector = self.embedding_model.encode(embedding_text)
             
-            # conversione del payload in dict
-            payload_dict = {
-                "type": metadata.type,
-                "embedding_source": metadata.embedding_source,
-                "table_name": metadata.table_name,
-                "description": metadata.description,
-                "keywords": metadata.keywords,
-                "columns": metadata.columns,
-                "primary_keys": metadata.primary_keys,
-                "foreign_keys": metadata.foreign_keys,
-                "row_count": metadata.row_count,
-                "importance_score": metadata.importance_score
-            }
-            
-            # upsert del punto
+            # upsert del documento
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=[models.PointStruct(
-                    id=self._generate_table_id(metadata.table_name),
+                    id=self._generate_table_id(payload.table_name),
                     vector=vector,
-                    payload=payload_dict
+                    payload=asdict(payload)
                 )]
             )
-            logger.debug(f"Metadati aggiunti/aggiornati per tabella: {metadata.table_name}")
+            logger.debug(f"Metadata added/updated for table: {payload.table_name}")
             return True
-        
+            
         except Exception as e:
-            logger.error(f"Errore nell'aggiunta dei metadati: {str(e)}")
+            logger.error(f"Error adding table metadata: {str(e)}")
             return False
         
-    def get_relevant_tables(self, query: str, limit: int = 3) -> List[TableSearchResult]:
-        """Trova le tabelle più rilevanti per una query
-        TODO implementazione base che sfrutta solo similarità del coseno, va arricchita e strutturata maggiormente
-        """
+        
+    def search_similar_tables(self, question: str, limit: int = 3) -> List[TableSearchResult]:
+        """Trova le tabelle più rilevanti per domanda utente usando similarità del coseno"""
         try:
-            vector = self.embedding_model.encode(query)
+            vector = self.embedding_model.encode(question)
             
             search_result = self.client.search(
                 collection_name=self.collection_name,
                 query_vector=vector,
                 query_filter=models.Filter(
                     must=[
-                        models.FieldCondition( # cerchiamo solo nei documenti type = "table"
+                        models.FieldCondition(
                             key="type",
                             match=models.MatchValue(value="table")
                         )
@@ -124,71 +158,49 @@ class QdrantStore(VectorStore):
                 limit=limit
             )
         
-            results = []
-            for hit in search_result:
-                payload = hit.payload
-
-                # ricotruzione dell'oggetto TableMetadataPayload
-                metadata = TablePayload(
-                    table_name=payload["table_name"],
-                    description=payload["description"],
-                    keywords=payload["keywords"],
-                    columns=payload["columns"],
-                    primary_keys=payload["primary_keys"],
-                    foreign_keys=payload["foreign_keys"],
-                    row_count=payload["row_count"],
-                    embedding_source=payload["embedding_source"],
-                    importance_score=payload.get("importance_score", 0.0)
+            return [
+                TableSearchResult(
+                    table_name=hit.payload["table_name"],
+                    metadata=TablePayload(
+                        type='table',
+                        table_name=hit.payload["table_name"],
+                        description=hit.payload["description"],
+                        keywords=hit.payload["keywords"],
+                        columns=hit.payload["columns"],
+                        primary_keys=hit.payload["primary_keys"],
+                        foreign_keys=hit.payload["foreign_keys"],
+                        row_count=hit.payload["row_count"],
+                        importance_score=hit.payload.get("importance_score", 0.0)
+                    ),
+                    relevance_score=hit.score
                 )
+                for hit in search_result
+            ]
                 
-                # keywords che hanno fatto match
-                query_words = set(query.lower().split())
-                matched_keywords = [
-                    k for k in metadata.keywords 
-                    if k.lower() in query_words
-                ]
-                
-                results.append(TableSearchResult(
-                    table_name=metadata.table_name,
-                    metadata=metadata,
-                    relevance_score=hit.score,
-                    matched_keywords=matched_keywords
-                ))
-            
-            return results
-            
         except Exception as e:
             logger.error(f"Errore nella ricerca delle tabelle: {str(e)}")
             return []
         
         
     def add_query(self, query: QueryPayload) -> bool:
-        """Aggiunge una nuova query allo store"""
+        """Aggiunge una risposta del LLM al vector store (domanda utente + query sql + spiegazione)"""
         try:
             vector = self.embedding_model.encode(query.question)
-            
-            payload_dict = {
-                "type": query.type,
-                "embedding_source": query.embedding_source,
-                "question": query.question,
-                "sql_query": query.sql_query,
-                "explanation": query.explanation,
-                "positive_votes": query.positive_votes
-            }
             
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=[models.PointStruct(
                     id=self._generate_query_id(query.question),
                     vector=vector,
-                    payload=payload_dict
+                    payload=asdict(query)
                 )]
             )
             return True
             
         except Exception as e:
-            logger.error(f"Errore nell'aggiunta della query: {str(e)}")
+            logger.error(f"Error adding query: {str(e)}")
             return False
+        
 
     def search_similar_queries(self, question: str, limit: int = 3) -> List[QuerySearchResult]:
         """Cerca query simili nel vector store"""
@@ -221,7 +233,7 @@ class QdrantStore(VectorStore):
             ]
             
         except Exception as e:
-            logger.error(f"Errore nella ricerca delle query: {str(e)}")
+            logger.error(f"Error searching similar queries: {str(e)}")
             return []
         
         
@@ -258,8 +270,7 @@ class QdrantStore(VectorStore):
                 question=question,
                 sql_query=sql_query,
                 explanation=explanation,
-                positive_votes=votes,
-                embedding_source="question"
+                positive_votes=votes
             )
             
             return self.add_query(query)
@@ -267,11 +278,3 @@ class QdrantStore(VectorStore):
         except Exception as e:
             logger.error(f"Errore nella gestione del feedback: {str(e)}")
             return False
-
-    def _generate_table_id(self, table_name: str) -> str:
-        """Genera un ID deterministico per una tabella"""
-        return f"table_{table_name}"
-    
-    def _generate_query_id(self, question: str) -> str:
-        """Genera un ID deterministico per una query"""
-        return str(uuid.uuid5(uuid.NAMESPACE_DNS, question))

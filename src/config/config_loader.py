@@ -112,7 +112,6 @@ class ConfigLoader:
             path = path.replace('${db_schema}', context['db_schema'])
             
         collection_name = vs_data['collection_name'].replace('${db_schema}', context['db_schema'])
-        
 
         if 'embedding' not in vs_data:
             raise ValueError("Missing embedding configuration in vector_store config")

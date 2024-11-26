@@ -25,6 +25,83 @@ class ServiceFactory:
     """ Factory class responsible for creating and configuring all major components of the application.
     It implements the Factory pattern to handle the creation of complex objects while keeping the code modular and testable.
     """
+
+    @staticmethod
+    def create_chat_service(app_config):
+        """ Main method that orchestrates the creation and initialization of all components required
+        for the chat service. This is the main entry point for application configuration.
+        
+        La sequenza di inizializzazione è:
+        1. Crea connessione DB e verifica
+        2. Crea LLM handler
+        3. Crea metadata retriever e enhancer
+        4. Se il vector store è abilitato:
+           - Lo crea
+           - Genera i metadati enhanced
+           - Inizializza lo store con i metadati
+        5. Crea il prompt generator
+        6. Assembla il chat service
+        
+        Args:
+            app_config: Complete application configuration (database, LLM, prompts)
+
+        Returns:
+            A fully configured instance of ChatService ready to process requests
+
+        Raises:
+            RuntimeError: If the connection to the database fails
+            ValueError: If the configuration is invalid or necessary components are missing
+        """
+        
+        # 1. Connessione al DB 
+        db = ServiceFactory.create_db_connector(app_config.database)
+        if not db.connect():
+            raise RuntimeError("Failed to connect to database")
+        
+        # 2. LLM handler
+        llm = ServiceFactory.create_llm_handler(app_config.llm)
+        
+        # 3. Metadata Components
+        metadata_retriever = ServiceFactory.create_metadata_retriever(app_config.database, db)
+        metadata_enhancer = ServiceFactory.create_metadata_enhancer(llm)
+        
+        # 4. Vector Store (se abilitato)
+        vector_store = None
+        enhanced_metadata = None
+        
+        if app_config.vector_store and app_config.vector_store.enabled:
+            logger.info("Vector store enabled, initializing...")
+            
+            vector_store = ServiceFactory.create_vector_store(app_config.vector_store)
+            
+            # generazione dei metadati enhanced per autopopolamento dello store
+            logger.debug("Generating enhanced metadata...")
+            base_metadata = metadata_retriever.get_all_tables_metadata()
+            enhanced_metadata = metadata_enhancer.enhance_all_metadata(base_metadata)
+            
+            # inizializziamo lo store con i metadati
+            logger.debug("Initializing vector store with metadata...")
+            if not vector_store.initialize(enhanced_metadata):
+                raise RuntimeError("Failed to initialize vector store with metadata")
+            
+            logger.info("Vector store initialization completed")
+            
+        # 5. Prompt Generator
+        prompt_generator = PromptGenerator(
+            metadata_retriever=metadata_retriever,
+            schema_name=app_config.database.schema,
+            prompt_config=app_config.prompt,
+            language=app_config.llm.language
+        )        
+        
+        # 6. Chat Service
+        return ChatService(
+            db=db,
+            llm=llm, 
+            metadata_retriever=metadata_retriever,
+            prompt_generator=prompt_generator,
+            vector_store=vector_store
+        )
     
     @staticmethod
     def create_db_connector(config):
@@ -160,23 +237,20 @@ class ServiceFactory:
         Returns:
             VectorStore: Istanza configurata del vector store o None se non supportato
         """
-        if not config.enabled:
-            return None
-        
         if config.type == 'qdrant':
             # modello di embedding in base alla configurazione
             embedding_model = ServiceFactory.create_embedding_model(config.embedding)
             
             # se è specificato un path, usiamo lo storage locale
             if config.path:
-                store = QdrantStore(
+                return QdrantStore(
                     path=config.path,
                     collection_name=config.collection_name,
                     embedding_model=embedding_model
                 )
             # altrimenti usiamo l'URL del server
             elif config.url:
-                store = QdrantStore(
+                return QdrantStore(
                     url=config.url,
                     collection_name=config.collection_name,
                     api_key=config.api_key,
@@ -184,12 +258,9 @@ class ServiceFactory:
                 )
             else:
                 raise ValueError("Neither path nor url specified for Qdrant")
-                
-            if store.initialize():
-                return store
-            raise RuntimeError("Failed to initialize vector store")
-        return None
-    
+        
+        raise ValueError(f"Vector store type {config.type} not supported")
+
     @staticmethod
     def create_embedding_model(config: EmbeddingModel):
         """Creates the appropriate embedding model based on configuration
@@ -212,51 +283,3 @@ class ServiceFactory:
         else:
             raise ValueError(f"Embedding type {config.type} not supported")
         
-    @staticmethod
-    def create_chat_service(app_config):
-        """ Main method that orchestrates the creation and initialization of all components required
-        for the chat service. This is the main entry point for application configuration.
-        
-        The method follows these critical steps:
-        1. Creates and verifies the database connection
-        2. Initialize the language model
-        3. Configures metadata retriever for database introspection
-        4. Prepares the prompt generator that will combine metadata with user requests
-        5. Assembles all components into a working chat service
-        
-        Args:
-            app_config: Complete application configuration (database, LLM, prompts)
-
-        Returns:
-            A fully configured instance of ChatService ready to process requests
-
-        Raises:
-            RuntimeError: If the connection to the database fails
-            ValueError: If the configuration is invalid or necessary components are missing
-        """
-        
-        db = ServiceFactory.create_db_connector(app_config.database)
-        if not db.connect():
-            raise RuntimeError("Failed to connect to database")
-        
-        llm = ServiceFactory.create_llm_handler(app_config.llm)
-        metadata_retriever = ServiceFactory.create_metadata_retriever(app_config.database, db)
-        
-        metadata_enhancer = ServiceFactory.create_metadata_enhancer(llm)
-        enhanced_metadata = metadata_enhancer.enhance_all_metadata(
-            metadata_retriever.get_all_tables_metadata()
-        )
-        
-        # Creiamo il vector store se configurato
-        vector_store = None
-        if app_config.vector_store:
-            vector_store = ServiceFactory.create_vector_store(app_config.vector_store)
-        
-        prompt_generator = PromptGenerator(
-            metadata_retriever=metadata_retriever,
-            schema_name=app_config.database.schema,
-            prompt_config=app_config.prompt,
-            language=app_config.llm.language
-        )        
-        
-        return ChatService(db, llm, metadata_retriever, prompt_generator, vector_store)

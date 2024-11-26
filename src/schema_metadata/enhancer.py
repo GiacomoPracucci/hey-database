@@ -2,59 +2,55 @@ from typing import Dict, List
 import re
 import logging
 
-from src.config.models.metadata import TableMetadata
-from src.llm_handler.base_llm_handler import BaseLLMHandler
-from src.config.models.vector_store import TableMetadataPayload
+from src.config.models.metadata import TableMetadata, EnhancedTableMetadata
+from src.llm_handler.base_llm_handler import LLMHandler
 
 logger = logging.getLogger('hey-database')
+
 
 class MetadataEnhancer:
     """Classe responsabile dell'arricchimento dei metadati delle tabelle con descrizioni e keywords"""
     
-    def __init__(self, llm_handler: BaseLLMHandler):
+    def __init__(self, llm_handler: LLMHandler):
         """
         Args:
             llm_handler: Handler per il modello di linguaggio da usare per generare descrizioni
         """
         self.llm_handler = llm_handler
         
-    def enhance_table_metadata(self, table_metadata: TableMetadata) -> TableMetadataPayload:
+    def enhance_table_metadata(self, table_metadata: TableMetadata) -> EnhancedTableMetadata:
         """Arricchisce i metadati di una tabella con descrizione e keywords
         
         Args:
             table_metadata: Metadati originali della tabella
             
         Returns:
-            TableMetadataPayload: Metadati arricchiti pronti per il vector store
+            EnhancedTableMetadata: Metadati arricchiti
         """
         try:
             description = self._generate_table_description(table_metadata)
             keywords = self._extract_keywords(table_metadata)
+            importance_score = self._calculate_importance_score(table_metadata)
             
-            return TableMetadataPayload(
-                table_name=table_metadata.name,
+            return EnhancedTableMetadata(
+                base_metadata=table_metadata,
                 description=description,
                 keywords=keywords,
-                columns=table_metadata.columns,
-                primary_keys=table_metadata.primary_keys,
-                foreign_keys=table_metadata.foreign_keys,
-                row_count=table_metadata.row_count,
-                embedding_source="table_name_description_keywords",
-                importance_score=self._calculate_importance_score(table_metadata)
+                importance_score=importance_score
             )
             
         except Exception as e:
             logger.error(f"Errore nell'enhancement dei metadati per la tabella {table_metadata.name}: {str(e)}")
             raise
         
-    def enhance_all_metadata(self, metadata: Dict[str, TableMetadata]) -> Dict[str, TableMetadataPayload]:
+    def enhance_all_metadata(self, metadata: Dict[str, TableMetadata]) -> Dict[str, EnhancedTableMetadata]:
         """Arricchisce i metadati di tutte le tabelle
         
         Args:
             metadata: Dizionario dei metadati originali
             
         Returns:
-            Dict[str, TableMetadataPayload]: Dizionario dei metadati arricchiti
+            Dict[str, EnhancedTableMetadata]: Dizionario dei metadati arricchiti
         """
         enhanced = {}
         for table_name, table_metadata in metadata.items():

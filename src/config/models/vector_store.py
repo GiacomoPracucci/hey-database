@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Optional, Any, Literal
 
 from src.config.models.embedding import EmbeddingConfig
+from src.config.models.metadata import EnhancedTableMetadata
 
 @dataclass
 class VectorStoreConfig:
@@ -23,7 +24,6 @@ DocumentType = Literal['table', 'query']
 class BasePayload:
     """Base class per tutti i payload nel vector store"""
     type: DocumentType
-    embedding_source: str  # campo da cui è stato generato l'embedding
     
 @dataclass
 class TablePayload(BasePayload):
@@ -37,19 +37,20 @@ class TablePayload(BasePayload):
     row_count: int
     importance_score: float = 0.0
     
-    def __init__(self, **kwargs):
-        super().__init__(
+    @classmethod
+    def from_enhanced_metadata(cls, metadata: EnhancedTableMetadata) -> 'TablePayload':
+        """Crea un payload da metadati enhanced"""
+        return cls(
             type='table',
-            embedding_source=kwargs.get('embedding_source', '')
+            table_name=metadata.base_metadata.name,
+            description=metadata.description,
+            keywords=metadata.keywords,
+            columns=metadata.base_metadata.columns,
+            primary_keys=metadata.base_metadata.primary_keys,
+            foreign_keys=metadata.base_metadata.foreign_keys,
+            row_count=metadata.base_metadata.row_count,
+            importance_score=metadata.importance_score
         )
-        self.table_name = kwargs['table_name']
-        self.description = kwargs['description']
-        self.keywords = kwargs['keywords']
-        self.columns = kwargs['columns']
-        self.primary_keys = kwargs['primary_keys']
-        self.foreign_keys = kwargs['foreign_keys']
-        self.row_count = kwargs['row_count']
-        self.importance_score = kwargs.get('importance_score', 0.0)
         
 @dataclass
 class QueryPayload(BasePayload):
@@ -61,8 +62,7 @@ class QueryPayload(BasePayload):
     
     def __init__(self, **kwargs):
         super().__init__(
-            type='query',
-            embedding_source=kwargs.get('embedding_source', '')
+            type='query'
         )
         self.question = kwargs['question']
         self.sql_query = kwargs['sql_query']
@@ -75,7 +75,6 @@ class TableSearchResult:
     table_name: str
     metadata: TablePayload
     relevance_score: float
-    matched_keywords: List[str]
 
 @dataclass
 class QuerySearchResult:
