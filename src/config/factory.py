@@ -97,7 +97,7 @@ class ServiceFactory:
         # 6. Chat Service
         return ChatService(
             db=db,
-            llm=llm, 
+            llm_manager=llm, 
             metadata_retriever=metadata_retriever,
             prompt_generator=prompt_generator,
             vector_store=vector_store

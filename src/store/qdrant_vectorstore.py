@@ -278,3 +278,37 @@ class QdrantStore(VectorStore):
         except Exception as e:
             logger.error(f"Errore nella gestione del feedback: {str(e)}")
             return False
+        
+    def find_exact_match(self, question: str) -> Optional[QuerySearchResult]:
+        """Cerca una corrispondenza esatta della domanda nel database"""
+        logger.debug(f"Cercando match esatto per: {question}")
+        try:
+            results = self.client.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="question",
+                            match=models.MatchValue(value=question)
+                        )
+                    ]
+                ),
+                limit=1
+            )[0]  # scroll returns (results, next_page_offset)
+            
+            logger.debug(f"Risultati trovati: {len(results)}")
+            if results:
+                point = results[0]
+                logger.debug(f"Match trovato con payload: {point.payload}")
+                return QuerySearchResult(
+                    question=point.payload["question"],
+                    sql_query=point.payload["sql_query"],
+                    explanation=point.payload["explanation"],
+                    score=1.0,  # match esatto = score 1
+                    positive_votes=point.payload["positive_votes"]
+                )
+            return None
+                
+        except Exception as e:
+            logger.error(f"Errore nella ricerca esatta: {str(e)}")
+            return None

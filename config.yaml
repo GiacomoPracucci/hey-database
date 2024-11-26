@@ -13,13 +13,13 @@ database:
   # role: analyst
 
 llm:
-  type: ollama    # openai, ollama
+  type: openai    # openai, ollama
   # Configurazioni per ollama
-  base_url: http://localhost:11434
-  model: llama3.1
+  #base_url: http://localhost:11434
+  model: gpt-4o
   language: english # sql query explanation language
   # Configurazioni per OpenAI
-  #api_key: ${OPENAI_API_KEY}
+  api_key: ${OPENAI_API_KEY}
 
 prompt:
   include_sample_data: true
@@ -34,8 +34,8 @@ vector_store:
   # api_key: optional
   batch_size: 100
   embedding:
-    type: huggingface # type: openai, huggingface
-    model_name: sentence-transformers/multi-qa-MiniLM-L6-cos-v1  # sentence-transformers/multi-qa-MiniLM-L6-cos-v1 , text-embedding-3-small text-embedding-3-large
-    #api_key: ${OPENAI_API_KEY} # Per OpenAI
+    type: openai # type: openai, huggingface
+    model_name: text-embedding-3-small  # sentence-transformers/multi-qa-MiniLM-L6-cos-v1 , text-embedding-3-small text-embedding-3-large
+    api_key: ${OPENAI_API_KEY} # Per OpenAI
 
 debug: true
