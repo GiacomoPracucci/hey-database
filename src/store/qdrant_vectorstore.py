@@ -312,3 +312,24 @@ class QdrantStore(VectorStore):
         except Exception as e:
             logger.error(f"Errore nella ricerca esatta: {str(e)}")
             return None
+    
+    def collection_exists(self) -> bool:
+        """Verifica se una collection esiste"""
+        try:
+            collections = self.client.get_collections().collections
+            return any(c.name == self.collection_name for c in collections)
+        except Exception as e:
+            logger.error(f"Error checking collection existence: {str(e)}")
+            return False
+        
+    def update_table_documents(self, enhanced_metadata: Dict[str, EnhancedTableMetadata]) -> bool:
+        """Aggiorna i documenti table di una collezione"""
+        try:
+            for table_name, metadata in enhanced_metadata.items():
+                if not self.add_table(metadata):
+                    logger.error(f"Failed to update metadata for table: {table_name}")
+                    return False
+            return True
+        except Exception as e:
+            logger.error(f"Error updating metadata: {str(e)}")
+            return False

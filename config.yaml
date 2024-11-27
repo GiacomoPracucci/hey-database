@@ -28,7 +28,7 @@ prompt:
 vector_store:
   enabled: true
   type: qdrant
-  collection_name: ${db_schema}_store
+  collection_name: ${db_schema}
   path: ./data/${db_schema}_store
   #url: http://localhost:6333
   # api_key: optional

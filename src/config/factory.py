@@ -74,17 +74,20 @@ class ServiceFactory:
             
             vector_store = ServiceFactory.create_vector_store(app_config.vector_store)
             
-            # generazione dei metadati enhanced per autopopolamento dello store
-            logger.debug("Generating enhanced metadata...")
-            base_metadata = metadata_retriever.get_all_tables_metadata()
-            enhanced_metadata = metadata_enhancer.enhance_all_metadata(base_metadata)
-            
-            # inizializziamo lo store con i metadati
-            logger.debug("Initializing vector store with metadata...")
-            if not vector_store.initialize(enhanced_metadata):
-                raise RuntimeError("Failed to initialize vector store with metadata")
-            
-            logger.info("Vector store initialization completed")
+            # La collection esiste?
+            if not vector_store.collection_exists():
+                # creiamo i metadati enhanced solo se non esiste + inizializziamo con i metadata enhanced
+                logger.info("Vector store does not exist, creating enhanced metadata...")
+                enhanced_metadata = metadata_enhancer.enhance_all_metadata(
+                    metadata_retriever.get_all_tables_metadata()
+                )
+                if not vector_store.initialize(enhanced_metadata):
+                    raise RuntimeError("Failed to initialize vector store with metadata")
+            else:
+                # se esiste già, non stiamo a ricreare inutilmente i metadati
+                logger.info("Vector store exists, skipping metadata enhancement")
+                if not vector_store.initialize():
+                    raise RuntimeError("Failed to initialize existing vector store")
             
         # 5. Prompt Generator
         prompt_generator = PromptGenerator(
