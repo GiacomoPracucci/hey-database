@@ -18,7 +18,9 @@ from src.config.models.vector_store import (
 logger = logging.getLogger('hey-database')
 
 class QdrantStore(VectorStore):
-    """Implementazione del vectorstore Qdrant"""
+    """Implementazione del vectorstore Qdrant
+    TODO sta classe è arrivata a fare troppa roba, andrebbero divisi i vari servizi che offre
+    """
     
     def __init__(self,
                 collection_name: str,
