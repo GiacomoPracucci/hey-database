@@ -65,7 +65,38 @@ class ChatService:
                 
             # se non troviamo una risposta simile o il vector store non è configurato,
             # procediamo con la generazione normale
-            prompt = self.prompt_generator.generate_prompt(message)
+            
+            # ricerca di tabelle e query rilevanti
+            similar_tables = []
+            similar_queries = []
+            if self.vector_store:
+                table_results = self.vector_store.search_similar_tables(message, limit=3)
+                similar_tables = [{
+                    "table_name": t.metadata.table_name,
+                    "relevance_score": t.relevance_score,
+                    "row_count": t.metadata.row_count,
+                    "description": t.metadata.description,
+                    "columns": t.metadata.columns,
+                    "primary_keys": t.metadata.primary_keys,
+                    "foreign_keys": t.metadata.foreign_keys
+                } for t in table_results]
+
+                query_results = self.vector_store.search_similar_queries(message, limit=3)
+                similar_queries = [{
+                    "question": q.question,
+                    "sql_query": q.sql_query,
+                    "explanation": q.explanation,
+                    "score": q.score,
+                    "positive_votes": q.positive_votes
+                } for q in query_results]
+
+            # genera il prompt includendo tabelle e query simili
+            prompt = self.prompt_generator.generate_prompt(
+                message,
+                similar_tables=similar_tables,
+                similar_queries=similar_queries
+            )
+            
             logger.debug(f"Generated prompt: {prompt}")
 
             llm_response = self.llm_manager.get_completion(prompt)

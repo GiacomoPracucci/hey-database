@@ -1,3 +1,4 @@
+from typing import Any, Dict, List, Optional
 from src.config.languages import SupportedLanguage
 import logging
 logger = logging.getLogger(__name__)
@@ -24,16 +25,34 @@ class PromptGenerator:
         self.language = language
 
 
-    def generate_prompt(self, user_question: str) -> str:
+    def generate_prompt(self, 
+                        user_question: str,
+                        similar_tables: Optional[List[Dict[str, Any]]] = None,
+                        similar_queries: Optional[List[Dict[str, Any]]] = None
+                        ) -> str:
         """Genera il prompt completo per il modello.
         
         Args:
-            user_question (str): Domanda dell'utente
-            include_sample_data (bool): Se includere dati di esempio
-            max_sample_rows (int): Numero massimo di righe di esempio per tabella
-            
-        Returns:
-            str: Prompt completo formattato"""
+            user_question: Domanda dell'utente
+            similar_tables: Lista di dizionari con struttura:
+                {
+                    "table_name": str,
+                    "relevance_score": float,
+                    "row_count": int,
+                    "description": str,
+                    "columns": List[Dict],
+                    "primary_keys": List[str],
+                    "foreign_keys": List[Dict]
+                }
+            similar_queries: Lista di dizionari con struttura:
+                {
+                    "question": str,
+                    "sql_query": str,
+                    "explanation": str,
+                    "score": float,
+                    "positive_votes": int
+                }
+        """
             
         prompt_parts = []
         
@@ -63,66 +82,90 @@ Important:
 Response must be valid JSON - do not include any other text or markdown formatting. 
         """)
         
-        # aggiunge info sullo schema del database
-        prompt_parts.append(self._format_metadata())
-        # aggiunge dati di esempio (se richiesti)
-        if self.prompt_config.include_sample_data:
-            prompt_parts.append(self._format_sample_data(self.prompt_config.max_sample_rows))
+        # Aaggiunge le tabelle rilevanti e i metadati associati
+        if similar_tables:
+            prompt_parts.append("\nRelevant Tables:")
+            for table_info in similar_tables:
+                prompt_parts.append(self._format_table_metadata(table_info))
+                if self.prompt_config.include_sample_data:
+                    sample_data = self._sample_table_data(
+                        table_info["table_name"],
+                        self.prompt_config.max_sample_rows
+                    )
+                    if sample_data:
+                        prompt_parts.append(sample_data)
+        
+        # esempi di query simili
+        if similar_queries:
+            prompt_parts.append("\nSimilar Questions and Queries:")
+            for query_info in similar_queries:
+                prompt_parts.append(self._format_similar_query(query_info))
 
         prompt_parts.append(f"\nAnswer in {self.language.value} language.")
         prompt_parts.append("\nUSER QUESTION:")
         prompt_parts.append(user_question)
         
         return "\n\n".join(prompt_parts)
+
     
-    def _format_metadata(self) -> str:
-        """Formatta la descrizione dello schema/tabelle in modo leggibile.
-        Usando i metodi forniti dai retriever dei metadati.
-        
-        Returns:
-            str: Descrizione formattata dello schema"""
-        
+    def _format_table_metadata(self, table_info: Dict[str, Any]) -> str:
+        """Formatta i metadati di una singola tabella."""
         description = []
-        description.append("Schema del Database:")
+        description.append(f"\nTabella: {table_info['table_name']} ({table_info['row_count']} righe)")
+        description.append(f"Relevance Score: {table_info['relevance_score']:.2f}")
+        description.append(f"Description: {table_info['description']}")
         
-        for table_name, table_info in self.metadata_retriever.get_all_tables_metadata().items():
-            description.append(f"\nTabella: {table_name} ({table_info.row_count} righe)")
-            
-            description.append("Colonne:")
-            for col in table_info.columns:
-                nullable = "NULL" if col["nullable"] else "NOT NULL"
-                description.append(f"- {col['name']} ({col['type']}) {nullable}")
-            
-            if table_info.primary_keys:
-                description.append(f"Chiavi Primarie: {', '.join(table_info.primary_keys)}")
-            
-            if table_info.foreign_keys:
-                description.append("Foreign Keys:")
-                for fk in table_info.foreign_keys:
-                    description.append(
-                        f"- {', '.join(fk['constrained_columns'])} -> "
-                        f"{fk['referred_table']}({', '.join(fk['referred_columns'])})"
-                    )
+        description.append("Colonne:")
+        for col in table_info["columns"]:
+            nullable = "NULL" if col["nullable"] else "NOT NULL"
+            description.append(f"- {col['name']} ({col['type']}) {nullable}")
+        
+        if table_info["primary_keys"]:
+            description.append(f"Chiavi Primarie: {', '.join(table_info['primary_keys'])}")
+        
+        if table_info["foreign_keys"]:
+            description.append("Foreign Keys:")
+            for fk in table_info["foreign_keys"]:
+                description.append(
+                    f"- {', '.join(fk['constrained_columns'])} -> "
+                    f"{fk['referred_table']}({', '.join(fk['referred_columns'])})"
+                )
         
         return "\n".join(description)
+
+    def _format_similar_query(self, query_info: Dict[str, Any]) -> str:
+        """Formatta una query simile per l'inclusione nel prompt."""
+        return f"""
+Similar Question (Score: {query_info['score']:.2f}, Positive Votes: {query_info['positive_votes']}):
+Q: {query_info['question']}
+SQL: {query_info['sql_query']}
+Explanation: {query_info['explanation']}"""
     
-    def _format_sample_data(self, max_rows: int = 3) -> str:
-        """Formatta i dati di esempio di tutte le tabelle.
+    
+    def _sample_table_data(self, table_name: str, max_rows: int = 3) -> str:
+        """Formatta i dati di esempio per una singola tabella.
         
         Args:
-            max_rows (int): Numero massimo di righe per tabella
+            table_name: Nome della tabella da cui estrarre i dati
+            max_rows: Numero massimo di righe da mostrare
             
         Returns:
-            str: Dati di esempio formattati
+            str: Dati di esempio formattati o stringa vuota se non ci sono dati
         """
-        samples = []
-        samples.append("\nEsempi di Dati:")
+        sample_data = self.metadata_retriever.get_sample_data(table_name, max_rows)
+        if not sample_data:
+            return ""
+            
+        formatted_samples = []
+        formatted_samples.append(f"\nSample Data for {table_name} (First {len(sample_data)} records):")
         
-        for table_name in self.metadata_retriever.get_all_tables_metadata():
-            sample_data = self.metadata_retriever.get_sample_data(table_name, max_rows)
-            if sample_data:
-                samples.append(f"\n{table_name} (primi {len(sample_data)} record):")
-                for row in sample_data:
-                    samples.append(str(row))
+        # formattazione dei risultati
+        for row in sample_data:
+            # formatta la riga come dizionario ma con indentazione e a capo
+            formatted_row = "{\n"
+            for key, value in row.items():
+                formatted_row += f"    {key}: {value},\n"
+            formatted_row += "}"
+            formatted_samples.append(formatted_row)
         
-        return "\n".join(samples)
+        return "\n".join(formatted_samples)
