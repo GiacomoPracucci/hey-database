@@ -2,7 +2,7 @@
 
 ## Chatbot SQL
 
-1. BASELINE - La composizione del prompt va resa dinamica:
+1. FATTO - BASELINE - La composizione del prompt va resa dinamica:
     - attualmente, il prompt è costruito in maniera statica inserendo sample data da tutte le tabelle e tutti i metadati associati ad esse
     - TODO il prompt deve essere generato dinamicamente, inserendo solo sample data e metadati delle tabelle semanticamente simili alla user query (ricerca nel vectorstore per cosine similarity)
 
