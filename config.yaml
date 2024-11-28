@@ -23,7 +23,7 @@ llm:
 
 prompt:
   include_sample_data: true
-  max_sample_rows: 3
+  max_sample_rows: 2
 
 vector_store:
   enabled: true
