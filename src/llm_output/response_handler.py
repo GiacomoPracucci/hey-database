@@ -18,7 +18,6 @@ class ResponseHandler:
         
         Args:
             response: JSON string from LLM containing query and explanation
-            
         Returns:
             Dict with query results and metadata"""
             

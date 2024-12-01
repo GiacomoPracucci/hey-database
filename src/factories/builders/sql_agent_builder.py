@@ -1,89 +1,85 @@
 import logging
-
 from src.config.models.app import AppConfig
 from src.factories.database import DatabaseFactory
 from src.factories.llm import LLMFactory
 from src.factories.vector_store import VectorStoreFactory
-from src.schema_metadata.enhancer import MetadataEnhancer
-from src.llm_input.prompt_generator import PromptGenerator
-from src.web.chat_service import ChatService
+from src.agents.sql_agent import SQLAgent
+from src.factories.builders.base import AgentBuilder
+from src.agents.metadata_enhancer_agent import MetadataAgent
 
 logger = logging.getLogger('hey-database')
 
+class SQLAgentBuilder(AgentBuilder[SQLAgent]):
+    """Builder per la creazione dell'SQLAgent"""
 
-class ChatServiceBuilder:
-    """Builder per la creazione del ChatService"""
-    
     def __init__(self, app_config: AppConfig):
         self.config = app_config
         self.db = None
         self.llm = None
         self.metadata_retriever = None
-        self.metadata_enhancer = None
+        self.metadata_enhancer_agent = None
         self.vector_store = None
-        self.prompt_generator = None
-        
-    def build_database(self) -> 'ChatServiceBuilder':
+
+    def build_database(self) -> 'SQLAgentBuilder':
         """Costruisce e verifica la connessione database"""
         self.db = DatabaseFactory.create_connector(self.config.database)
         if not self.db.connect():
             raise RuntimeError("Failed to connect to database")
         return self
-        
-    def build_llm(self) -> 'ChatServiceBuilder':
+
+    def build_llm(self) -> 'SQLAgentBuilder':
         """Costruisce l'handler LLM"""
         self.llm = LLMFactory.create_handler(self.config.llm)
         return self
-        
-    def build_metadata_components(self) -> 'ChatServiceBuilder':
+
+    def build_metadata_components(self) -> 'SQLAgentBuilder':
         """Costruisce i componenti per i metadata"""
+        # crea metadata retriever
         self.metadata_retriever = DatabaseFactory.create_metadata_retriever(
-            self.config.database, 
+            self.config.database,
             self.db
         )
-        self.metadata_enhancer = MetadataEnhancer(self.llm)
+        # agente per l'enhancement dei metadati
+        self.metadata_enhancer_agent = MetadataAgent(llm_handler=self.llm)
+
         return self
-        
-    def build_vector_store(self) -> 'ChatServiceBuilder':
+
+    def build_vector_store(self) -> 'SQLAgentBuilder':
         """Costruisce e inizializza il vector store se abilitato"""
         if self.config.vector_store and self.config.vector_store.enabled:
             logger.info("Vector store enabled, initializing...")
-            
+
             self.vector_store = VectorStoreFactory.create(self.config.vector_store)
-            
+
             if not self.vector_store.collection_exists():
                 logger.info("Vector store does not exist, creating enhanced metadata...")
-                enhanced_metadata = self.metadata_enhancer.enhance_all_metadata(
+                # ssa l'agente interno per l'enhancement
+                metadata_response = self.metadata_enhancer_agent.run(
                     self.metadata_retriever.get_all_tables_metadata()
                 )
-                if not self.vector_store.initialize(enhanced_metadata):
+                if not metadata_response.success:
+                    raise RuntimeError("Failed to enhance metadata")
+
+                if not self.vector_store.initialize(metadata_response.enhanced_metadata):
                     raise RuntimeError("Failed to initialize vector store with metadata")
             else:
                 logger.info("Vector store exists, skipping metadata enhancement")
                 if not self.vector_store.initialize():
                     raise RuntimeError("Failed to initialize existing vector store")
-                    
+
         return self
-        
-    def build_prompt_generator(self) -> 'ChatServiceBuilder':
-        """Costruisce il generatore di prompt"""
-        self.prompt_generator = PromptGenerator(
-            metadata_retriever=self.metadata_retriever,
-            schema_name=self.config.database.schema,
-            prompt_config=self.config.prompt,
-            language=self.config.llm.language
-        )
-        return self
-        
-    def build(self) -> ChatService:
-        """Costruisce e restituisce il ChatService completo"""
-        if not all([self.db, self.llm, self.metadata_retriever, self.prompt_generator]):
+
+    def build(self) -> SQLAgent:
+        """Costruisce e restituisce l'SQLAgent"""
+        if not all([self.db, self.llm, self.metadata_retriever]):
             raise RuntimeError("Not all required components have been built")
-            
-        return ChatService(
+
+        return SQLAgent(
             db=self.db,
             llm_manager=self.llm,
             metadata_retriever=self.metadata_retriever,
-            prompt_generator=self.prompt_generator,
-            vector_store=self.vector_store
+            schema_name=self.config.database.schema,
+            prompt_config=self.config.prompt,
+            vector_store=self.vector_store,
+            language=self.config.llm.language
         )

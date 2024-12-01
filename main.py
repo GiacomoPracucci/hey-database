@@ -37,10 +37,12 @@ def create_app():
     app.config['DEBUG'] = config.debug
     
     try:
+        # crea il servizio chat
         chat_service = ServiceFactory.create_chat_service(config)
-        
-        create_chat_routes(app, chat_service) # blueprint della chat
-        create_schema_routes(app, chat_service.metadata_retriever) # blueprint dello schema er
+
+        # registra le routes
+        create_chat_routes(app, chat_service)
+        create_schema_routes(app, chat_service.sql_agent.metadata_retriever)
         
         # route principale
         @app.route('/')
