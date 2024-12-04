@@ -1,6 +1,6 @@
 # Hey, Database! SQL Chatbot
 
-A Flask-based web application that lets users query a video games database using natural language.  
+A Flask-based web application that lets users query a database using natural language.  
 The app translates user questions into SQL queries using LLMs (supports both OpenAI and Ollama models) and returns formatted results.
 
 [heydatabase.webm](https://github.com/user-attachments/assets/0bf67ffd-fd4b-4d39-8ef6-be8381e95738)
