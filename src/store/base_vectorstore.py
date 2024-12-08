@@ -47,6 +47,11 @@ class VectorStore(ABC):
     def _generate_query_id(self, question: str) -> str:
         """Genera un ID deterministico per una query"""
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, question))
+
+    @abstractmethod
+    def _verify_connection(self) -> bool:
+        """Verifica la connessione al vector store"""
+        pass
     
     def close(self) -> None:
         """Chiude la connessione al vector store"""

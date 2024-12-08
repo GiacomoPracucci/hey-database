@@ -45,6 +45,9 @@ class QdrantStore(VectorStore):
         else:
             raise ValueError("Neither path nor url specified")
 
+        if not self._verify_connection():
+            raise RuntimeError("Unable to establish connection to vector store")
+
         self.embedding_model = embedding_model
         self.collection_name = collection_name
         self.vector_size = self.embedding_model.get_embedding_dimension()
@@ -334,4 +337,15 @@ class QdrantStore(VectorStore):
             return True
         except Exception as e:
             logger.error(f"Error updating metadata: {str(e)}")
+            return False
+
+    def _verify_connection(self) -> bool:
+        """Verifica che il vector store sia raggiungibile
+        Returns:
+            bool: True se la connessione è stabilita correttamente
+        """
+        try:
+            return self.client.get_collections() is not None
+        except Exception as e:
+            logger.error(f"Vector store connection check failed: {str(e)}")
             return False

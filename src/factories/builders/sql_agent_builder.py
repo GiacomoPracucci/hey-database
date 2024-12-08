@@ -53,7 +53,7 @@ class SQLAgentBuilder(AgentBuilder[SQLAgent]):
 
             if not self.vector_store.collection_exists():
                 logger.info("Vector store does not exist, creating enhanced metadata...")
-                # ssa l'agente interno per l'enhancement
+                # usa l'agente interno per l'enhancement
                 metadata_response = self.metadata_enhancer_agent.run(
                     self.metadata_retriever.get_all_tables_metadata()
                 )

@@ -29,9 +29,9 @@ vector_store:
   enabled: true
   type: qdrant
   collection_name: ${db_schema}
-  path: ./data/${db_schema}_store
-  #url: http://localhost:6333
-  # api_key: optional
+  #path: ./data/${db_schema}_store
+  url: https://8cffa799-bfdb-434d-8cfb-f9ec8a4ed6d8.us-east4-0.gcp.cloud.qdrant.io:6333/dashboard#/collections
+  api_key: ${QDRANT_API_KEY}
   batch_size: 100
   embedding:
     type: openai # type: openai, huggingface

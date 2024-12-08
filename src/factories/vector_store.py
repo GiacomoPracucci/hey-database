@@ -34,7 +34,12 @@ class VectorStoreFactory:
             
         if config.type == 'qdrant':
             embedding_model = VectorStoreFactory.create_embedding_model(config.embedding)
-            
+
+            if config.path and config.url:
+                raise ValueError("Both path and url specified for Qdrant, only one is allowed")
+            if not config.path and not config.url:
+                raise ValueError("Neither path nor url specified for Qdrant, please specify one")
+
             if config.path:
                 return QdrantStore(
                     path=config.path,
