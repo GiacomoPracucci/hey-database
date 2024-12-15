@@ -1,16 +1,21 @@
-# config.yaml
+# northwind_postgres.yaml
 database:
   type: postgres  # o mysql o snowflake
   host: localhost
   port: 5432
-  database: postgres
+  database: giacomo
   user: postgres
-  password: ${POSTGRES_PWD}  # Prende il valore dalla variabile d'ambiente
-  schema: &db_schema video_games
+  password: ${POSTGRES_PWD}
+  schema: &db_schema northwind
   # Configurazioni opzionali per Snowflake
   # warehouse: compute_wh
   # account: xy12345.eu-central-1
   # role: analyst
+
+cache:
+  enabled: true
+  directory: ./data/cache/${db_schema}
+  ttl_hours: 336
 
 llm:
   type: openai    # openai, ollama
@@ -30,7 +35,7 @@ vector_store:
   type: qdrant
   collection_name: ${db_schema}
   #path: ./data/${db_schema}_store
-  url: https://8cffa799-bfdb-434d-8cfb-f9ec8a4ed6d8.us-east4-0.gcp.cloud.qdrant.io:6333/dashboard#/collections
+  url: ${QDRANT_URL}
   api_key: ${QDRANT_API_KEY}
   batch_size: 100
   embedding:

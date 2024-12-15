@@ -26,7 +26,7 @@ def create_app():
     
     template_dir = os.path.join(project_root, 'src', 'web', 'templates')
     static_dir = os.path.join(project_root, 'src', 'web', 'static')
-    config_path = os.path.join(project_root, 'config.yaml')
+    config_path = os.path.join(project_root, 'configs','northwind_postgres.yaml')
     
     config = ConfigLoader.load_config(config_path)
     
