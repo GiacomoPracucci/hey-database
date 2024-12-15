@@ -37,7 +37,8 @@ class SQLAgentBuilder(AgentBuilder[SQLAgent]):
         # crea metadata retriever
         self.metadata_retriever = DatabaseFactory.create_metadata_retriever(
             self.config.database,
-            self.db
+            self.db,
+            self.config.cache
         )
         # agente per l'enhancement dei metadati
         self.metadata_enhancer_agent = MetadataAgent(llm_handler=self.llm)

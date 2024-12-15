@@ -1,7 +1,5 @@
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
-import pandas as pd
-from typing import Optional
 from src.connettori.base_connector import DatabaseConnector
 
 class PostgresManager(DatabaseConnector):

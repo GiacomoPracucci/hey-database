@@ -9,6 +9,7 @@ from src.config.models.llm import LLMConfig
 from src.config.models.prompt import PromptConfig
 from src.config.models.vector_store import VectorStoreConfig
 from src.config.models.embedding import EmbeddingConfig
+from src.config.models.cache import CacheConfig
 
 
 import logging
@@ -60,6 +61,13 @@ class ConfigLoader:
             account=config_data['database'].get('account'),
             role=config_data['database'].get('role')
         )
+
+        # load cache configuration
+        cache_config = CacheConfig(
+            enabled=config_data.get('cache', {}).get('enabled', False),
+            directory=config_data.get('cache', {}).get('directory'),
+            ttl_hours=config_data.get('cache', {}).get('ttl_hours', 24)
+        )
         
         language_str = config_data['llm'].get('language', SupportedLanguage.get_default().value)
         if not SupportedLanguage.is_supported(language_str):
@@ -83,11 +91,16 @@ class ConfigLoader:
         )
         
         vector_store_config = ConfigLoader._load_vector_store_config(config_data)
-        
+
+        # Resolve ${db_schema} in cache directory if needed
+        if cache_config.directory and '${db_schema}' in cache_config.directory:
+            cache_config.directory = cache_config.directory.replace('${db_schema}', context['db_schema'])
+
         return AppConfig(
             database=db_config,
             llm=llm_config,
             prompt=prompt_config,
+            cache = cache_config,
             vector_store=vector_store_config,
             debug=config_data.get('debug', False)
         )
