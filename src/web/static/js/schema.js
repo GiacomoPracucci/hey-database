@@ -1,112 +1,200 @@
 document.addEventListener('DOMContentLoaded', () => {
     const schemaViewer = document.getElementById('schemaViewer');
     let globalSchemaData = null;
-    
-    const cy = cytoscape({
-        container: schemaViewer,
-        style: [
-            {
-                selector: 'node',
-                style: {
-                    'background-color': '#ffffff',
-                    'border-width': 2,
-                    'border-color': '#3498db',
-                    'width': '180px',
-                    'height': '60px',
-                    'shape': 'roundrectangle',
-                    'content': 'data(label)',
-                    'text-valign': 'center',
-                    'text-halign': 'center',
-                    'font-family': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif',
-                    'font-size': '14px',
-                    'font-weight': '500',
-                    'text-wrap': 'wrap',
-                    'text-max-width': '160px',
-                    'padding': '10px',
-                    'color': '#2c3e50',
-                    'text-outline-color': '#ffffff',
-                    'text-outline-width': 1,
-                    'box-shadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
-                    'overlay-opacity': 0
-                }
-            },
-            {
-                selector: 'node:hover',
-                style: {
-                    'border-width': 3,
-                    'border-color': '#2980b9',
-                    'background-color': '#f8f9fa',
-                    'transition-property': 'border-width, border-color, background-color',
-                    'transition-duration': '0.2s'
-                }
-            },
-            {
-                selector: 'node:selected',
-                style: {
-                    'border-width': 3,
-                    'border-color': '#2980b9',
-                    'background-color': '#ebf5fb',
-                    'box-shadow': '0 0 0 4px rgba(52, 152, 219, 0.2)'
-                }
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'width': 2,
-                    'line-color': '#95a5a6',
-                    'target-arrow-color': '#95a5a6',
-                    'target-arrow-shape': 'triangle',
-                    'curve-style': 'bezier',
-                    'arrow-scale': 1.5,
-                    'line-style': 'solid',
-                    'target-distance-from-node': '10px',
-                    'source-distance-from-node': '10px'
-                }
-            },
-            {
-                selector: 'edge:hover',
-                style: {
-                    'width': 3,
-                    'line-color': '#3498db',
-                    'target-arrow-color': '#3498db',
-                    'transition-property': 'width, line-color, target-arrow-color',
-                    'transition-duration': '0.2s',
-                    'z-index': 999
-                }
-            },
-            {
-                selector: '.highlighted',
-                style: {
-                    'border-color': '#2980b9',
-                    'border-width': 3,
-                    'line-color': '#3498db',
-                    'target-arrow-color': '#3498db',
-                    'z-index': 999,
-                    'transition-property': 'all',
-                    'transition-duration': '0.2s'
-                }
-            },
-            {
-                selector: '.faded',
-                style: {
-                    'opacity': 0.4,
-                    'transition-property': 'opacity',
-                    'transition-duration': '0.2s'
-                }
-            },
-            // Aggiungiamo gli stili per i risultati della ricerca
-            {
-                selector: '.search-match',
-                style: {
-                    'border-color': '#3498db',  
-                    'border-width': 3,
-                    'background-color': '#ebf5fb', 
-                    'z-index': 1000,
-                    'transition-property': 'all',
-                    'transition-duration': '0.2s'
+
+    const schemaStyles = [
+        {
+            selector: 'node',
+            style: {
+                'background-color': '#ffffff',
+                'border-width': 1,
+                'border-color': '#e2e8f0',
+                'border-opacity': 1,
+                'shape': 'roundrectangle',
+                'width': 'label',
+                'height': 'label',
+                'padding': '20px',
+                'text-wrap': 'wrap',
+                'text-max-width': '280px',
+                'text-valign': 'center',
+                'text-halign': 'center',
+                'font-family': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                'font-size': '14px',
+                'color': '#2d3748',
+                'text-margin-y': 5,
+                'compound-sizing-wrt-labels': 'include',
+                'min-width': '200px',
+                'min-height': '50px',
+                'corner-radius': '8px',
+                'background-opacity': 1,
+                'box-shadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'label': function(ele) {
+                    const data = ele.data();
+                    if (!data.tableData) return '';
+
+                    const lines = [];
+                    // Table header
+                    lines.push(data.tableData.name.toUpperCase());
+                    lines.push('─'.repeat(Math.min(data.tableData.name.length * 1.5, 30)));
+
+                    // Filtra solo PK e FK
+                    if (data.tableData.columns) {
+                        const keyColumns = data.tableData.columns.filter(col =>
+                            col.isPrimaryKey || col.isForeignKey
+                        );
+
+                        keyColumns.forEach(col => {
+                            let line = col.name;
+
+                            // Add key indicators
+                            if (col.isPrimaryKey) line += ' 🔑';
+                            if (col.isForeignKey) line += ' 🔗';
+
+                            // Add type with clean format
+                            const cleanType = col.type.replace(/\([^)]*\)/g, '').toLowerCase();
+                            line += ` [${cleanType}]`;
+
+                            lines.push(line);
+                        });
+
+                        // Add indicator if there are more columns
+                        const hiddenColumns = data.tableData.columns.length - keyColumns.length;
+                        if (hiddenColumns > 0) {
+                            lines.push(`... +${hiddenColumns} more columns`);
+                        }
+                    }
+
+                    return lines.join('\n');
                 }
             }
-        ]
+        },
+        {
+            selector: 'edge',
+            style: {
+                'width': 1.5,
+                'line-color': '#a0aec0',
+                'line-style': 'dashed',
+                'curve-style': 'bezier',
+                'target-arrow-color': '#a0aec0',
+                'target-arrow-shape': 'triangle',
+                'arrow-scale': 1,
+                'source-endpoint': 'outside-to-node',
+                'target-endpoint': 'outside-to-node'
+            }
+        },
+        {
+            selector: '.highlighted',
+            style: {
+                'border-color': '#3182ce',
+                'border-width': 2,
+                'border-opacity': 1,
+                'background-color': '#ebf8ff',
+                'transition-property': 'all',
+                'transition-duration': '0.2s'
+            }
+        },
+        {
+            selector: ':selected',
+            style: {
+                'border-color': '#3182ce',
+                'border-width': 2,
+                'border-opacity': 1,
+                'background-color': '#ebf8ff',
+                'box-shadow': '0 0 0 3px rgba(49, 130, 206, 0.3)'
+            }
+        },
+        {
+            selector: 'node:hover',
+            style: {
+                'border-color': '#3182ce',
+                'border-width': 1.5,
+                'background-color': '#f7fafc',
+                'transition-property': 'all',
+                'transition-duration': '0.2s'
+            }
+        },
+        {
+            selector: '.faded',
+            style: {
+                'opacity': 0.25
+            }
+        },
+        {
+            selector: '.search-match',
+            style: {
+                'border-color': '#3182ce',
+                'border-width': 2,
+                'background-color': '#ebf8ff',
+                'z-index': 999
+            }
+        }
+    ];
+
+    function createGraphElements(schemaData) {
+        if (!schemaData || !Array.isArray(schemaData.tables)) {
+            throw new Error('Invalid schema data structure');
+        }
+
+        const elements = [];
+
+        // Pre-process per identificare le foreign keys
+        const foreignKeys = new Set();
+        schemaData.tables.forEach(table => {
+            if (Array.isArray(table.relationships)) {
+                table.relationships.forEach(rel => {
+                    rel.fromColumns.forEach(col => {
+                        foreignKeys.add(`${table.name}.${col}`);
+                    });
+                });
+            }
+        });
+
+        // Nodi (tabelle)
+        schemaData.tables.forEach(table => {
+            // Aggiungiamo l'informazione sulle FK alle colonne
+            const tableData = {...table};
+            if (tableData.columns) {
+                tableData.columns = tableData.columns.map(col => ({
+                    ...col,
+                    isForeignKey: foreignKeys.has(`${table.name}.${col.name}`)
+                }));
+            }
+
+            elements.push({
+                group: 'nodes',
+                data: {
+                    id: table.name,
+                    tableData: tableData
+                },
+                classes: ['table-node']
+            });
+
+            // Relazioni
+            if (Array.isArray(table.relationships)) {
+                table.relationships.forEach((rel, index) => {
+                    elements.push({
+                        group: 'edges',
+                        data: {
+                            id: `edge-${table.name}-${rel.toTable}-${index}`,
+                            source: table.name,
+                            target: rel.toTable,
+                            relationship: rel.type,
+                            fromColumns: rel.fromColumns,
+                            toColumns: rel.toColumns
+                        }
+                    });
+                });
+            }
+        });
+
+        return elements;
+    }
+
+    // Inizializzazione di Cytoscape
+    const cy = cytoscape({
+        container: schemaViewer,
+        style: schemaStyles,
+        wheelSensitivity: 0.2,
     });
 
     // Funzione di ricerca
@@ -300,10 +388,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const detailsTitle = detailsPanel.querySelector('.details-title');
         const detailsContent = detailsPanel.querySelector('.details-content');
         const relationships = getTableRelationships(table.name);
-        
+
         // Aggiorna il titolo
         detailsTitle.textContent = table.name;
-        
+
         // Aggiorna il contenuto
         detailsContent.innerHTML = `
             <div class="section">
@@ -317,17 +405,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         </tr>
                     </thead>
                     <tbody>
-                        ${table.columns.map(col => `
-                            <tr>
-                                <td>${col.name}</td>
-                                <td><code>${col.type}</code></td>
-                                <td>
-                                    ${col.isPrimaryKey ? '<span class="badge pk">PK</span>' : ''}
-                                    ${col.isForeignKey ? '<span class="badge fk">FK</span>' : ''}
-                                    ${!col.isNullable ? '<span class="badge required">Required</span>' : ''}
-                                </td>
-                            </tr>
-                        `).join('')}
+                        ${table.columns.map(col => {
+            const properties = [];
+            if (col.isPrimaryKey) properties.push('<span class="badge pk">PK</span>');
+            if (col.isForeignKey) properties.push('<span class="badge fk">FK</span>');
+            if (!col.isNullable) properties.push('<span class="badge required">Required</span>');
+
+            return `
+                                <tr class="${col.isPrimaryKey || col.isForeignKey ? 'key-column' : ''}">
+                                    <td>${col.name}</td>
+                                    <td><code>${col.type}</code></td>
+                                    <td>${properties.join(' ')}</td>
+                                </tr>
+                            `;
+        }).join('')}
                     </tbody>
                 </table>
             </div>
@@ -335,10 +426,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="section">
                 <h4>Relationships</h4>
                 <div class="relationships-list">
-                    ${relationships.length ? 
-                        relationships.map(rel => formatRelationship(rel)).join('') :
-                        '<div class="relationship-item">No relationships found</div>'
-                    }
+                    ${relationships.length ?
+            relationships.map(rel => formatRelationship(rel)).join('') :
+            '<div class="relationship-item">No relationships found</div>'
+        }
                 </div>
             </div>
             
@@ -351,10 +442,22 @@ LIMIT 5;</code></pre>
                 </div>
             </div>
         `;
-        
+
         detailsPanel.classList.remove('hidden');
     }
 
+    // Aggiungi questi stili CSS dinamicamente
+    const style = document.createElement('style');
+    style.textContent = `
+        .key-column {
+            background-color: #f7fafc;
+        }
+        
+        .details-table tr.key-column td {
+            font-weight: 500;
+        }
+    `;
+    document.head.appendChild(style);
 
     function setupInteractivity(cy) {
         // Hover effects
@@ -404,66 +507,28 @@ LIMIT 5;</code></pre>
         }
     }
 
-    // Il resto delle funzioni rimane lo stesso, ma aggiorniamo la creazione degli elementi
-    function createGraphElements(schemaData) {
-        if (!schemaData || !Array.isArray(schemaData.tables)) {
-            throw new Error('Invalid schema data structure');
-        }
-    
-        const elements = [];
-    
-        // Nodi (tabelle)
-        schemaData.tables.forEach(table => {
-            elements.push({
-                group: 'nodes',
-                data: {
-                    id: table.name,
-                    label: formatTableLabel(table),
-                    tableData: table
-                },
-                classes: ['table-node']
-            });
-    
-            // Relazioni
-            if (Array.isArray(table.relationships)) {
-                table.relationships.forEach((rel, index) => {
-                    elements.push({
-                        group: 'edges',
-                        data: {
-                            id: `edge-${table.name}-${rel.toTable}-${index}`,
-                            source: table.name,
-                            target: rel.toTable,
-                            relationship: rel.type,
-                            fromColumns: rel.fromColumns,
-                            toColumns: rel.toColumns
-                        }
-                    });
-                });
-            }
-        });
-    
-        return elements;
-    }
-
 
 
     async function initializeGraph() {
         const loadingIndicator = document.getElementById('loadingIndicator');
         loadingIndicator.style.display = 'flex';
-        
+
         try {
             const response = await fetch('/schema/api/metadata');
             if (!response.ok) {
                 throw new Error(`Failed to load schema data: ${response.statusText}`);
             }
             const result = await response.json();
+
+            // Debug dei dati ricevuti
+            console.log('Schema data:', result.data);
+
             globalSchemaData = result.data;
-            
             const elements = createGraphElements(globalSchemaData);
-            
+
             cy.elements().remove();
             cy.add(elements);
-            
+
             const layout = cy.layout({
                 name: 'dagre',
                 rankDir: 'TB',
@@ -475,19 +540,19 @@ LIMIT 5;</code></pre>
                 animationEasing: 'ease-in-out',
                 nodeDimensionsIncludeLabels: true
             });
-            
+
             layout.run();
-            
+
             setupInteractivity(cy);
             setupSearch();
             setupZoomControls(cy);
-            
+
             setTimeout(() => {
                 cy.fit(50);
                 cy.center();
                 loadingIndicator.style.display = 'none';
             }, 50);
-            
+
         } catch (error) {
             console.error('Error in graph initialization:', error);
             loadingIndicator.innerHTML = `
