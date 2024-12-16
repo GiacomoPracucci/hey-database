@@ -304,25 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function formatTableLabel(table) {
-        const lines = [];
-        lines.push(table.name.toUpperCase());
-        lines.push('─'.repeat(16));
-        
-        table.columns.forEach(col => {
-            if (col.isPrimaryKey || col.isForeignKey) {
-                const flags = [];
-                if (col.isPrimaryKey) flags.push('🔑');
-                if (col.isForeignKey) flags.push('🔗');
-                
-                let type = col.type.replace(/\([^)]*\)/g, '').substring(0, 12);
-                const flagText = flags.length ? ` ${flags.join(' ')}` : '';
-                lines.push(`${col.name} [${type}]${flagText}`);
-            }
-        });
-        
-        return lines.join('\n');
-    }
  
     function getTableRelationships(tableName) {
         if (!globalSchemaData || !Array.isArray(globalSchemaData.tables)) {
@@ -493,20 +474,314 @@ LIMIT 5;</code></pre>
         }
     }
 
-    async function loadSchemaData() {
-        try {
-            const response = await fetch('/schema/api/metadata');
-            if (!response.ok) {
-                throw new Error(`Failed to load schema data: ${response.statusText}`);
+
+
+    // Funzioni di analisi della rete
+    function analyzeNetworkMetrics(cy) {
+        // Calcolo della degree centrality
+        const degreeCentrality = {};
+        cy.nodes().forEach(node => {
+            degreeCentrality[node.id()] = node.degree();
+        });
+
+        // Calcolo della betweenness centrality
+        const betweennessCentrality = cy.elements().bc();
+
+        // Calcolo delle componenti connesse
+        const components = [];
+        let unvisited = cy.nodes().toArray();
+
+        while (unvisited.length > 0) {
+            const component = [];
+            const queue = [unvisited[0]];
+
+            while (queue.length > 0) {
+                const node = queue.shift();
+                if (unvisited.includes(node)) {
+                    component.push(node);
+                    unvisited = unvisited.filter(n => n !== node);
+
+                    node.neighborhood().nodes().forEach(neighbor => {
+                        if (unvisited.includes(neighbor)) {
+                            queue.push(neighbor);
+                        }
+                    });
+                }
             }
-            const result = await response.json();
-            return result.data;
+
+            components.push(component);
+        }
+
+        return {
+            degreeCentrality,
+            betweennessCentrality,
+            components
+        };
+    }
+
+    // Layout intelligente basato sulle metriche
+    function applySmartLayout(cy) {
+        const metrics = analyzeNetworkMetrics(cy);
+        const components = metrics.components;
+
+        // Resetta gli stili prima di applicare il nuovo layout
+        cy.nodes().style({
+            'border-width': 1,
+            'border-color': '#e2e8f0'
+        });
+
+        // Se abbiamo una singola componente grande
+        if (components.length === 1 && components[0].length > 10) {
+            // Usa layout gerarchico per grafi grandi e connessi
+            cy.layout({
+                name: 'dagre',
+                rankDir: 'TB',
+                rankSep: 100,
+                nodeSep: 80,
+                padding: 50,
+                animate: true,
+                animationDuration: 500,
+                fit: true
+            }).run();
+        } else if (components.length > 1) {
+            // Per multiple componenti, disponi ogni componente separatamente
+            components.forEach(component => {
+                const componentCy = cy.collection(component);
+
+                componentCy.layout({
+                    name: 'cose',
+                    animate: true,
+                    animationDuration: 500,
+                    fit: false,
+                    padding: 50,
+                    nodeRepulsion: 400000,
+                    componentSpacing: 150
+                }).run();
+            });
+
+            // Dopo aver disposto le componenti, fai il fit della vista
+            setTimeout(() => {
+                cy.fit(50);
+            }, 600);
+        } else {
+            // Per grafi piccoli usa CoSE
+            cy.layout({
+                name: 'cose',
+                animate: true,
+                animationDuration: 500,
+                fit: true,
+                padding: 50,
+                nodeRepulsion: 400000
+            }).run();
+        }
+
+        // Evidenzia i nodi più connessi
+        const maxDegree = Math.max(...Object.values(metrics.degreeCentrality));
+        cy.nodes().forEach(node => {
+            const degree = metrics.degreeCentrality[node.id()];
+            const intensity = degree / maxDegree;
+            if (intensity > 0.7) { // Solo per i nodi più connessi
+                node.style({
+                    'border-width': 2,
+                    'border-color': '#3182ce'
+                });
+            }
+        });
+    }
+
+    // Funzione per evidenziare i nodi centrali
+    function highlightCentralNodes(cy) {
+        const metrics = analyzeNetworkMetrics(cy);
+
+        // Normalizza i valori di betweenness
+        const betweennessValues = Object.values(metrics.betweennessCentrality.betweenness());
+        const maxBetweenness = Math.max(...betweennessValues);
+
+        cy.nodes().forEach(node => {
+            const betweenness = metrics.betweennessCentrality.betweenness(node);
+            const normalizedBetweenness = betweenness / maxBetweenness;
+
+            // Applica stili basati sulla centralità
+            node.style({
+                'border-width': 1 + (normalizedBetweenness * 2),
+                'border-color': `rgb(49, 130, 206, ${0.5 + normalizedBetweenness * 0.5})`
+            });
+        });
+    }
+
+    // Aggiungi controlli per la visualizzazione
+    function addVisualizationControls() {
+        try {
+            // Verifica se esiste già un contenitore per i controlli
+            let controlsContainer = document.querySelector('.context-toolbar');
+
+            // Se non esiste, crealo
+            if (!controlsContainer) {
+                controlsContainer = document.createElement('div');
+                controlsContainer.className = 'context-toolbar';
+
+                // Trova un punto appropriato dove inserirlo
+                const schemaViewer = document.getElementById('schemaViewer');
+                if (!schemaViewer) {
+                    console.error('Schema viewer element not found');
+                    return; // Exit early if we can't find the schema viewer
+                }
+
+                schemaViewer.parentNode.insertBefore(controlsContainer, schemaViewer);
+            }
+
+            // Crea il contenitore dei controlli di visualizzazione
+            const controls = document.createElement('div');
+            controls.className = 'visualization-controls';
+
+            // Prepara il contenuto HTML
+            controls.innerHTML = `
+            <div class="control-group">
+                <button id="autoArrangeBtn" class="btn btn-secondary">
+                    <i class="fas fa-project-diagram"></i>
+                    Auto Arrange
+                </button>
+                <select id="layoutSelect" class="select">
+                    <option value="dagre">Hierarchical View</option>
+                    <option value="cose">Organic View</option>
+                    <option value="concentric">Circular View</option>
+                    <option value="grid">Grid View</option>
+                </select>
+            </div>
+        `;
+
+            // Aggiungi i controlli al contenitore
+            controlsContainer.appendChild(controls);
+
+            // Aggiungi gli stili
+            const style = document.createElement('style');
+            style.textContent = `
+            .context-toolbar {
+                display: flex;
+                align-items: center;
+                padding: 0.5rem 1.5rem;
+                background-color: var(--background-color);
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .visualization-controls {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .control-group {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .btn-secondary {
+                background-color: var(--background-color);
+                border: 1px solid var(--border-color);
+                padding: 0.5rem 1rem;
+                border-radius: 0.375rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                cursor: pointer;
+                transition: all 0.2s;
+                color: var(--text-color);
+            }
+            
+            .btn-secondary:hover {
+                background-color: var(--hover-color);
+                border-color: var(--primary-color);
+            }
+            
+            .select {
+                padding: 0.5rem;
+                border: 1px solid var(--border-color);
+                border-radius: 0.375rem;
+                background-color: var(--background-color);
+                min-width: 200px;
+                color: var(--text-color);
+            }
+
+            .select:focus {
+                outline: none;
+                border-color: var(--primary-color);
+            }
+        `;
+            document.head.appendChild(style);
+
+            // Aggiungi gli event listener dopo che gli elementi sono stati aggiunti al DOM
+            const autoArrangeBtn = document.getElementById('autoArrangeBtn');
+            const layoutSelect = document.getElementById('layoutSelect');
+
+            if (autoArrangeBtn) {
+                autoArrangeBtn.addEventListener('click', () => {
+                    applySmartLayout(cy);
+                });
+            } else {
+                console.error('Auto Arrange button not found');
+            }
+
+            if (layoutSelect) {
+                layoutSelect.addEventListener('change', (e) => {
+                    const layoutName = e.target.value;
+                    applyLayout(cy, layoutName);
+                });
+            } else {
+                console.error('Layout select not found');
+            }
+
         } catch (error) {
-            console.error('Error loading schema:', error);
-            throw error;
+            console.error('Error adding visualization controls:', error);
         }
     }
 
+
+    // Funzione per applicare un layout specifico
+    function applyLayout(cy, layoutName) {
+        const layoutConfig = {
+            dagre: {
+                name: 'dagre',
+                rankDir: 'TB',
+                rankSep: 100,
+                nodeSep: 80,
+                padding: 50
+            },
+            cose: {
+                name: 'cose',
+                idealEdgeLength: 150,
+                nodeOverlap: 20,
+                refresh: 20,
+                padding: 30,
+                randomize: false,
+                componentSpacing: 150,
+                nodeRepulsion: 400000,
+                edgeElasticity: 100,
+                nestingFactor: 5,
+                gravity: 80,
+                numIter: 1000
+            },
+            concentric: {
+                name: 'concentric',
+                minNodeSpacing: 100,
+                concentric: node => node.degree(),
+                levelWidth: () => 1
+            },
+            grid: {
+                name: 'grid',
+                padding: 50
+            }
+        };
+
+        const layout = cy.layout({
+            ...layoutConfig[layoutName],
+            animate: true,
+            animationDuration: 500,
+            animationEasing: 'ease-in-out'
+        });
+
+        layout.run();
+    }
 
 
     async function initializeGraph() {
@@ -514,21 +789,19 @@ LIMIT 5;</code></pre>
         loadingIndicator.style.display = 'flex';
 
         try {
-            const response = await fetch('/schema/api/metadata');
-            if (!response.ok) {
-                throw new Error(`Failed to load schema data: ${response.statusText}`);
+            const result = await fetch('/schema/api/metadata');
+            if (!result.ok) {
+                throw new Error(`Failed to load schema data: ${result.statusText}`);
             }
-            const result = await response.json();
+            const data = await result.json();
 
-            // Debug dei dati ricevuti
-            console.log('Schema data:', result.data);
-
-            globalSchemaData = result.data;
+            globalSchemaData = data.data;
             const elements = createGraphElements(globalSchemaData);
 
             cy.elements().remove();
             cy.add(elements);
 
+            // Prima esegui il layout
             const layout = cy.layout({
                 name: 'dagre',
                 rankDir: 'TB',
@@ -541,25 +814,25 @@ LIMIT 5;</code></pre>
                 nodeDimensionsIncludeLabels: true
             });
 
-            layout.run();
+            await layout.run();
 
+            // Poi aggiungi i controlli
             setupInteractivity(cy);
             setupSearch();
             setupZoomControls(cy);
+            addVisualizationControls();  // Ora dovrebbe funzionare correttamente
 
-            setTimeout(() => {
-                cy.fit(50);
-                cy.center();
-                loadingIndicator.style.display = 'none';
-            }, 50);
+            cy.fit(50);
+            cy.center();
+            loadingIndicator.style.display = 'none';
 
         } catch (error) {
             console.error('Error in graph initialization:', error);
             loadingIndicator.innerHTML = `
-                <div class="error-message">
-                    Failed to load schema: ${error.message}
-                </div>
-            `;
+            <div class="error-message">
+                Failed to load schema: ${error.message}
+            </div>
+        `;
         }
     }
 
