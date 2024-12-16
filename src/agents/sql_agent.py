@@ -1,8 +1,5 @@
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional, Dict, List, Tuple, Any
-import logging
-from pandas import DataFrame
 
 from src.connettori.base_connector import DatabaseConnector
 from src.llm_handler.base_llm_handler import LLMHandler
@@ -10,8 +7,10 @@ from src.schema_metadata.base_metadata_retriever import DatabaseMetadataRetrieve
 from src.llm_output.response_handler import ResponseHandler
 from src.store.base_vectorstore import VectorStore
 from src.config.languages import SupportedLanguage
+from src.agents.base_agent import Agent
 
-logger = logging.getLogger(__name__)
+import logging
+logger = logging.getLogger('hey-database')
 
 @dataclass
 class SQLAgentResponse:
@@ -25,7 +24,7 @@ class SQLAgentResponse:
     from_vector_store: bool = False
     original_question: Optional[str] = None
 
-class SQLAgent:
+class SQLAgent(Agent):
     """Agente incaricato della generazione e dell'esecuzione di query SQL"""
 
     def __init__(self,
@@ -63,23 +62,25 @@ class SQLAgent:
         Returns:
             SQLAgentResponse con i risultati o l'errore
         """
-        logger.debug(f"Processing message: {message}")
+        logger.debug(f"Processing message: {message}\n")
         try:
             # 1. Verifichiamo se la risposta è già presente nel vector store
             cached_response = self._check_cache(message)
             if cached_response:
                 return cached_response
 
-            # Recupera contesto
+            # retrieve di tabelle e query simili
             similar_tables, similar_queries = self._get_context(message)
+            logger.debug(f"Similar tables: {similar_tables}\n")
+            logger.debug(f"Similar queries: {similar_queries}\n")
 
-            # Costruisce ed esegue il prompt
+            # costruisce ed esegue il prompt
             prompt = self.build_prompt(
                 message,
                 similar_tables=similar_tables,
                 similar_queries=similar_queries
             )
-            logger.debug(f"Generated prompt: {prompt}")
+            logger.debug(f"Generated prompt: {prompt}\n")
 
             llm_response = self.llm_manager.get_completion(prompt)
             if not llm_response:
@@ -88,7 +89,7 @@ class SQLAgent:
                     error="Failed to get LLM response",
                     original_question=message
                 )
-            logger.debug(f"LLM response: {llm_response}")
+            logger.debug(f"LLM response: {llm_response}\n")
 
             # Processa risposta ed esegue query
             result = self.response_handler.process_response(llm_response)
@@ -156,7 +157,7 @@ Response must be valid JSON - do not include any other text or markdown formatti
             prompt_parts.append("\nRelevant Tables:")
             for table_info in similar_tables:
                 prompt_parts.append(self._format_table_metadata(table_info))
-                if self.prompt_config.include_sample_data:
+                if self.prompt_config.include_sample_data: # se in config abbiamo specificato che vogliamo records di esempio
                     sample_data = self._get_sample_data(
                         table_info["table_name"],
                         self.prompt_config.max_sample_rows
@@ -248,6 +249,7 @@ Response must be valid JSON - do not include any other text or markdown formatti
             } for q in query_results]
 
         return similar_tables, similar_queries
+
 
     @staticmethod
     def _format_table_metadata(table_info: Dict) -> str:

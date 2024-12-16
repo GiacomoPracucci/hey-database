@@ -44,7 +44,7 @@ class DatabaseMetadataRetriever(ABC):
                     return
                 logger.info("No valid cache found, loading from database")
 
-            # Se non c'è cache o è invalida, carica dal database
+            # se non c'è cache o è invalida, carica dal database
             logger.info("Loading metadata from database")
             inspector = inspect(self.engine)
 
@@ -94,7 +94,7 @@ class DatabaseMetadataRetriever(ABC):
 
         except Exception as e:
             logger.error(f"Error loading schema metadata: {str(e)}")
-            # Se abbiamo dati in cache e incontriamo un errore, usiamo quelli
+            # se abbiamo dati in cache e incontriamo un errore, usiamo quelli
             if self.cache and self.tables:
                 logger.warning("Using cached metadata after database error")
             else:

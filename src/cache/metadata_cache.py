@@ -10,30 +10,13 @@ from src.config.models.metadata import TableMetadata
 
 logger = logging.getLogger('hey-database')
 
-""" Esempio di utilizzo
-# Creazione della cache
-cache = MetadataCache("/path/to/cache", "my_schema", ttl_hours=24)
-
-# Lettura
-metadata = cache.get()
-if metadata is None:
-    # Cache miss, ricarica i dati
-    metadata = load_from_database()
-    cache.set(metadata)
-
-# Invalidazione manuale se necessario
-cache.invalidate()
-
-# Uso con context manager
-with MetadataCache("/path/to/cache", "my_schema") as cache:
-    metadata = cache.get()
-
-"""
-
 class MetadataCache:
     """Thread-safe cache system for database metadata"""
 
-    def __init__(self, cache_dir: str, schema_name: str, ttl_hours: int = 24):
+    def __init__(self,
+                 cache_dir: str,
+                 schema_name: str,
+                 ttl_hours: int = 24):
         """Initialize the metadata cache
 
         Args:
@@ -58,7 +41,6 @@ class MetadataCache:
 
     def _is_cache_valid(self) -> bool:
         """Check if the cache file exists and is still valid
-
         Returns:
             bool: True if cache exists and is within TTL
         """
@@ -75,7 +57,6 @@ class MetadataCache:
 
     def get(self) -> Optional[Dict[str, TableMetadata]]:
         """Get metadata from cache if valid
-
         Returns:
             Dict[str, TableMetadata] or None if cache invalid/missing
         """
@@ -115,7 +96,6 @@ class MetadataCache:
 
     def set(self, metadata: Dict[str, TableMetadata]) -> bool:
         """Save metadata to cache
-
         Args:
             metadata: Dictionary of table metadata to cache
 
@@ -124,7 +104,7 @@ class MetadataCache:
         """
         with self._lock:
             try:
-                # Convert TableMetadata objects to serializable dictionaries
+                # convert TableMetadata objects to serializable dictionaries
                 serializable_data = {
                     table_name: {
                         "name": table_meta.name,
@@ -136,23 +116,15 @@ class MetadataCache:
                     for table_name, table_meta in metadata.items()
                 }
 
-                # Write to temporary file first
-                temp_file = self.cache_file.with_suffix('.tmp')
-                with open(temp_file, 'w', encoding='utf-8') as f:
+                # write directly to final file
+                with open(self.cache_file, 'w', encoding='utf-8') as f:
                     json.dump(serializable_data, f, indent=2)
 
-                # Atomic rename to avoid partial writes
-                temp_file.rename(self.cache_file)
                 logger.debug(f"Successfully cached metadata for schema {self.schema_name}")
                 return True
 
             except Exception as e:
-                logger.error(f"Error writing metadata cache: {e}")
-                if temp_file.exists():
-                    try:
-                        temp_file.unlink()
-                    except:
-                        pass
+                logger.error(f"Error writing metadata cache: {str(e)}")
                 return False
 
     def invalidate(self) -> None:

@@ -269,7 +269,8 @@ class QdrantStore(VectorStore):
                 votes = existing["positive_votes"] + 1
             else: # altrimenti è il primo voto
                 votes = 1
-            
+
+            # se è una nuova domanda
             # crea/aggiorna in base alla situazione che si è verificata
             query = QueryPayload(
                 question=question,
