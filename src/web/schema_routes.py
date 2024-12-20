@@ -32,14 +32,17 @@ def create_schema_routes(app, metadata_retriever):
             schema_data = {
                 "tables": []
             }
-            
-            for table_name, table_info in tables_metadata.items():
+
+            for table_name, enhanced_table_info in tables_metadata.items():
+                # accediamo ai metadati base tramite base_metadata
+                table_info = enhanced_table_info.base_metadata
+
                 table_data = {
                     "name": table_name,
                     "columns": [],
                     "relationships": []
                 }
-                
+
                 # colonne
                 for col in table_info.columns:
                     column_data = {
@@ -49,7 +52,7 @@ def create_schema_routes(app, metadata_retriever):
                         "isPrimaryKey": col["name"] in table_info.primary_keys
                     }
                     table_data["columns"].append(column_data)
-                
+
                 # relazioni (foreign keys)
                 for fk in table_info.foreign_keys:
                     relationship = {
@@ -58,11 +61,11 @@ def create_schema_routes(app, metadata_retriever):
                         "toColumns": fk["referred_columns"]
                     }
                     table_data["relationships"].append(relationship)
-                
+
                 schema_data["tables"].append(table_data)
-            
+
             return jsonify({"success": True, "data": schema_data})
-            
+
         except Exception as e:
             logger.exception(f"Error retrieving schema metadata: {str(e)}")
             return jsonify({

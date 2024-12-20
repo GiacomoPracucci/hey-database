@@ -15,8 +15,8 @@ class ServiceFactory:
             sql_agent = (SQLAgentBuilder(app_config)
                          .build_database()
                          .build_llm()
-                         .build_metadata_components()
                          .build_vector_store()
+                         .build_metadata_components()
                          .build())
 
             # crea il service che wrappa l'agente

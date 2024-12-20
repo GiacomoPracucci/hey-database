@@ -23,10 +23,8 @@ class OpenAIHandler(LLMHandler):
 
     def _serialize_response(self, obj: Any) -> Any:
         """Serialize objects to JSON-compatible format
-        
         Args:
             obj: Object to serialize
-            
         Returns:
             Serialized object
         """

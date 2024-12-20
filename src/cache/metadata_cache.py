@@ -1,12 +1,11 @@
 import json
-import os
 import logging
 import threading
 
 from typing import Dict, Optional
 from datetime import datetime, timedelta
 from pathlib import Path
-from src.config.models.metadata import TableMetadata
+from src.config.models.metadata import TableMetadata, EnhancedTableMetadata
 
 logger = logging.getLogger('hey-database')
 
@@ -55,13 +54,14 @@ class MetadataCache:
             logger.error(f"Error checking cache validity: {e}")
             return False
 
-    def get(self) -> Optional[Dict[str, TableMetadata]]:
+    def get(self) -> Optional[Dict[str, EnhancedTableMetadata]]:
         """Get metadata from cache if valid
         Returns:
             Dict[str, TableMetadata] or None if cache invalid/missing
         """
         with self._lock:
             try:
+                # check di validità by ttl
                 if not self._is_cache_valid():
                     logger.debug("Cache invalid or expired")
                     return None
@@ -73,13 +73,21 @@ class MetadataCache:
                 metadata = {}
                 for table_name, table_data in data.items():
                     try:
-                        metadata[table_name] = TableMetadata(
+                        base_metadata = TableMetadata(
                             name=table_data['name'],
                             columns=table_data['columns'],
                             primary_keys=table_data['primary_keys'],
                             foreign_keys=table_data['foreign_keys'],
                             row_count=table_data['row_count']
                         )
+
+                        metadata[table_name] = EnhancedTableMetadata(
+                            base_metadata=base_metadata,
+                            description=table_data.get('description', ''),
+                            keywords=table_data.get('keywords', []),
+                            importance_score=table_data.get('importance_score', 0.0)
+                        )
+
                     except KeyError as e:
                         logger.error(f"Missing required field in cached data for table {table_name}: {e}")
                         continue
@@ -88,7 +96,7 @@ class MetadataCache:
 
             except json.JSONDecodeError as e:
                 logger.error(f"Error decoding cache file: {e}")
-                self.invalidate()  # Invalida la cache se il JSON è corrotto
+                self.invalidate()
                 return None
             except Exception as e:
                 logger.error(f"Error reading metadata cache: {e}")
@@ -107,18 +115,21 @@ class MetadataCache:
                 # convert TableMetadata objects to serializable dictionaries
                 serializable_data = {
                     table_name: {
-                        "name": table_meta.name,
-                        "columns": table_meta.columns,
-                        "primary_keys": table_meta.primary_keys,
-                        "foreign_keys": table_meta.foreign_keys,
-                        "row_count": table_meta.row_count
+                        "name": table_meta.base_metadata.name,
+                        "description": table_meta.description,
+                        "primary_keys": table_meta.base_metadata.primary_keys,
+                        "foreign_keys": table_meta.base_metadata.foreign_keys,
+                        "keywords": table_meta.keywords,
+                        "importance_score": table_meta.importance_score,
+                        "row_count": table_meta.base_metadata.row_count,
+                        "columns": table_meta.base_metadata.columns,
                     }
                     for table_name, table_meta in metadata.items()
                 }
 
-                # write directly to final file
+                # write to final file
                 with open(self.cache_file, 'w', encoding='utf-8') as f:
-                    json.dump(serializable_data, f, indent=2)
+                    json.dump(serializable_data, f, indent=2, ensure_ascii=False)
 
                 logger.debug(f"Successfully cached metadata for schema {self.schema_name}")
                 return True

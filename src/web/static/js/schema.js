@@ -207,17 +207,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         searchTerm = searchTerm.toLowerCase();
-        
+
         // Trova i nodi che corrispondono al termine di ricerca
         const matchingNodes = cy.nodes().filter(node => {
             const tableData = node.data('tableData');
             if (!tableData) return false;
-            
+
             // Cerca nel nome della tabella
             if (tableData.name.toLowerCase().includes(searchTerm)) return true;
-            
+
             // Cerca nei nomi delle colonne e nei tipi
-            return tableData.columns.some(col => 
+            return tableData.columns.some(col =>
                 col.name.toLowerCase().includes(searchTerm) ||
                 col.type.toLowerCase().includes(searchTerm)
             );
@@ -227,11 +227,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Evidenzia i nodi corrispondenti e le loro relazioni
             cy.elements().addClass('faded').style('opacity', 0.2);
             matchingNodes.removeClass('faded').addClass('search-match').style('opacity', 1);
-            
+
             // Evidenzia anche le relazioni dirette tra i nodi corrispondenti
             const connectedEdges = matchingNodes.edgesWith(matchingNodes);
             connectedEdges.removeClass('faded').style('opacity', 1);
-            
+
             // Centra la vista sui nodi trovati
             cy.animate({
                 fit: {
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupSearch() {
         // Usiamo l'input esistente nell'HTML
         const searchInput = document.getElementById('schemaSearch');
-        
+
         if (searchInput) {
             // Event listener con debounce per la ricerca
             let debounceTimer;
@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupZoomControls(cy) {
         // Zoom step (quanto zoom per click - 1.2 significa 20% in più o in meno)
         const ZOOM_STEP = 1.2;
-        
+
         // Zoom In
         document.getElementById('zoomIn').addEventListener('click', () => {
             cy.animate({
@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 easing: 'ease-out'
             });
         });
-        
+
         // Zoom Out
         document.getElementById('zoomOut').addEventListener('click', () => {
             cy.animate({
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 easing: 'ease-out'
             });
         });
-        
+
         // Fit to View
         document.getElementById('zoomFit').addEventListener('click', () => {
             cy.animate({
@@ -304,17 +304,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
- 
+
     function getTableRelationships(tableName) {
         if (!globalSchemaData || !Array.isArray(globalSchemaData.tables)) {
             return [];
         }
-        
+
         const relationships = [];
-        
+
         // Cerca la tabella corrente
         const currentTable = globalSchemaData.tables.find(t => t.name === tableName);
-        
+
         // Aggiungi relazioni in uscita
         if (currentTable && Array.isArray(currentTable.relationships)) {
             currentTable.relationships.forEach(rel => {
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         }
-        
+
         // Cerca relazioni in entrata da altre tabelle
         globalSchemaData.tables.forEach(table => {
             if (Array.isArray(table.relationships)) {
@@ -344,16 +344,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
-        
+
         return relationships;
     }
 
     function formatRelationship(rel) {
         const arrow = rel.type === 'outgoing' ? '→' : '←';
-        const direction = rel.type === 'outgoing' ? 
+        const direction = rel.type === 'outgoing' ?
             `${rel.from} ${arrow} ${rel.to}` :
             `${rel.from} ${arrow} ${rel.to}`;
-        
+
         return `
             <div class="relationship-item">
                 <div>${direction}</div>
@@ -446,11 +446,11 @@ LIMIT 5;</code></pre>
             const node = e.target;
             const connectedEdges = node.connectedEdges();
             const connectedNodes = connectedEdges.connectedNodes();
-            
+
             cy.elements()
-              .difference(connectedEdges.union(connectedNodes).union(node))
-              .addClass('faded');
-            
+                .difference(connectedEdges.union(connectedNodes).union(node))
+                .addClass('faded');
+
             connectedEdges.addClass('highlighted');
             connectedNodes.addClass('highlighted');
         });
@@ -801,7 +801,7 @@ LIMIT 5;</code></pre>
             cy.elements().remove();
             cy.add(elements);
 
-            // Prima esegui il layout
+            // prima esegui il layout
             const layout = cy.layout({
                 name: 'dagre',
                 rankDir: 'TB',
@@ -816,11 +816,11 @@ LIMIT 5;</code></pre>
 
             await layout.run();
 
-            // Poi aggiungi i controlli
+            // poi i controlli
             setupInteractivity(cy);
             setupSearch();
             setupZoomControls(cy);
-            addVisualizationControls();  // Ora dovrebbe funzionare correttamente
+            addVisualizationControls();
 
             cy.fit(50);
             cy.center();

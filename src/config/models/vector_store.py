@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Any, Literal
 
+from docutils.nodes import strong
+
 from src.config.models.embedding import EmbeddingConfig
 from src.config.models.metadata import EnhancedTableMetadata
 
@@ -27,7 +29,7 @@ class BasePayload:
     
 @dataclass
 class TablePayload(BasePayload):
-    """Rappresenta il payload per i metadati di una tabella nel vector store"""
+    """Rappresenta il payload per i metadati di un documento 'tabella' nel vector store"""
     table_name: str
     description: str
     keywords: List[str]
@@ -51,6 +53,7 @@ class TablePayload(BasePayload):
             row_count=metadata.base_metadata.row_count,
             importance_score=metadata.importance_score
         )
+
         
 @dataclass
 class QueryPayload(BasePayload):

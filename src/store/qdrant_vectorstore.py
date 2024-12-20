@@ -20,6 +20,7 @@ logger = logging.getLogger('hey-database')
 class QdrantStore(VectorStore):
     """Implementazione del vectorstore Qdrant
     TODO sta classe è arrivata a fare troppa roba, andrebbero divisi i vari servizi che offre
+    TODO disassociare il concetto di metadati enhanced allo store e integrarlo all'estrazione dei metadati dallo schema
     """
     
     def __init__(self,
@@ -51,14 +52,18 @@ class QdrantStore(VectorStore):
         self.embedding_model = embedding_model
         self.collection_name = collection_name
         self.vector_size = self.embedding_model.get_embedding_dimension()
-        
-    def initialize(self, enhanced_metadata: Optional[Dict[str, EnhancedTableMetadata]] = None) -> bool:
-        """Inizializza la collection e opzionalmente carica i metadati"""
+
+    def initialize(self) -> bool:
+        """Inizializza la collection se non esiste.
+        Returns:
+            bool: True se l'inizializzazione ha successo
+        """
         try:
             collections = self.client.get_collections().collections
             exists = any(c.name == self.collection_name for c in collections)
-            
+
             if not exists:
+                logger.info(f"Creating new collection: {self.collection_name}")
                 self.client.create_collection(
                     collection_name=self.collection_name,
                     vectors_config=VectorParams(
@@ -66,24 +71,43 @@ class QdrantStore(VectorStore):
                         distance=Distance.COSINE
                     )
                 )
-                
-            # se ci sono metadati da salvare nello store verifichiamo se sono già presenti
-            # se non lo sono popoliamo in automatico la collection
-            if enhanced_metadata:
-                logger.debug("Starting metadata population check")
-                for table_name, metadata in enhanced_metadata.items():
-                    if not self._table_exists(table_name):
-                        logger.debug(f"Adding metadata for table: {table_name}")
-                        if not self.add_table(metadata):
-                            logger.error(f"Error adding metadata for table: {table_name}")
-                            return False
-                    else:
-                        logger.debug(f"Metadata already exists for table: {table_name}")
-            
+                logger.info(f"Collection {self.collection_name} created successfully")
+            else:
+                logger.info(f"Collection {self.collection_name} already exists")
+
             return True
-            
+
         except Exception as e:
             logger.error(f"Error in store initialization: {str(e)}")
+            return False
+
+        except Exception as e:
+            logger.error(f"Error in store initialization: {str(e)}")
+            return False
+
+    def populate_store_with_metadata(self, metadata: Dict[str, EnhancedTableMetadata]) -> bool:
+        """Popola lo store con i metadati enhanced se è una nuova collection.
+        Args:
+            metadata: Dizionario dei metadati enhanced delle tabelle
+        Returns:
+            bool: True se il popolamento ha successo o non era necessario
+        """
+        try:
+            # popola solo se la collection è vuota
+            if self.collection_exists() and self.client.count(self.collection_name).count > 0:
+                logger.info("Collection already populated, skipping metadata population")
+                return True
+
+            logger.info("Populating collection with metadata")
+            for table_name, enhanced_metadata in metadata.items():
+                if not self.add_table(enhanced_metadata):
+                    logger.error(f"Failed to add metadata for table: {table_name}")
+                    return False
+            logger.info("Collection successfully populated")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error in metadata population: {str(e)}")
             return False
         
     def _table_exists(self, table_name: str) -> bool:
@@ -112,10 +136,8 @@ class QdrantStore(VectorStore):
 
     def add_table(self, payload_metadata: EnhancedTableMetadata) -> bool:
         """Aggiunge o aggiorna un documento tabella nella collection
-        
         Args:
             payload_metadata: Metadati arricchiti della tabella
-        
         Returns:
             bool: True se l'operazione è andata a buon fine, False altrimenti
         """

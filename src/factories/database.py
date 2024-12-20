@@ -3,6 +3,8 @@ from typing import Optional
 
 from src.config.models.db import DatabaseConfig
 from src.config.models.cache import CacheConfig
+from src.llm_handler.base_llm_handler import LLMHandler
+from src.schema_metadata.enhancing_strategy import MetadataEnhancementStrategy
 
 from src.connettori.postgres import PostgresManager
 from src.connettori.mysql import MySQLManager
@@ -58,12 +60,16 @@ class DatabaseFactory:
     @staticmethod
     def create_metadata_retriever(config: DatabaseConfig,
                                   db,
+                                  llm_handler: LLMHandler,
+                                  enhancement_strategy: MetadataEnhancementStrategy,
                                   cache_config: Optional[CacheConfig] = None):
         """Crea il metadata retriever appropriato
 
         Args:
-            db_config: Configurazione del database
+            config: Configurazione del database
             db: Istanza del database connector
+            llm_handler: Handler per il modello di linguaggio
+            enhancement_strategy: Strategia per l'enhancement dei metadati
             cache_config: Configurazione opzionale della cache
         """
         retriever_types = {
@@ -84,4 +90,10 @@ class DatabaseFactory:
             cache_dir = cache_config.directory
             logger.debug(f"Metadata caching enabled. Using directory: {cache_dir}")
 
-        return retriever_class(db.engine, schema=config.schema, cache_dir=cache_dir)
+        return retriever_class(
+            db.engine,
+            llm_handler=llm_handler,
+            enhancement_strategy=enhancement_strategy,
+            schema=config.schema,
+            cache_dir=cache_dir
+        )

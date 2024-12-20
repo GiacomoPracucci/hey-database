@@ -56,7 +56,6 @@ class MetadataAgent(Agent):
 
     def build_prompt(self, input_data: TableMetadata) -> str:
         """Costruisce il prompt per la generazione della descrizione
-
         Args:
             input_data: Metadati della tabella
 
@@ -88,7 +87,7 @@ Primary Keys: {', '.join(input_data.primary_keys)}
 Foreign Keys:
 {chr(10).join(foreign_keys_info) if foreign_keys_info else 'No foreign keys'}
 
-Provide a clear and concise description in 2-3 sentences."""
+Provide a clear and concise description in max 2 sentences. La descrizione deve essere in lingua italiana per favore."""
 
         return prompt
 
