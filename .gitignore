@@ -2,8 +2,8 @@
 .idea/
 .vscode/
 
-data/cache/
-data/*
+data/cache/*
+data/*/
 data/*_store/
 data/*/collection/
 data/**/storage.sqlite
