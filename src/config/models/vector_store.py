@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Any, Literal
 
-from docutils.nodes import strong
-
 from src.config.models.embedding import EmbeddingConfig
 from src.config.models.metadata import EnhancedTableMetadata
 
