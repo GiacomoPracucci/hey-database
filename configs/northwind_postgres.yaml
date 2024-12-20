@@ -27,7 +27,7 @@ llm:
   api_key: ${OPENAI_API_KEY}
 
 prompt:
-  include_sample_data: true
+  include_sample_data: false
   max_sample_rows: 2
 
 vector_store:
