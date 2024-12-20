@@ -2,6 +2,8 @@
 .idea/
 .vscode/
 
+data/cache/
+data/*
 data/*_store/
 data/*/collection/
 data/**/storage.sqlite
@@ -11,7 +13,3 @@ data/**/.lock
 # Ignora tutte le cartelle e file __pycache__
 **/__pycache__/
 *.pyc
-
-docs/sviluppi/
-
-test/feedback.py

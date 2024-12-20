@@ -87,7 +87,7 @@ Primary Keys: {', '.join(input_data.primary_keys)}
 Foreign Keys:
 {chr(10).join(foreign_keys_info) if foreign_keys_info else 'No foreign keys'}
 
-Provide a clear and concise description in max 2 sentences. La descrizione deve essere in lingua italiana per favore."""
+Provide a clear and concise description in max 2 sentences"""
 
         return prompt
 
