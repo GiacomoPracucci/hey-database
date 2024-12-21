@@ -17,7 +17,6 @@ from src.schema_metadata.snowflake_metadata_retriever import SnowflakeMetadataRe
 from src.schema_metadata.vertica_metadata_retriever import VerticaMetadataRetriever
 
 
-
 logger = logging.getLogger('hey-database')
 
 class DatabaseFactory:
