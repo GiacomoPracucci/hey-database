@@ -44,7 +44,7 @@ class OpenAIHandler(LLMHandler):
     )
     def get_completion(self,
                        prompt: str,
-                       system_prompt: str = "Sei un assistente utile ed accurato.",
+                       system_prompt: str = "",
                        temperature: float = 0.2,
                        max_tokens: int = 1000
                        ) -> Union[str, None]:
@@ -68,7 +68,7 @@ class OpenAIHandler(LLMHandler):
         
     def get_chat_stream(self,
                         prompt: str,
-                        system_prompt: str = "Sei un assistente utile ed accurato.",
+                        system_prompt: str = "",
                         temperature: float = 0.2):
         """Get streaming response from OpenAI API"""
         try:
