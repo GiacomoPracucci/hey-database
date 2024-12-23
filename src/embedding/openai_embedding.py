@@ -1,9 +1,8 @@
 from typing import List, Union
-import numpy as np
 from openai import OpenAI
-from src.embedding.base_embedding_model import EmbeddingModel
+from src.embedding.embedding import Embedder
 
-class OpenAIEmbedding(EmbeddingModel):
+class OpenAIEmbedding(Embedder):
     """Embedding model implementation using OpenAI's API"""
     
     def __init__(self, api_key: str, model: str = "text-embedding-3-small"):

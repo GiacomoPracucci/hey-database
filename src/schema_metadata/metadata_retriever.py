@@ -9,9 +9,9 @@ from sqlalchemy.engine import Inspector
 from src.config.models.metadata import TableMetadata, EnhancedTableMetadata
 from src.cache.metadata_cache import MetadataCache
 from src.agents.metadata_enhancer_agent import MetadataAgent
-from src.llm_handler.base_llm_handler import LLMHandler
+from src.llm_handler.llm_handler import LLMHandler
 from src.config.models.metadata import MetadataConfig
-from src.schema_metadata.enhancing_strategy import MetadataEnhancementStrategy
+from src.schema_metadata.enhancement_strategy import MetadataEnhancementStrategy
 
 logger = logging.getLogger('hey-database')
 

@@ -4,8 +4,8 @@ from src.factories.database import DatabaseFactory
 from src.factories.llm import LLMFactory
 from src.factories.vector_store import VectorStoreFactory
 from src.agents.sql_agent import SQLAgent
-from src.factories.builders.base import AgentBuilder
-from src.schema_metadata.enhancing_strategy import MetadataEnhancementStrategy
+from src.factories.builders.agent_builder import AgentBuilder
+from src.schema_metadata.enhancement_strategy import MetadataEnhancementStrategy
 
 logger = logging.getLogger('hey-database')
 

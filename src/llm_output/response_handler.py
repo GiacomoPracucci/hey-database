@@ -2,8 +2,7 @@ import pandas as pd
 import json
 from typing import Dict, Any
 import logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger('hey-database')
     
 class ResponseHandler:
     """Processa la risposta generata dal LLM, formattandola ed estraendo query SQL e spiegazione + ci aggiunge i risultati dell'estrazione. 

@@ -4,8 +4,8 @@ from typing import Optional
 from src.config.models.db import DatabaseConfig
 from src.config.models.cache import CacheConfig
 from src.config.models.metadata import MetadataConfig
-from src.llm_handler.base_llm_handler import LLMHandler
-from src.schema_metadata.enhancing_strategy import MetadataEnhancementStrategy
+from src.llm_handler.llm_handler import LLMHandler
+from src.schema_metadata.enhancement_strategy import MetadataEnhancementStrategy
 
 from src.connettori.postgres import PostgresManager
 from src.connettori.mysql import MySQLManager

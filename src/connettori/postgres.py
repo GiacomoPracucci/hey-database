@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
-from src.connettori.base_connector import DatabaseConnector
+from src.connettori.connector import DatabaseConnector
 
 class PostgresManager(DatabaseConnector):
     """ Classe per gestire la connessione e le query al database PostgreSQL"""

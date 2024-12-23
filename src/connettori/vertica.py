@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-from src.connettori.base_connector import DatabaseConnector
+from src.connettori.connector import DatabaseConnector
 
 class VerticaManager(DatabaseConnector):
     """Classe per gestire la connessione e le query al database Vertica"""

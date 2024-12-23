@@ -5,8 +5,8 @@ from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams
 from dataclasses import asdict
 
-from src.store.base_vectorstore import VectorStore
-from src.embedding.base_embedding_model import EmbeddingModel
+from src.store.vectorstore import VectorStore
+from src.embedding.embedding import Embedder
 from src.config.models.metadata import EnhancedTableMetadata
 from src.config.models.vector_store import (
     TablePayload,
@@ -25,7 +25,7 @@ class QdrantStore(VectorStore):
     
     def __init__(self,
                 collection_name: str,
-                embedding_model: EmbeddingModel,
+                embedding_model: Embedder,
                 path: Optional[str] = None,
                 url: Optional[str] = None,
                 api_key: Optional[str] = None

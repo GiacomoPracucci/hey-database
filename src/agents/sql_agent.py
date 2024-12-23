@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, List, Tuple, Any
 
-from src.connettori.base_connector import DatabaseConnector
-from src.llm_handler.base_llm_handler import LLMHandler
-from src.schema_metadata.base_metadata_retriever import DatabaseMetadataRetriever
+from src.connettori.connector import DatabaseConnector
+from src.llm_handler.llm_handler import LLMHandler
+from src.schema_metadata.metadata_retriever import DatabaseMetadataRetriever
 from src.llm_output.response_handler import ResponseHandler
-from src.store.base_vectorstore import VectorStore
+from src.store.vectorstore import VectorStore
 from src.config.languages import SupportedLanguage
-from src.agents.base_agent import Agent
+from src.agents.agent import Agent
 
 import logging
 logger = logging.getLogger('hey-database')

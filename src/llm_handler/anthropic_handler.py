@@ -1,7 +1,7 @@
 from anthropic import Anthropic
 from typing import Union, Generator
 from tenacity import retry, stop_after_attempt, wait_exponential
-from src.llm_handler.base_llm_handler import LLMHandler
+from src.llm_handler.llm_handler import LLMHandler
 
 class AnthropicHandler(LLMHandler):
     """Classe per gestire le operazioni con le API di Anthropic/Claude"""

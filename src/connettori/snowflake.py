@@ -1,10 +1,7 @@
-from snowflake import connector
 from snowflake.sqlalchemy import URL
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
-import pandas as pd
-from typing import Optional
-from src.connettori.base_connector import DatabaseConnector
+from src.connettori.connector import DatabaseConnector
 
 class SnowflakeManager(DatabaseConnector):
     """Classe per gestire la connessione e le query a Snowflake"""

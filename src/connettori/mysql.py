@@ -2,7 +2,7 @@ from typing import Optional
 import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-from src.connettori.base_connector import DatabaseConnector
+from src.connettori.connector import DatabaseConnector
 
 class MySQLManager(DatabaseConnector):
     """Classe per gestire la connessione e le query al database MySQL/MariaDB"""

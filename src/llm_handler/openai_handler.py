@@ -1,8 +1,7 @@
 from openai import OpenAI
-from typing import Union, List,  Any
-import time
+from typing import Union, Any
 from tenacity import retry, stop_after_attempt, wait_exponential
-from src.llm_handler.base_llm_handler import LLMHandler
+from src.llm_handler.llm_handler import LLMHandler
 
 class OpenAIHandler(LLMHandler):
     """Classe per gestire le operazion con le API di OpenAI"""

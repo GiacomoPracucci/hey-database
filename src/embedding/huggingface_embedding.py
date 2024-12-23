@@ -1,9 +1,8 @@
 from sentence_transformers import SentenceTransformer
 from typing import List, Union
-import numpy as np
-from src.embedding.base_embedding_model import EmbeddingModel
+from src.embedding.embedding import Embedder
 
-class HuggingFaceEmbedding(EmbeddingModel):
+class HuggingFaceEmbedding(Embedder):
     """Embedding model implementation using HuggingFace's sentence-transformers"""
 
     def __init__(self, model_name: str = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"):

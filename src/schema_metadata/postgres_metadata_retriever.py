@@ -1,6 +1,6 @@
 from typing import List
 from sqlalchemy import text
-from src.schema_metadata.base_metadata_retriever import DatabaseMetadataRetriever
+from src.schema_metadata.metadata_retriever import DatabaseMetadataRetriever
 import logging
 logger = logging.getLogger('hey-database')
 

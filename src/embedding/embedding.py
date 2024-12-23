@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Union
 
-class EmbeddingModel(ABC):
+class Embedder(ABC):
     """Base class for embedding models that convert text to vector representations"""
     
     @abstractmethod

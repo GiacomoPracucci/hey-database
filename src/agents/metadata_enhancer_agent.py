@@ -3,9 +3,9 @@ import re
 import logging
 from dataclasses import dataclass
 
-from src.agents.base_agent import Agent
+from src.agents.agent import Agent
 from src.config.models.metadata import TableMetadata, EnhancedTableMetadata
-from src.llm_handler.base_llm_handler import LLMHandler
+from src.llm_handler.llm_handler import LLMHandler
 
 logger = logging.getLogger('hey-database')
 

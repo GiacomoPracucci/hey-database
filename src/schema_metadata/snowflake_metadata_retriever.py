@@ -1,7 +1,7 @@
 from typing import Dict, List
 from sqlalchemy import text
 import logging
-from src.schema_metadata.base_metadata_retriever import DatabaseMetadataRetriever
+from src.schema_metadata.metadata_retriever import DatabaseMetadataRetriever
 
 logger = logging.getLogger('hey-database')
 
