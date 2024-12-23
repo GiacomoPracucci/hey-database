@@ -3,6 +3,7 @@ from typing import Optional
 
 from src.config.models.db import DatabaseConfig
 from src.config.models.cache import CacheConfig
+from src.config.models.metadata import MetadataConfig
 from src.llm_handler.base_llm_handler import LLMHandler
 from src.schema_metadata.enhancing_strategy import MetadataEnhancementStrategy
 
@@ -61,6 +62,7 @@ class DatabaseFactory:
                                   db,
                                   llm_handler: LLMHandler,
                                   enhancement_strategy: MetadataEnhancementStrategy,
+                                  metadata_config: MetadataConfig,
                                   cache_config: Optional[CacheConfig] = None):
         """Crea il metadata retriever appropriato
 
@@ -93,6 +95,7 @@ class DatabaseFactory:
             db.engine,
             llm_handler=llm_handler,
             enhancement_strategy=enhancement_strategy,
+            metadata_config=metadata_config,
             schema=config.schema,
             cache_dir=cache_dir
         )

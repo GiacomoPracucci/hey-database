@@ -80,8 +80,9 @@ class SQLAgentBuilder(AgentBuilder[SQLAgent]):
         self.metadata_retriever = DatabaseFactory.create_metadata_retriever(
             self.config.database,
             self.db,
-            self.llm,  # Passa l'LLM handler
-            enhancement_strategy,  # Passa la strategia
+            self.llm,
+            enhancement_strategy,
+            self.config.metadata,
             self.config.cache
         )
 

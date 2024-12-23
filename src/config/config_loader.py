@@ -10,7 +10,7 @@ from src.config.models.prompt import PromptConfig
 from src.config.models.vector_store import VectorStoreConfig
 from src.config.models.embedding import EmbeddingConfig
 from src.config.models.cache import CacheConfig
-
+from src.config.models.metadata import MetadataConfig
 
 import logging
 
@@ -95,12 +95,18 @@ class ConfigLoader:
         # Resolve ${db_schema} in cache directory if needed
         if cache_config.directory and '${db_schema}' in cache_config.directory:
             cache_config.directory = cache_config.directory.replace('${db_schema}', context['db_schema'])
+            
+        metadata_config = MetadataConfig(
+            retrieve_distinct_values=config_data.get('metadata', {}).get('retrieve_distinct_values', False),
+            max_distinct_values=config_data.get('metadata', {}).get('max_distinct_values', 100)
+        )
 
         return AppConfig(
             database=db_config,
             llm=llm_config,
             prompt=prompt_config,
             cache = cache_config,
+            metadata=metadata_config,
             vector_store=vector_store_config,
             debug=config_data.get('debug', False)
         )

@@ -10,6 +10,8 @@ from src.config.models.metadata import TableMetadata, EnhancedTableMetadata
 from src.cache.metadata_cache import MetadataCache
 from src.agents.metadata_enhancer_agent import MetadataAgent
 from src.llm_handler.base_llm_handler import LLMHandler
+from src.config.models.metadata import MetadataConfig
+from src.schema_metadata.enhancing_strategy import MetadataEnhancementStrategy
 
 logger = logging.getLogger('hey-database')
 
@@ -19,7 +21,8 @@ class DatabaseMetadataRetriever(ABC):
     def __init__(self,
                  db_engine: sa.Engine,
                  llm_handler: LLMHandler,
-                 enhancement_strategy: 'MetadataEnhancementStrategy',
+                 enhancement_strategy: MetadataEnhancementStrategy,
+                 metadata_config: MetadataConfig,
                  schema: str = None,
                  cache_dir: Optional[str] = None):
         """
@@ -27,12 +30,14 @@ class DatabaseMetadataRetriever(ABC):
             db_engine: Engine del database
             llm_handler: Handler per il modello di linguaggio
             enhancement_strategy: Strategia per determinare se fare enhancement
+            metadata_config: Configurazione per il recupero dei metadati
             schema: Nome dello schema da utilizzare
             cache_dir: Directory opzionale per il caching dei metadati
         """
         self.engine = db_engine
         self.llm_handler = llm_handler
         self.enhancement_strategy = enhancement_strategy
+        self.metadata_config = metadata_config
         self.schema = schema or db_engine.url.database
         self.tables: Dict[str, EnhancedTableMetadata] = {}
         self.inspector: Inspector = inspect(self.engine)
@@ -160,8 +165,15 @@ class DatabaseMetadataRetriever(ABC):
                 "name": col["name"],
                 "type": str(col["type"]),
                 "nullable": col["nullable"],
-                "distinct_values": self._get_column_distinct_values(table_name, col["name"])
             }
+            
+            if self.metadata_config.retrieve_distinct_values:
+                column_info["distinct_values"] = self._get_column_distinct_values(
+                    table_name,
+                    col["name"],
+                    max_values=self.metadata_config.max_distinct_values
+                )
+            
             columns.append(column_info)
         return columns
 

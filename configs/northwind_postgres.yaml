@@ -1,6 +1,6 @@
 # northwind_postgres.yaml
 database:
-  type: postgres  # o mysql o snowflake
+  type: postgres # o mysql o snowflake
   host: localhost
   port: 5432
   database: giacomo
@@ -12,13 +12,17 @@ database:
   # account: xy12345.eu-central-1
   # role: analyst
 
+metadata:
+  retrieve_distinct_values: true # true per recuperare i valori distinti delle colonne, false altrimenti
+  max_distinct_values: 100 # massimo numero di valori distinti da recuperare per colonna
+
 cache:
   enabled: true
   directory: ./data/cache/${db_schema}
   ttl_hours: 336
 
 llm:
-  type: openai    # openai, ollama
+  type: openai # openai, ollama
   # Configurazioni per ollama
   #base_url: http://localhost:11434
   model: gpt-4o
@@ -40,7 +44,7 @@ vector_store:
   batch_size: 100
   embedding:
     type: openai # type: openai, huggingface
-    model_name: text-embedding-3-small  # sentence-transformers/multi-qa-MiniLM-L6-cos-v1 , text-embedding-3-small text-embedding-3-large
+    model_name: text-embedding-3-small # sentence-transformers/multi-qa-MiniLM-L6-cos-v1 , text-embedding-3-small text-embedding-3-large
     api_key: ${OPENAI_API_KEY} # Per OpenAI
 
 debug: true

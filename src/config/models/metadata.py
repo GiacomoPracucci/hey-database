@@ -2,6 +2,12 @@ from dataclasses import dataclass
 from typing import List, Dict
 
 @dataclass
+class MetadataConfig:
+    """Configurazione per il recupero ed elaborazione dei metadati"""
+    retrieve_distinct_values: bool = False  # Se True, recupera i valori distinti delle colonne
+    max_distinct_values: int = 100         # Numero massimo di valori distinti da recuperare per colonna
+
+@dataclass
 class TableMetadata:
     """Metadati inferiti dallo schema"""
     name: str
