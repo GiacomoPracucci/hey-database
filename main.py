@@ -2,13 +2,12 @@ import os
 import sys
 import logging
 from pathlib import Path
-
-from flask import Flask
+from flask_cors import CORS
+from flask import Flask, jsonify
 from src.config.config_loader import ConfigLoader
 from src.factories import ServiceFactory 
 from src.backend.chat_routes import create_chat_routes
 from src.backend.schema_routes import create_schema_routes
-
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -24,36 +23,21 @@ def create_app():
     sys.path.append(str(project_root))
     os.chdir(project_root)
     
-    template_dir = os.path.join(project_root, 'src', 'web', 'templates')
-    static_dir = os.path.join(project_root, 'src', 'web', 'static')
-    config_path = os.path.join(project_root, 'configs','northwind_postgres.yaml')
-    
+    config_path = os.path.join(project_root, 'configs', 'northwind_postgres.yaml')
     config = ConfigLoader.load_config(config_path)
     
-    app = Flask(__name__, 
-                template_folder=template_dir,
-                static_folder=static_dir)
+    app = Flask(__name__)
+    CORS(app)  # Configurazione CORS semplice ma sufficiente per sviluppo
     
     app.config['DEBUG'] = config.debug
     
     try:
-        # crea il servizio chat
         chat_service = ServiceFactory.create_chat_service(config)
-
-        # registra le routes
         create_chat_routes(app, chat_service)
         create_schema_routes(app, chat_service.sql_agent.metadata_retriever)
         
-        # route principale
-        @app.route('/')
-        def index():
-            """route principale che reindirizza alla chat"""
-            from flask import redirect, url_for
-            return redirect(url_for('chat.index'))
-        
-        
     except Exception as e:
-        print(f"Failed to initialize service: {e}")
+        logger.error(f"Failed to initialize service: {e}")
         raise
     
     return app

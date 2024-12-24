@@ -1,51 +1,18 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, request, jsonify
 import logging
 
 logger = logging.getLogger('hey-database')
 logger.setLevel(logging.DEBUG)
 
 def create_chat_routes(app, chat_service):
-    """ Crea e configuraz le routes dell'app
+    """Crea e configura le routes per la chat
     
     Args:
-    app: Istanza Flask
-    chat_service: Istanza di ChatService già configurata
+        app: Istanza Flask
+        chat_service: Istanza di ChatService già configurata
     """
     chat_bp = Blueprint('chat', __name__)
     
-    @chat_bp.route('/')
-    def index():
-        """Index Page"""
-        logger.debug("Rendering index page")
-        return render_template('chat/index.html')
-
-    @chat_bp.route('/api/feedback', methods=['POST'])
-    def feedback():
-        """Endpoint per gestire il feedback positivo dell'utente"""
-        try:
-            logger.debug("Received feedback request")
-            data = request.get_json()
-            logger.debug(f"Received data: {data}")
-
-            if not data or not all(key in data for key in ['question', 'sql_query', 'explanation']):
-                logger.error("Missing data in request")
-                return jsonify({"success": False, "error": "Missing data"}), 400
-
-            success = chat_service.handle_feedback(
-                question=data['question'],
-                sql_query=data['sql_query'],
-                explanation=data['explanation']
-            )
-
-            if success:
-                return jsonify({"success": True})
-            else:
-                return jsonify({"success": False, "error": "Error saving feedback"}), 500
-
-        except Exception as e:
-            logger.exception(f"Error in feedback endpoint: {str(e)}")
-            return jsonify({"success": False, "error": str(e)}), 500
-
     @chat_bp.route('/api/chat', methods=['POST'])
     def chat():
         """Chat endpoint"""
@@ -75,6 +42,33 @@ def create_chat_routes(app, chat_service):
             logger.exception(f"Error in chat endpoint: {str(e)}")
             return jsonify({"success": False, "error": str(e)}), 500
 
+    @chat_bp.route('/api/feedback', methods=['POST'])
+    def feedback():
+        """Endpoint per gestire il feedback positivo dell'utente"""
+        try:
+            logger.debug("Received feedback request")
+            data = request.get_json()
+            logger.debug(f"Received data: {data}")
+
+            if not data or not all(key in data for key in ['question', 'sql_query', 'explanation']):
+                logger.error("Missing data in request")
+                return jsonify({"success": False, "error": "Missing data"}), 400
+
+            success = chat_service.handle_feedback(
+                question=data['question'],
+                sql_query=data['sql_query'],
+                explanation=data['explanation']
+            )
+
+            if success:
+                return jsonify({"success": True})
+            else:
+                return jsonify({"success": False, "error": "Error saving feedback"}), 500
+
+        except Exception as e:
+            logger.exception(f"Error in feedback endpoint: {str(e)}")
+            return jsonify({"success": False, "error": str(e)}), 500
+
+
     app.register_blueprint(chat_bp, url_prefix='/chat')
-    
     return app

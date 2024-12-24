@@ -1,8 +1,9 @@
 import { Message } from "./types";
+import { FeedbackRequest } from "../../types";
 
 interface MessageBubbleProps {
   message: Message;
-  onFeedback?: (question: string, query: string, explanation: string) => void;
+  onFeedback?: (feedback: FeedbackRequest) => Promise<void>;
 }
 
 const MessageBubble = ({ message, onFeedback }: MessageBubbleProps) => {
@@ -72,11 +73,11 @@ const MessageBubble = ({ message, onFeedback }: MessageBubbleProps) => {
                           message.query &&
                           message.explanation
                         ) {
-                          onFeedback(
-                            message.originalQuestion,
-                            message.query,
-                            message.explanation
-                          );
+                          onFeedback({
+                            question: message.originalQuestion,
+                            sql_query: message.query,
+                            explanation: message.explanation,
+                          });
                         }
                       }}
                     >
