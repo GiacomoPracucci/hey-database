@@ -10,13 +10,17 @@ export default defineConfig({
   // questo perchè avremo il server flask per il back + il server vite per il front
   server: {
     proxy: {
-      "/chat": {
+      "/chat/api": {
         target: "http://localhost:5000", // url del server flask, le chiamate a /chat vengono reindirizzate a http://localhost:5000/chat/*
         changeOrigin: true, // per evitare problemi CORS (Cross-Origin Resource Sharing) durante lo sviluppo
+        secure: false,
+        rewrite: (path) => path.replace(/^\/chat\/api/, "/chat/api"),
       },
-      "/schema": {
+      "/schema/api": {
         target: "http://localhost:5000", // idem per schema
         changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/schema\/api/, "/schema/api"),
       },
     },
   },
