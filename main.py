@@ -6,8 +6,8 @@ from pathlib import Path
 from flask import Flask
 from src.config.config_loader import ConfigLoader
 from src.factories import ServiceFactory 
-from src.web.chat_routes import create_chat_routes
-from src.web.schema_routes import create_schema_routes
+from src.backend.chat_routes import create_chat_routes
+from src.backend.schema_routes import create_schema_routes
 
 
 logging.basicConfig(
