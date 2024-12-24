@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { v4 as uuidv4 } from "uuid"; // Dovrai installare uuid con npm
+import { v4 as uuidv4 } from "uuid";
 import { Message } from "../components/chat/types";
 import { FeedbackRequest } from "../types";
 import ChatService from "../services/chat";
@@ -16,34 +16,34 @@ interface UseChatReturn {
 }
 
 const useChat = (): UseChatReturn => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Carica i messaggi dal localStorage all'avvio
-  useEffect(() => {
-    const savedMessages = localStorage.getItem(STORAGE_KEY);
-    if (savedMessages) {
+  const [messages, setMessages] = useState<Message[]>(() => {
+    // Inizializza lo stato dai dati salvati
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
       try {
-        setMessages(JSON.parse(savedMessages));
+        return JSON.parse(saved);
       } catch (e) {
         console.error("Error loading saved messages:", e);
         localStorage.removeItem(STORAGE_KEY);
       }
     }
-  }, []);
+    return [];
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Salva i messaggi nel localStorage quando cambiano
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    if (messages.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    }
   }, [messages]);
 
-  // Invia un messaggio
   const sendMessage = useCallback(async (content: string) => {
     setError(null);
     setIsLoading(true);
 
-    // Aggiungi immediatamente il messaggio dell'utente
     const userMessage: Message = {
       id: uuidv4(),
       type: "user",
@@ -54,10 +54,8 @@ const useChat = (): UseChatReturn => {
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      // Invia il messaggio all'API
       const response = await ChatService.sendMessage(content);
 
-      // Crea il messaggio del bot
       const botMessage: Message = {
         id: uuidv4(),
         type: "bot",
@@ -66,7 +64,6 @@ const useChat = (): UseChatReturn => {
         query: response.query,
         explanation: response.explanation,
         results: response.results,
-        error: response.error,
         originalQuestion: response.original_question,
         fromVectorStore: response.from_vector_store,
       };
@@ -75,9 +72,9 @@ const useChat = (): UseChatReturn => {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An unknown error occurred";
+      setError(errorMessage);
 
-      // Crea il messaggio di errore del bot
-      const botErrorMessage: Message = {
+      const errorBotMessage: Message = {
         id: uuidv4(),
         type: "bot",
         content: "",
@@ -85,23 +82,22 @@ const useChat = (): UseChatReturn => {
         error: errorMessage,
       };
 
-      setMessages((prev) => [...prev, botErrorMessage]);
-      setError(errorMessage); // Ora passiamo direttamente la stringa
+      setMessages((prev) => [...prev, errorBotMessage]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Invia feedback positivo
   const sendFeedback = useCallback(async (feedback: FeedbackRequest) => {
     try {
       await ChatService.sendFeedback(feedback);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error sending feedback");
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred";
+      setError(errorMessage);
     }
   }, []);
 
-  // Pulisce la chat
   const clearMessages = useCallback(() => {
     setMessages([]);
     localStorage.removeItem(STORAGE_KEY);
