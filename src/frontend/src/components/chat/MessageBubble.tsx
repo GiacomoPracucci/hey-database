@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Message } from "./types";
 import { FeedbackRequest } from "../../types";
 
@@ -7,6 +8,37 @@ interface MessageBubbleProps {
 }
 
 const MessageBubble = ({ message, onFeedback }: MessageBubbleProps) => {
+  const [feedbackGiven, setFeedbackGiven] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+
+  // gestione del click sul feedback
+  const handleFeedback = async () => {
+    if (!onFeedback || message.type !== "bot") return;
+
+    const botMessage = message; // Type narrowing già fatto con il check sopra
+    if (
+      !botMessage.originalQuestion ||
+      !botMessage.query ||
+      !botMessage.explanation
+    )
+      return;
+
+    try {
+      await onFeedback({
+        question: botMessage.originalQuestion,
+        sql_query: botMessage.query,
+        explanation: botMessage.explanation,
+      });
+      setFeedbackGiven(true);
+      setFeedbackError(null);
+    } catch (err) {
+      setFeedbackError(
+        err instanceof Error ? err.message : "Error sending feedback"
+      );
+      setTimeout(() => setFeedbackError(null), 3000);
+    }
+  };
+
   // se è un messaggio utente
   if (message.type === "user") {
     return (
@@ -56,30 +88,26 @@ const MessageBubble = ({ message, onFeedback }: MessageBubbleProps) => {
                 <div className="flex gap-2">
                   <button
                     className="p-1.5 hover:bg-blue-500 rounded transition-colors"
-                    title="Copia query"
+                    title="Copy query"
                     onClick={() =>
                       navigator.clipboard.writeText(message.query || "")
                     }
                   >
                     <i className="fas fa-copy text-sm"></i>
                   </button>
+
                   {onFeedback && message.explanation && (
                     <button
-                      className="p-1.5 hover:bg-blue-500 rounded transition-colors"
-                      title="Mark as correct answer"
-                      onClick={() => {
-                        if (
-                          message.originalQuestion &&
-                          message.query &&
-                          message.explanation
-                        ) {
-                          onFeedback({
-                            question: message.originalQuestion,
-                            sql_query: message.query,
-                            explanation: message.explanation,
-                          });
-                        }
-                      }}
+                      className={`p-1.5 rounded transition-colors ${
+                        feedbackGiven
+                          ? "text-green-300 cursor-default"
+                          : "hover:bg-blue-500 cursor-pointer"
+                      }`}
+                      title={
+                        feedbackGiven ? "Feedback given" : "Mark as helpful"
+                      }
+                      onClick={handleFeedback}
+                      disabled={feedbackGiven}
                     >
                       <i className="fas fa-thumbs-up text-sm"></i>
                     </button>
@@ -96,6 +124,13 @@ const MessageBubble = ({ message, onFeedback }: MessageBubbleProps) => {
         {/* Spiegazione */}
         {message.explanation && (
           <div className="text-gray-600 italic mb-4">{message.explanation}</div>
+        )}
+
+        {/* Errore Feedback */}
+        {feedbackError && (
+          <div className="text-red-500 text-sm mt-2 fade-out">
+            {feedbackError}
+          </div>
         )}
 
         {/* Risultati */}
