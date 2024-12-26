@@ -30,10 +30,10 @@ const Layout = ({ children }: PropsWithChildren) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-blue-900 shadow-md">
+    <div className="w-full h-full">
+      <header className="fixed top-0 left-0 right-0 bg-brand-500 bg-blue-900 shadow-md">
         {/* Navbar principale */}
-        <nav className="max-w-[1500px] mx-auto px-6 h-[60px] flex items-center">
+        <nav className="h-[60px] max-w-[1500px] mx-auto px-6 flex items-center">
           {/* Brand */}
           <Link
             to="/"
@@ -87,7 +87,7 @@ const Layout = ({ children }: PropsWithChildren) => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 relative overflow-hidden">{children}</main>
+      <main className="w-full h-full pt-[15px]">{children}</main>
     </div>
   );
 };
