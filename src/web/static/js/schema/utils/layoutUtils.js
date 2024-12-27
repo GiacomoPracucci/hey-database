@@ -31,27 +31,18 @@ const layoutConfigs = {
     name: "cose",
     idealEdgeLength: 150, // Lunghezza ideale degli archi
     nodeOverlap: 20, // Spazio minimo tra i nodi
-    refresh: 20, // Frequenza di refresh durante l'animazione
     padding: 30, // Padding intorno al layout
-    randomize: false, // Disabilita il posizionamento iniziale random
     componentSpacing: 150, // Spazio tra componenti disconnesse
     nodeRepulsion: 400000, // Forza di repulsione tra i nodi
     edgeElasticity: 100, // Elasticità degli archi
     nestingFactor: 5, // Fattore per gestire nodi nidificati
     gravity: 80, // Forza che tiene insieme il grafo
     numIter: 1000, // Numero di iterazioni per il layout
-
-    animate: true,
-    animationDuration: 1000, // Un po' più lungo per il layout complesso
-    animationEasing: "ease-in-out",
-    refresh: 30, // Frequenza di refresh durante l'animazione
-    fit: true,
-    padding: 50,
-
-    randomize: false, // Impedisce il posizionamento random iniziale
     initialTemp: 1000, // Temperatura iniziale per il layout
     coolingFactor: 0.99, // Raffreddamento più graduale
     minTemp: 1.0, // Temperatura minima
+    randomize: false, // Disabilita il posizionamento iniziale random
+    refresh: 30, // Frequenza di refresh durante l'animazione
   },
 
   /**
