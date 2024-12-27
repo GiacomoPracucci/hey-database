@@ -3,10 +3,10 @@ database:
   type: postgres # o mysql o snowflake
   host: localhost
   port: 5432
-  database: giacomo
+  database: postgres
   user: postgres
   password: ${POSTGRES_PWD}
-  schema: &db_schema northwind
+  schema: &db_schema video_games
   # Configurazioni opzionali per Snowflake
   # warehouse: compute_wh
   # account: xy12345.eu-central-1
@@ -38,9 +38,9 @@ vector_store:
   enabled: true
   type: qdrant
   collection_name: ${db_schema}
-  #path: ./data/${db_schema}_store
-  url: ${QDRANT_URL}
-  api_key: ${QDRANT_API_KEY}
+  path: ./data/${db_schema}_store
+  #url: ${QDRANT_URL}
+  #api_key: ${QDRANT_API_KEY}
   batch_size: 100
   embedding:
     type: openai # type: openai, huggingface
