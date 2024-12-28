@@ -1,60 +1,97 @@
-{% extends "base.html" %}
-
-{% block title %}Hey, Database! - Schema{% endblock %}
-
+{% extends "base.html" %} {% block title %}Hey, Database! - Schema{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/schema.css') }}">
-{% endblock %}
-
-{% block page_title %}Entity Relationship Diagram{% endblock %}
-
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/schema.css') }}"
+/>
+{% endblock %} {% block page_title %}Entity Relationship Diagram{% endblock %}
 {% block navbar_actions %}
 <div class="search-field">
-    <i class="fas fa-search"></i>
-    <input type="text" id="schemaSearch" placeholder="Search tables...">
+  <i class="fas fa-search"></i>
+  <input type="text" id="schemaSearch" placeholder="Search tables..." />
 </div>
 
 <div class="zoom-controls">
-    <button class="btn" id="zoomIn" title="Zoom In">
-        <i class="fas fa-plus"></i>
-    </button>
-    <button class="btn" id="zoomOut" title="Zoom Out">
-        <i class="fas fa-minus"></i>
-    </button>
-    <button class="btn" id="zoomFit" title="Fit to Screen">
-        <i class="fas fa-expand"></i>
-    </button>
+  <button class="btn" id="zoomIn" title="Zoom In">
+    <i class="fas fa-plus"></i>
+  </button>
+  <button class="btn" id="zoomOut" title="Zoom Out">
+    <i class="fas fa-minus"></i>
+  </button>
+  <button class="btn" id="zoomFit" title="Fit to Screen">
+    <i class="fas fa-expand"></i>
+  </button>
 </div>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block context_toolbar %}
+<div class="context-toolbar">
+  <div class="control-group">
+    <button id="autoArrangeBtn" class="btn btn-secondary">
+      <i class="fas fa-project-diagram"></i>
+      Auto Arrange
+    </button>
+    <select id="layoutSelect" class="select">
+      <option value="dagre">Hierarchical View</option>
+      <option value="cose">Organic View</option>
+      <option value="concentric">Circular View</option>
+      <option value="grid">Grid View</option>
+    </select>
+  </div>
+</div>
+{% endblock %} {% block content %}
 <div class="schema-container">
-    <div id="schemaViewer" class="schema-viewer"></div>
-    
-    <div id="tableDetails" class="table-details hidden">
-        <div class="details-header">
-            <h3 class="details-title"></h3>
-            <button class="close-button" aria-label="Close details">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="details-content"></div>
-    </div>
-    
-    <div id="loadingIndicator" class="loading-indicator">
-        <div class="typing-indicator">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <div class="loading-text">Loading schema...</div>
-    </div>
-</div>
-{% endblock %}
+  <div id="schemaViewer" class="schema-viewer"></div>
 
-{% block scripts %}
+  <div id="tableDetails" class="table-details hidden">
+    <div class="details-header">
+      <h3 class="details-title"></h3>
+      <button class="close-button" aria-label="Close details">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="details-content"></div>
+  </div>
+
+  <div id="loadingIndicator" class="loading-indicator">
+    <div class="typing-indicator">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="loading-text">Loading schema...</div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.19.1/cytoscape.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.3.2/cytoscape-dagre.min.js"></script>
-<script src="{{ url_for('static', filename='js/schema.js') }}"></script>
+
+<!-- Moduli Schema -->
+<script
+  type="module"
+  src="{{ url_for('static', filename='js/schema/config/styles.js') }}"
+></script>
+<script
+  type="module"
+  src="{{ url_for('static', filename='js/schema/utils/graphUtils.js') }}"
+></script>
+<script
+  type="module"
+  src="{{ url_for('static', filename='js/schema/utils/layoutUtils.js') }}"
+></script>
+<script
+  type="module"
+  src="{{ url_for('static', filename='js/schema/features/search.js') }}"
+></script>
+<script
+  type="module"
+  src="{{ url_for('static', filename='js/schema/features/details.js') }}"
+></script>
+<script
+  type="module"
+  src="{{ url_for('static', filename='js/schema/features/controls.js') }}"
+></script>
+<script
+  type="module"
+  src="{{ url_for('static', filename='js/schema/main.js') }}"
+></script>
 {% endblock %}
