@@ -39,18 +39,8 @@ export class ChatStorage {
    */
   saveMessages(messages) {
     try {
-      const processedMessages = messages
-        .filter(
-          (msg) =>
-            !msg.classList.contains("welcome") &&
-            !msg.classList.contains("typing-indicator-container")
-        )
-        .map((msg) => this.processMessageForStorage(msg));
-
-      localStorage.setItem(
-        STORAGE.CHAT_MESSAGES,
-        JSON.stringify(processedMessages)
-      );
+      // I messaggi sono già oggetti strutturati, dobbiamo solo serializzarli
+      localStorage.setItem(STORAGE.CHAT_MESSAGES, JSON.stringify(messages));
     } catch (error) {
       console.error("Errore nel salvataggio dei messaggi:", error);
       throw new Error("Impossibile salvare i messaggi nel localStorage");
