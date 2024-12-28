@@ -1,6 +1,7 @@
 import { MessageType } from "./messageTypes.js";
 import { chatDomService } from "../../utils/dom.js";
 import { CSS_CLASSES } from "../../config/constants.js";
+import { feedbackView } from "../feedback/feedbackView.js";
 
 /**
  * MessageView gestisce la visualizzazione dei messaggi nella chat.
@@ -83,15 +84,26 @@ export class MessageView {
     const contentDiv = document.createElement("div");
     contentDiv.className = CSS_CLASSES.MESSAGE.CONTENT;
 
-    // Aggiungi query SQL se presente
+    // Crea la query SQL con feedback se presente
     if (message.content.query) {
-      contentDiv.appendChild(
-        chatDomService.createQueryContainer({
-          query: message.content.query,
-          original_question: message.content.original_question,
-          explanation: message.content.explanation,
-        })
-      );
+      const queryContainer = chatDomService.createQueryContainer({
+        query: message.content.query,
+        original_question: message.content.original_question,
+        explanation: message.content.explanation,
+      });
+
+      // Crea il bottone di feedback e aggiungilo alla toolbar
+      const feedbackButton = feedbackView.createFeedbackButton({
+        question: message.content.original_question,
+        sql_query: message.content.query,
+        explanation: message.content.explanation,
+      });
+
+      queryContainer
+        .querySelector(`.${CSS_CLASSES.SQL.TOOLBAR}`)
+        .appendChild(feedbackButton);
+
+      contentDiv.appendChild(queryContainer);
     }
 
     // Aggiungi spiegazione se presente
@@ -157,10 +169,7 @@ export class MessageView {
    * @param {Array} messages - Lista di messaggi da visualizzare
    */
   updateView(messages) {
-    // Pulisce il contenitore
     this.clearMessages();
-
-    // Renderizza tutti i messaggi
     messages.forEach((message) => this.renderMessage(message));
   }
 
@@ -188,7 +197,6 @@ export class MessageView {
    * Pulisce tutti i messaggi dal contenitore
    */
   clearMessages() {
-    // Mantiene solo il messaggio di benvenuto
     const welcomeMessage = this.container.querySelector(
       `.${CSS_CLASSES.MESSAGE.WELCOME}`
     );

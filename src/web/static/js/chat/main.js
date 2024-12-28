@@ -58,6 +58,10 @@ class ChatApplication {
    * Inizializza tutti gli event listener necessari
    * @private
    */
+  /**
+   * Inizializza tutti gli event listener necessari
+   * @private
+   */
   initializeEventListeners() {
     // Inizializza il pulsante di pulizia chat
     const clearButton = document.querySelector(`#${DOM_ELEMENTS.CLEAR_BUTTON}`);
@@ -142,8 +146,19 @@ class ChatApplication {
    * @param {Object} feedbackData - Dati del feedback
    * @private
    */
+  /**
+   * Gestisce l'invio di un feedback
+   * @param {Object} feedbackData - Dati del feedback
+   * @private
+   */
   async handleFeedbackSubmit(feedbackData) {
-    await feedbackApiService.sendFeedbackWithNotification(feedbackData);
+    try {
+      await feedbackApiService.submitFeedback(feedbackData);
+      return true; // Ritorna true in caso di successo
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      throw error; // Rilancia l'errore per gestirlo nel componente feedback
+    }
   }
 
   /**

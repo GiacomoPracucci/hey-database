@@ -141,7 +141,7 @@ export class ChatDomService {
     toolbar.className = CSS_CLASSES.SQL.TOOLBAR;
 
     toolbar.appendChild(this.createCopyButton(content.query));
-    toolbar.appendChild(this.createFeedbackButton(content));
+    //toolbar.appendChild(this.createFeedbackButton(content));
 
     return toolbar;
   }

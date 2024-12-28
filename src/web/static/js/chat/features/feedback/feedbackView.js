@@ -100,6 +100,8 @@ export class FeedbackView {
     button.classList.add(CSS_CLASSES.FEEDBACK.VOTED);
     button.disabled = true;
     button.title = UI_TEXTS.FEEDBACK_SUBMITTED;
+    // Rimuovi l'icona di loading e metti il check
+    button.innerHTML = `<i class="fas fa-check"></i>`;
     buttonData.isVoted = true;
 
     // Aggiorna la mappa
@@ -193,7 +195,7 @@ export class FeedbackView {
 // Creiamo un'istanza della vista feedback quando il DOM è pronto
 let feedbackView;
 document.addEventListener("DOMContentLoaded", () => {
-  feedbackView = new FeedbackView((feedbackData) => {
+  feedbackView = new FeedbackView(async (feedbackData) => {
     // Il callback verrà iniettato dal main.js
     console.log("Feedback submitted:", feedbackData);
   });
