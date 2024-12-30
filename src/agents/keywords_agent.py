@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Tuple, Optional
 import yake
 import logging
-from agents.agent import Agent
+from src.agents.agent import Agent
 
 logger = logging.getLogger('hey-database')
 
