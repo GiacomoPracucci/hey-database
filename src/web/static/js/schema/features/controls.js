@@ -171,15 +171,78 @@ export class SchemaControls {
    * @param {Object} metrics - Metriche della rete calcolate
    */
   highlightImportantNodes(metrics) {
-    const maxDegree = Math.max(...Object.values(metrics.degreeCentrality));
+    // Prima resetta tutti i nodi
+    this.cy.nodes().style({
+      "background-color": "#ffffff",
+      "border-width": 1,
+      "border-color": "#e2e8f0",
+      "shadow-blur": 0,
+      "shadow-color": "transparent",
+      "shadow-opacity": 0,
+    });
+
+    // Calcola il grado massimo considerando tutte le connessioni
+    let maxDegree = 0;
     this.cy.nodes().forEach((node) => {
-      const degree = metrics.degreeCentrality[node.id()];
-      const intensity = degree / maxDegree;
-      if (intensity > 0.7) {
+      const connections = node.connectedEdges().length;
+      maxDegree = Math.max(maxDegree, connections);
+    });
+
+    // Applica gli stili in base alla centralità
+    this.cy.nodes().forEach((node) => {
+      const connections = node.connectedEdges().length;
+      const intensity = connections / maxDegree;
+
+      // Debug - stampa info sui nodi
+      console.log(
+        `Node ${node.id()}: connections=${connections}, intensity=${intensity}`
+      );
+
+      if (intensity > 0.3) {
+        // Nodi con almeno 30% delle connessioni del nodo più connesso
+        // Normalizza l'intensità per i nodi sopra la soglia
+        const normalizedIntensity = (intensity - 0.3) / 0.7;
+
+        // Colore di sfondo che varia dal bianco al blu
+        const r = Math.round(255 - normalizedIntensity * 100);
+        const g = Math.round(255 - normalizedIntensity * 100);
+        const b = 255;
+
         node.style({
-          "border-width": 2,
+          "background-color": `rgb(${r},${g},${b})`,
+          "border-width": 2 + normalizedIntensity * 2,
           "border-color": "#3182ce",
+          "shadow-blur": 5 + normalizedIntensity * 15,
+          "shadow-color": "#3182ce",
+          "shadow-opacity": 0.3 + normalizedIntensity * 0.4,
+          "z-index": 999,
         });
+
+        // Effetto pulsante per i nodi più centrali (top 40%)
+        if (intensity > 0.6) {
+          node.style("shadow-color", "#2c5282");
+          node
+            .animation({
+              style: {
+                "shadow-blur": 20,
+                "shadow-opacity": 0.8,
+              },
+              duration: 1000,
+              complete: function () {
+                node
+                  .animation({
+                    style: {
+                      "shadow-blur": 10,
+                      "shadow-opacity": 0.5,
+                    },
+                    duration: 1000,
+                  })
+                  .play();
+              },
+            })
+            .play()
+            .repeat();
+        }
       }
     });
   }
@@ -311,10 +374,20 @@ export class SchemaControls {
    * Resetta la visualizzazione allo stato iniziale
    */
   resetVisualization() {
+    // Ferma tutte le animazioni in corso
+    this.cy.nodes().forEach((node) => {
+      node.stop();
+    });
+
     // Reset degli stili dei nodi
     this.cy.nodes().style({
+      "background-color": "#ffffff",
       "border-width": 1,
       "border-color": "#e2e8f0",
+      "shadow-blur": 0,
+      "shadow-color": "transparent",
+      "shadow-opacity": 0,
+      "z-index": 1,
     });
 
     // Reset della vista
