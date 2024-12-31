@@ -620,3 +620,15 @@
   font-size: 1.5rem;
   font-weight: 600;
 }
+
+/* --- STILI PER I LINK NEL PANEL --- */
+.relationship-link {
+  color: var(--brand-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.relationship-link:hover {
+  color: var(--brand-accent);
+  text-decoration: underline;
+}

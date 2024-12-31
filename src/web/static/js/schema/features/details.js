@@ -7,14 +7,19 @@ export class TableDetails {
    * Inizializza il gestore dei dettagli delle tabelle
    * @param {Object} schemaData - I dati completi dello schema del database
    */
-  constructor(schemaData) {
+  constructor(schemaData, cy) {
     // Memorizza i dati dello schema per riferimenti futuri
     this.schemaData = schemaData;
+
+    // Memorizza l'istanza di Cytoscape
+    this.cy = cy;
 
     // Inizializza l'overlay
     this.createOverlay();
     // Inizializza gli event listener
     this.setupEventListeners();
+    // Inizializza i listener per le relazioni
+    this.setupRelationshipListeners();
   }
 
   /**
@@ -356,26 +361,41 @@ export class TableDetails {
    */
   formatRelationship(rel) {
     const arrow = rel.type === "outgoing" ? "→" : "←";
-    const direction =
-      rel.type === "outgoing"
-        ? `${rel.from} ${arrow} ${rel.to}`
-        : `${rel.from} ${arrow} ${rel.to}`;
+    const targetTable = rel.type === "outgoing" ? rel.to : rel.from;
 
     return `
-            <div class="relationship-item">
-                <div class="relationship-header">
-                    <span class="relationship-direction">${direction}</span>
-                </div>
-                <div class="relationship-details">
-                    <small class="columns">
-                        ${rel.fromColumns.join(", ")} → ${rel.toColumns.join(
-      ", "
-    )}
-                    </small>
-                    <small class="type">Type: N-1</small>
-                </div>
+        <div class="relationship-item">
+            <div class="relationship-header">
+                <a href="#" class="relationship-link" data-table="${targetTable}">
+                    ${rel.from} ${arrow} ${rel.to}
+                </a>
             </div>
-        `;
+            <div class="relationship-details">
+                <small class="columns">
+                    ${rel.fromColumns.join(", ")} → ${rel.toColumns.join(", ")}
+                </small>
+                <small class="type">Type: N-1</small>
+            </div>
+        </div>
+    `;
+  }
+
+  setupRelationshipListeners() {
+    const detailsPanel = document.getElementById("tableDetails");
+    if (!detailsPanel) return;
+
+    detailsPanel.addEventListener("click", (e) => {
+      const link = e.target.closest(".relationship-link");
+      if (!link) return;
+
+      e.preventDefault();
+      const targetTable = link.dataset.table;
+      const targetNode = this.cy.$(`node[id = "${targetTable}"]`);
+
+      if (targetNode.length) {
+        this.updateDetails(targetNode[0]);
+      }
+    });
   }
 
   /**

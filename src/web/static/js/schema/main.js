@@ -88,12 +88,13 @@ class SchemaViewer {
    * Crea le istanze dei vari moduli funzionali
    * @param {Object} data - I dati dello schema del database
    */
+  // Nel metodo initializeFeatures della classe SchemaViewer
   initializeFeatures(data) {
     // Inizializza il modulo di ricerca
     this.search = new SchemaSearch(this.cy);
 
-    // Inizializza il pannello dei dettagli
-    this.details = new TableDetails(data);
+    // Inizializza il pannello dei dettagli passando anche l'istanza cy
+    this.details = new TableDetails(data, this.cy);
 
     // Inizializza i controlli dell'interfaccia
     this.controls = new SchemaControls(this.cy);
