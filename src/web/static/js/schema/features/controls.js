@@ -372,6 +372,7 @@ export class SchemaControls {
 
   /**
    * Resetta la visualizzazione allo stato iniziale
+   * Rimuove tutti gli effetti di highlighting e riporta il grafo allo stato originale
    */
   resetVisualization() {
     // Ferma tutte le animazioni in corso
@@ -379,18 +380,18 @@ export class SchemaControls {
       node.stop();
     });
 
-    // Reset degli stili dei nodi
+    // Reset degli stili dei nodi allo stato originale
     this.cy.nodes().style({
       "background-color": "#ffffff",
       "border-width": 1,
-      "border-color": "#e2e8f0",
+      "border-color": "#3182ce", // Colore blu originale dei bordi
       "shadow-blur": 0,
       "shadow-color": "transparent",
       "shadow-opacity": 0,
       "z-index": 1,
     });
 
-    // Reset della vista
+    // Reset della vista con animazione
     this.cy.animate({
       fit: {
         padding: 50,

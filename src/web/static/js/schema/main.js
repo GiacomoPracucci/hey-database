@@ -1,7 +1,3 @@
-/**
- * Importazione delle dipendenze necessarie per il funzionamento del visualizzatore
- * Ogni modulo ha una responsabilità specifica nella gestione del grafo
- */
 import { createGraphElements } from "./utils/graphUtils.js";
 import { schemaStyles } from "./config/styles.js";
 import { SchemaSearch } from "./features/search.js";
