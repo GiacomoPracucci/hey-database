@@ -75,6 +75,14 @@ export class TableDetails {
 
     return `
             <div class="section">
+                <h4>Table Summary</h4>
+                <p class="table-description">${
+                  table.description ||
+                  "No description available for this table."
+                }</p>
+            </div>
+
+            <div class="section">
                 <h4>Columns</h4>
                 ${this.generateColumnsTable(table.columns)}
             </div>

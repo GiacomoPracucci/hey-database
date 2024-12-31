@@ -39,6 +39,7 @@ def create_schema_routes(app, metadata_retriever):
 
                 table_data = {
                     "name": table_name,
+                    "description": enhanced_table_info.description,
                     "columns": [],
                     "relationships": []
                 }

@@ -424,3 +424,20 @@
   border-color: var(--brand-secondary);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
+
+.table-description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  background-color: var(--surface-lighter);
+  border-radius: 0.375rem;
+  font-size: 0.925rem;
+}
+
+.section h4 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
