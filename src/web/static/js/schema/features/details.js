@@ -15,7 +15,7 @@ export class TableDetails {
     this.cy = cy;
 
     // Inizializza lo stack della cronologia
-    this.history = [];
+    this.history = null;
 
     // Inizializza l'overlay
     this.createOverlay();
@@ -76,12 +76,18 @@ export class TableDetails {
   /**
    * Nasconde il panel dei dettagli
    */
+  /**
+   * Nasconde il panel dei dettagli
+   */
   hideDetailsPanel() {
     const detailsPanel = document.getElementById("tableDetails");
     const overlay = document.querySelector(".panel-overlay");
     if (detailsPanel) {
       detailsPanel.classList.remove("visible");
       detailsPanel.classList.add("hidden");
+
+      // Reset della cronologia quando si chiude il panel
+      this.history = null;
     }
     if (overlay) {
       overlay.classList.remove("active");
@@ -99,13 +105,19 @@ export class TableDetails {
     if (!detailsPanel) return;
 
     const detailsContent = detailsPanel.querySelector(".details-content");
-
     // Animazione di transizione
     detailsContent.classList.add("transitioning");
 
-    // Aggiungi alla cronologia solo se richiesto
-    if (addToHistory) {
-      this.history.push(node);
+    // Gestione della cronologia
+    if (this.history === null) {
+      // Prima apertura del panel
+      this.history = [node];
+    } else if (addToHistory) {
+      // Evita duplicati consecutivi
+      const lastNode = this.history[this.history.length - 1];
+      if (lastNode.id() !== node.id()) {
+        this.history.push(node);
+      }
     }
 
     // Aggiorna il pulsante Back
@@ -138,7 +150,9 @@ export class TableDetails {
   updateBackButton() {
     const backButton = document.querySelector(".details-back-button");
     if (backButton) {
-      backButton.style.display = this.history.length > 1 ? "flex" : "none";
+      // Mostra il pulsante solo se c'è più di un elemento nella cronologia
+      const shouldShow = this.history && this.history.length > 1;
+      backButton.style.display = shouldShow ? "flex" : "none";
     }
   }
 
@@ -147,13 +161,21 @@ export class TableDetails {
    * @private
    */
   handleBackClick() {
-    if (this.history.length > 1) {
-      // Rimuovi la tabella corrente dalla cronologia
+    if (this.history && this.history.length > 1) {
+      // Rimuovi l'ultimo elemento
       this.history.pop();
+
       // Prendi l'ultima tabella della cronologia
       const previousNode = this.history[this.history.length - 1];
-      // Aggiorna il panel senza aggiungere alla cronologia
-      this.updateDetails(previousNode, false);
+
+      // Verifica che il nodo esista ancora nel grafo
+      if (previousNode && this.cy.$(`#${previousNode.id()}`).length) {
+        this.updateDetails(previousNode, false);
+      } else {
+        // Se il nodo non esiste più, resetta la cronologia
+        this.history = null;
+        this.hideDetailsPanel();
+      }
     }
   }
 
