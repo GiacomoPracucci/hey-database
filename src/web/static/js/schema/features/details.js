@@ -14,6 +14,9 @@ export class TableDetails {
     // Memorizza l'istanza di Cytoscape
     this.cy = cy;
 
+    // Inizializza lo stack della cronologia
+    this.history = [];
+
     // Inizializza l'overlay
     this.createOverlay();
     // Inizializza gli event listener
@@ -42,7 +45,8 @@ export class TableDetails {
 
   /**
    * Configura gli event listener per il pannello dei dettagli
-   * Principalmente gestisce la chiusura del pannello
+   * Gestisce la chiusura del panel e la navigazione back
+   * @private
    */
   setupEventListeners() {
     // Gestione chiusura con pulsante
@@ -59,6 +63,14 @@ export class TableDetails {
         this.hideDetailsPanel();
       }
     });
+
+    // Gestione del pulsante back
+    const backButton = document.querySelector(".details-back-button");
+    if (backButton) {
+      backButton.addEventListener("click", () => {
+        this.handleBackClick();
+      });
+    }
   }
 
   /**
@@ -79,27 +91,70 @@ export class TableDetails {
   /**
    * Aggiorna e mostra il panel con i dettagli della tabella
    * @param {Object} node - Il nodo Cytoscape selezionato
+   * @param {boolean} [addToHistory=true] - Se true, aggiunge la tabella alla cronologia
    */
-  updateDetails(node) {
+  async updateDetails(node, addToHistory = true) {
     const table = node.data("tableData");
     const detailsPanel = document.getElementById("tableDetails");
     if (!detailsPanel) return;
 
-    const detailsTitle = detailsPanel.querySelector(".details-title");
     const detailsContent = detailsPanel.querySelector(".details-content");
 
+    // Animazione di transizione
+    detailsContent.classList.add("transitioning");
+
+    // Aggiungi alla cronologia solo se richiesto
+    if (addToHistory) {
+      this.history.push(node);
+    }
+
+    // Aggiorna il pulsante Back
+    this.updateBackButton();
+
+    // Attendi la fine dell'animazione di fade out
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
     // Aggiorna il contenuto
+    const detailsTitle = detailsPanel.querySelector(".details-title");
     detailsTitle.textContent = table.name;
     detailsContent.innerHTML = this.generateDetailsContent(table);
+
+    // Setup dei listener per le tab
     this.setupTabsListeners();
 
-    // Mostra il panel con animazione
-    const overlay = document.querySelector(".panel-overlay");
+    // Mostra il panel e rimuovi la classe di transizione
     detailsPanel.classList.remove("hidden");
     requestAnimationFrame(() => {
       detailsPanel.classList.add("visible");
-      overlay.classList.add("active");
+      detailsContent.classList.remove("transitioning");
+      document.querySelector(".panel-overlay").classList.add("active");
     });
+  }
+
+  /**
+   * Aggiorna la visibilità e lo stato del pulsante Back
+   * @private
+   */
+  updateBackButton() {
+    const backButton = document.querySelector(".details-back-button");
+    if (backButton) {
+      backButton.style.display = this.history.length > 1 ? "flex" : "none";
+    }
+  }
+
+  /**
+   * Gestisce il click sul pulsante Back
+   * @private
+   */
+  handleBackClick() {
+    if (this.history.length > 1) {
+      // Rimuovi la tabella corrente dalla cronologia
+      this.history.pop();
+      // Prendi l'ultima tabella della cronologia
+      const previousNode = this.history[this.history.length - 1];
+      // Aggiorna il panel senza aggiungere alla cronologia
+      this.updateDetails(previousNode, false);
+    }
   }
 
   /**

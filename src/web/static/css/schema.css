@@ -632,3 +632,38 @@
   color: var(--brand-accent);
   text-decoration: underline;
 }
+
+/* Stili per il pulsante back e l'header */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.details-back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.details-back-button:hover {
+  background-color: var(--surface-lighter);
+  color: var(--brand-primary);
+}
+
+/* Animazione per il cambio tabella */
+.details-content {
+  transition: opacity 0.2s ease-out;
+}
+
+.details-content.transitioning {
+  opacity: 0;
+}
