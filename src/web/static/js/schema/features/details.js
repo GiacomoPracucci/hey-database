@@ -11,8 +11,28 @@ export class TableDetails {
     // Memorizza i dati dello schema per riferimenti futuri
     this.schemaData = schemaData;
 
+    // Inizializza l'overlay
+    this.createOverlay();
     // Inizializza gli event listener
     this.setupEventListeners();
+  }
+
+  /**
+   * Crea l'overlay di sfondo se non esiste
+   */
+  createOverlay() {
+    if (!document.querySelector(".panel-overlay")) {
+      const overlay = document.createElement("div");
+      overlay.className = "panel-overlay";
+      document.body.appendChild(overlay);
+
+      // Chiude il panel al click sull'overlay
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
+          this.hideDetailsPanel();
+        }
+      });
+    }
   }
 
   /**
@@ -20,6 +40,7 @@ export class TableDetails {
    * Principalmente gestisce la chiusura del pannello
    */
   setupEventListeners() {
+    // Gestione chiusura con pulsante
     const closeButton = document.querySelector(".table-details .close-button");
     if (closeButton) {
       closeButton.addEventListener("click", () => {
@@ -27,7 +48,7 @@ export class TableDetails {
       });
     }
 
-    // Aggiungi listener per la chiusura con il tasto ESC
+    // Gestione chiusura con tasto ESC
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         this.hideDetailsPanel();
@@ -36,17 +57,22 @@ export class TableDetails {
   }
 
   /**
-   * Nasconde il pannello dei dettagli
+   * Nasconde il panel dei dettagli
    */
   hideDetailsPanel() {
     const detailsPanel = document.getElementById("tableDetails");
+    const overlay = document.querySelector(".panel-overlay");
     if (detailsPanel) {
+      detailsPanel.classList.remove("visible");
       detailsPanel.classList.add("hidden");
+    }
+    if (overlay) {
+      overlay.classList.remove("active");
     }
   }
 
   /**
-   * Aggiorna il pannello dei dettagli con le informazioni della tabella selezionata
+   * Aggiorna e mostra il panel con i dettagli della tabella
    * @param {Object} node - Il nodo Cytoscape selezionato
    */
   updateDetails(node) {
@@ -57,12 +83,17 @@ export class TableDetails {
     const detailsTitle = detailsPanel.querySelector(".details-title");
     const detailsContent = detailsPanel.querySelector(".details-content");
 
-    // Aggiorna il titolo e il contenuto
+    // Aggiorna il contenuto
     detailsTitle.textContent = table.name;
     detailsContent.innerHTML = this.generateDetailsContent(table);
 
-    // Mostra il pannello
+    // Mostra il panel con animazione
+    const overlay = document.querySelector(".panel-overlay");
     detailsPanel.classList.remove("hidden");
+    requestAnimationFrame(() => {
+      detailsPanel.classList.add("visible");
+      overlay.classList.add("active");
+    });
   }
 
   /**

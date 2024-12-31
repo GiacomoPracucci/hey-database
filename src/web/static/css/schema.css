@@ -21,42 +21,64 @@
 
 /* Pannello dei dettagli */
 .table-details {
-  position: absolute;
-  right: 1.5rem;
-  top: 1.5rem;
-  width: 400px;
+  /* Posizionamento centrale fisso */
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+
+  /* Dimensioni responsive con limiti */
+  width: min(85vw, 900px);
+  height: min(85vh, 800px);
+
+  /* Stile visivo */
   background: var(--details-panel-background);
-  border-radius: 8px;
-  box-shadow: var(--details-panel-shadow);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+  /* Gestione z-index e transizioni */
   z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout interno */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Stati del panel */
+.table-details.visible {
   opacity: 1;
-  transform: translateX(0);
-  transition: all var(--schema-transition-duration) ease;
+  pointer-events: all;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .table-details.hidden {
   opacity: 0;
-  transform: translateX(100%);
   pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.95);
 }
 
+/* Header del panel */
 .details-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--details-header-border);
   background-color: var(--details-header-background);
-  border-radius: 8px 8px 0 0;
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
 }
 
 .details-title {
-  margin: 0;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--details-title-color);
 }
 
+/* Pulsante di chiusura */
 .close-button {
   background: none;
   border: none;
@@ -72,14 +94,26 @@
 }
 
 .close-button:hover {
-  background-color: var(--hover-color);
+  background-color: var(--surface-lighter);
   color: var(--error-base);
 }
 
+/* Contenuto del panel */
 .details-content {
-  padding: 1.25rem;
-  max-height: calc(100vh - 200px);
+  padding: 1.5rem;
   overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .table-details {
+    width: 95vw;
+    height: 95vh;
+  }
 }
 
 /* Sezioni dei dettagli */
@@ -440,4 +474,31 @@
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
+}
+
+/* ============================
+   Panel Overlay Styles 
+   ============================ */
+.panel-overlay {
+  /* Overlay che copre l'intera viewport */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  /* Effetto di sfocatura sullo sfondo */
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+
+  /* Gestione z-index e transizioni */
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.panel-overlay.active {
+  opacity: 1;
+  pointer-events: all;
 }
