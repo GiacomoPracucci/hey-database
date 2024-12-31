@@ -230,6 +230,7 @@
   border: 1px solid var(--relationship-item-border);
   border-radius: 6px;
   font-size: 0.875rem;
+  margin-bottom: 0.75rem;
 }
 
 .relationship-item div {
@@ -501,4 +502,121 @@
 .panel-overlay.active {
   opacity: 1;
   pointer-events: all;
+}
+
+/* ---- STILI PER LE TAB DEL PANEL ----- */
+.tabs-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tabs-header {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--border-default);
+  background-color: var(--surface-white);
+}
+
+.tab-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.tab-button i {
+  font-size: 1rem;
+}
+
+.tab-button:hover {
+  color: var(--brand-primary);
+}
+
+.tab-button.active {
+  color: var(--brand-primary);
+}
+
+.tab-button.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--brand-primary);
+}
+
+/* Stili per i titoli delle sezioni */
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+}
+
+.tab-counter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background-color: var(--surface-white);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tabs-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* Stili per le statistiche rapide */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.stat-item {
+  padding: 1rem;
+  background-color: var(--surface-lighter);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  display: block;
+  color: var(--brand-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
 }

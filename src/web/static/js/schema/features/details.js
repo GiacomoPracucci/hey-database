@@ -86,6 +86,7 @@ export class TableDetails {
     // Aggiorna il contenuto
     detailsTitle.textContent = table.name;
     detailsContent.innerHTML = this.generateDetailsContent(table);
+    this.setupTabsListeners();
 
     // Mostra il panel con animazione
     const overlay = document.querySelector(".panel-overlay");
@@ -104,30 +105,124 @@ export class TableDetails {
   generateDetailsContent(table) {
     const relationships = this.getTableRelationships(table.name);
 
-    return `
-            <div class="section">
-                <h4>Table Summary</h4>
-                <p class="table-description">${
-                  table.description ||
-                  "No description available for this table."
-                }</p>
-            </div>
+    // Genera il contenuto delle tab
+    const tabsContent = {
+      overview: `
+      <div class="section">
+          <h3 class="section-title">TABLE SUMMARY</h3>
+          <p class="table-description">${
+            table.description || "No description available for this table."
+          }</p>
+      </div>
+      
+      <div class="section">
+          <h3 class="section-title">QUICK STATS</h3>
+          <div class="quick-stats">
+              <div class="stat-item">
+                  <span class="stat-label">Columns</span>
+                  <span class="stat-value">${table.columns.length}</span>
+              </div>
+              <div class="stat-item">
+                  <span class="stat-label">Primary Keys</span>
+                  <span class="stat-value">${
+                    table.columns.filter((col) => col.isPrimaryKey).length
+                  }</span>
+              </div>
+              <div class="stat-item">
+                  <span class="stat-label">Foreign Keys</span>
+                  <span class="stat-value">${
+                    table.columns.filter((col) => col.isForeignKey).length
+                  }</span>
+              </div>
+          </div>
+      </div>`,
 
-            <div class="section">
-                <h4>Columns</h4>
-                ${this.generateColumnsTable(table.columns)}
-            </div>
-            
-            <div class="section">
-                <h4>Relationships</h4>
-                ${this.generateRelationshipsList(relationships)}
-            </div>
-            
-            <div class="section">
-                <h4>Sample Query</h4>
-                ${this.generateSampleQuery(table.name, table.columns)}
-            </div>
-        `;
+      columns: `
+          <div class="section">
+              <h4>Columns</h4>
+              ${this.generateColumnsTable(table.columns)}
+          </div>`,
+
+      relationships: `
+          <div class="section">
+              <h4>Relationships</h4>
+              ${this.generateRelationshipsList(relationships)}
+          </div>`,
+
+      queries: `
+          <div class="section">
+              <h4>Sample Queries</h4>
+              ${this.generateSampleQuery(table.name, table.columns)}
+          </div>`,
+    };
+
+    // Genera il markup delle tab
+    return `
+      <div class="tabs-container">
+          <div class="tabs-header">
+              <button class="tab-button active" data-tab="overview">
+                  <i class="fas fa-info-circle"></i>
+                  Overview
+              </button>
+              <button class="tab-button" data-tab="columns">
+                  <i class="fas fa-table"></i>
+                  Columns <span class="tab-counter">${
+                    table.columns.length
+                  }</span>
+              </button>
+              <button class="tab-button" data-tab="relationships">
+                  <i class="fas fa-project-diagram"></i>
+                  Relations <span class="tab-counter">${
+                    relationships.length
+                  }</span>
+              </button>
+              <button class="tab-button" data-tab="queries">
+                  <i class="fas fa-database"></i>
+                  Queries
+              </button>
+          </div>
+          <div class="tabs-content">
+              ${Object.entries(tabsContent)
+                .map(
+                  ([key, content]) => `
+                  <div class="tab-pane ${
+                    key === "overview" ? "active" : ""
+                  }" data-tab="${key}">
+                      ${content}
+                  </div>
+              `
+                )
+                .join("")}
+          </div>
+      </div>
+  `;
+  }
+
+  /**
+   * Configura gli event listener per le tab
+   * @private
+   */
+  setupTabsListeners() {
+    const detailsPanel = document.getElementById("tableDetails");
+    if (!detailsPanel) return;
+
+    detailsPanel.addEventListener("click", (e) => {
+      const tabButton = e.target.closest(".tab-button");
+      if (!tabButton) return;
+
+      const tabId = tabButton.dataset.tab;
+      const tabsContainer = tabButton.closest(".tabs-container");
+
+      // Aggiorna i pulsanti attivi
+      tabsContainer.querySelectorAll(".tab-button").forEach((btn) => {
+        btn.classList.toggle("active", btn === tabButton);
+      });
+
+      // Aggiorna i contenuti attivi
+      tabsContainer.querySelectorAll(".tab-pane").forEach((pane) => {
+        pane.classList.toggle("active", pane.dataset.tab === tabId);
+      });
+    });
   }
 
   /**
