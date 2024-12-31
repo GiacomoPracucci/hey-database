@@ -1,5 +1,5 @@
 import { API, ERROR_MESSAGES } from "../../config/constants.js";
-import { chatNotificationService } from "../../utils/notifications.js";
+import { chatNotificationService } from "../../utils/chatNotifications.js";
 
 /**
  * FeedbackApiService gestisce tutte le interazioni API relative al feedback.

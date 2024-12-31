@@ -1,4 +1,4 @@
-import { chatDomService } from "../../utils/dom.js";
+import { chatDomService } from "../../utils/chatDom.js";
 import { DOM_ELEMENTS, TIMING } from "../../config/constants.js";
 
 /**

@@ -3,9 +3,9 @@ import { messageView } from "./features/messages/messageView.js";
 import { chatInput } from "./features/input/chatInput.js";
 import { feedbackView } from "./features/feedback/feedbackView.js";
 import { feedbackApiService } from "./features/feedback/feedbackApi.js";
-import { chatApiService } from "./utils/api.js";
-import { chatDomService } from "./utils/dom.js";
-import { chatNotificationService } from "./utils/notifications.js";
+import { chatApiService } from "./utils/chatApi.js";
+import { chatDomService } from "./utils/chatDom.js";
+import { chatNotificationService } from "./utils/chatNotifications.js";
 import { DOM_ELEMENTS } from "./config/constants.js";
 
 /**

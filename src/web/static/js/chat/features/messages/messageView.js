@@ -1,5 +1,5 @@
 import { MessageType } from "./messageTypes.js";
-import { chatDomService } from "../../utils/dom.js";
+import { chatDomService } from "../../utils/chatDom.js";
 import { CSS_CLASSES } from "../../config/constants.js";
 import { feedbackView } from "../feedback/feedbackView.js";
 

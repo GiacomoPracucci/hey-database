@@ -1,5 +1,5 @@
 import { CSS_CLASSES, ICONS, UI_TEXTS } from "../../config/constants.js";
-import { chatNotificationService } from "../../utils/notifications.js";
+import { chatNotificationService } from "../../utils/chatNotifications.js";
 
 /**
  * FeedbackView gestisce l'interfaccia utente per il sistema di feedback.

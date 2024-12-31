@@ -1,10 +1,10 @@
-import { ChatStorage } from "../../utils/storage.js";
+import { ChatStorage } from "../../utils/chastStorage.js";
 import {
   MessageFactory,
   MessageType,
   MessageValidator,
 } from "./messageTypes.js";
-import { chatNotificationService } from "../../utils/notifications.js";
+import { chatNotificationService } from "../../utils/chatNotifications.js";
 
 /**
  * MessageStore gestisce lo stato e la persistenza dei messaggi della chat.
