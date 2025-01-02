@@ -1,3 +1,5 @@
+import { TableSqlAssistant } from "./tableSqlAssistant.js";
+
 /**
  * TableDetails gestisce la visualizzazione e l'interazione con il pannello dei dettagli
  * delle tabelle del database. Mostra informazioni su colonne, relazioni e query di esempio.
@@ -101,6 +103,9 @@ export class TableDetails {
    */
   async updateDetails(node, addToHistory = true) {
     const table = node.data("tableData");
+    // Salva il riferimento alla tabella corrente
+    this.currentTable = table;
+
     const detailsPanel = document.getElementById("tableDetails");
     if (!detailsPanel) return;
 
@@ -185,39 +190,40 @@ export class TableDetails {
    * @returns {string} HTML formattato per il pannello dei dettagli
    */
   generateDetailsContent(table) {
+    // Recupera le relazioni per la tabella corrente
     const relationships = this.getTableRelationships(table.name);
 
     // Genera il contenuto delle tab
     const tabsContent = {
       overview: `
-      <div class="section">
-          <h3 class="section-title">TABLE SUMMARY</h3>
-          <p class="table-description">${
-            table.description || "No description available for this table."
-          }</p>
-      </div>
-      
-      <div class="section">
-          <h3 class="section-title">QUICK STATS</h3>
-          <div class="quick-stats">
-              <div class="stat-item">
-                  <span class="stat-label">Columns</span>
-                  <span class="stat-value">${table.columns.length}</span>
-              </div>
-              <div class="stat-item">
-                  <span class="stat-label">Primary Keys</span>
-                  <span class="stat-value">${
-                    table.columns.filter((col) => col.isPrimaryKey).length
-                  }</span>
-              </div>
-              <div class="stat-item">
-                  <span class="stat-label">Foreign Keys</span>
-                  <span class="stat-value">${
-                    table.columns.filter((col) => col.isForeignKey).length
-                  }</span>
-              </div>
+          <div class="section">
+              <h3 class="section-title">TABLE SUMMARY</h3>
+              <p class="table-description">${
+                table.description || "No description available for this table."
+              }</p>
           </div>
-      </div>`,
+          
+          <div class="section">
+              <h3 class="section-title">QUICK STATS</h3>
+              <div class="quick-stats">
+                  <div class="stat-item">
+                      <span class="stat-label">Columns</span>
+                      <span class="stat-value">${table.columns.length}</span>
+                  </div>
+                  <div class="stat-item">
+                      <span class="stat-label">Primary Keys</span>
+                      <span class="stat-value">${
+                        table.columns.filter((col) => col.isPrimaryKey).length
+                      }</span>
+                  </div>
+                  <div class="stat-item">
+                      <span class="stat-label">Foreign Keys</span>
+                      <span class="stat-value">${
+                        table.columns.filter((col) => col.isForeignKey).length
+                      }</span>
+                  </div>
+              </div>
+          </div>`,
 
       columns: `
           <div class="section">
@@ -235,6 +241,12 @@ export class TableDetails {
           <div class="section">
               <h4>Sample Queries</h4>
               ${this.generateSampleQuery(table.name, table.columns)}
+          </div>`,
+
+      askSql: `
+          <div class="section">
+              <h4>SQL Assistant</h4>
+              <div id="sqlAssistantContainer"></div>
           </div>`,
     };
 
@@ -262,17 +274,21 @@ export class TableDetails {
                   <i class="fas fa-database"></i>
                   Queries
               </button>
+              <button class="tab-button" data-tab="askSql">
+                  <i class="fas fa-magic"></i>
+                  Ask SQL
+              </button>
           </div>
           <div class="tabs-content">
               ${Object.entries(tabsContent)
                 .map(
                   ([key, content]) => `
-                  <div class="tab-pane ${
-                    key === "overview" ? "active" : ""
-                  }" data-tab="${key}">
-                      ${content}
-                  </div>
-              `
+                      <div class="tab-pane ${
+                        key === "overview" ? "active" : ""
+                      }" data-tab="${key}">
+                          ${content}
+                      </div>
+                  `
                 )
                 .join("")}
           </div>
@@ -304,6 +320,16 @@ export class TableDetails {
       tabsContainer.querySelectorAll(".tab-pane").forEach((pane) => {
         pane.classList.toggle("active", pane.dataset.tab === tabId);
       });
+
+      // Se la tab è askSql, inizializza l'assistente
+      if (tabId === "askSql") {
+        const container = tabsContainer.querySelector("#sqlAssistantContainer");
+        // Verifica se l'assistente è già stato inizializzato
+        if (container && !container.hasChildNodes()) {
+          const assistant = new TableSqlAssistant(this.currentTable.name);
+          container.appendChild(assistant.createAssistantElement());
+        }
+      }
     });
   }
 
