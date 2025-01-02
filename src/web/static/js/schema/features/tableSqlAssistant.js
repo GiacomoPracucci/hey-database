@@ -43,6 +43,39 @@ export class TableSqlAssistant {
   }
 
   /**
+   * Crea e restituisce l'elemento DOM dell'assistente
+   * @returns {HTMLElement}
+   */
+  createAssistantElement() {
+    const container = document.createElement("div");
+    container.className = "sql-assistant-container";
+
+    container.innerHTML = `
+      <form class="sql-assistant-form">
+          <div class="input-wrapper">
+              <textarea 
+                  class="sql-assistant-input" 
+                  placeholder="Ask a question about ${this.tableName} table..."
+                  rows="1"
+                  required
+              ></textarea>
+              <button type="button" class="sql-assistant-clear-input" title="Clear input">
+                  <i class="fas fa-times"></i>
+              </button>
+              <button type="submit" class="sql-assistant-submit" disabled title="Send question">
+                  <i class="fas fa-paper-plane"></i>
+              </button>
+          </div>
+      </form>
+      <div class="sql-assistant-response"></div>
+  `;
+
+    this.setupEventListeners(container);
+    this.container = container;
+    return container;
+  }
+
+  /**
    * Configura gli event listeners per l'interfaccia
    * @param {HTMLElement} container
    */
@@ -50,12 +83,20 @@ export class TableSqlAssistant {
     const form = container.querySelector(".sql-assistant-form");
     const input = container.querySelector(".sql-assistant-input");
     const submitBtn = container.querySelector(".sql-assistant-submit");
+    const clearBtn = container.querySelector(".sql-assistant-clear-input");
 
-    // Abilita/disabilita il pulsante in base all'input
+    // Gestione input e pulsanti
     input.addEventListener("input", () => {
       submitBtn.disabled = !input.value.trim();
-      // Reimposta l'altezza per gestire il contenuto cancellato
-      input.style.height = "42px";
+      clearBtn.style.opacity = input.value.trim() ? "1" : "0";
+    });
+
+    // Clear input button
+    clearBtn.addEventListener("click", () => {
+      input.value = "";
+      submitBtn.disabled = true;
+      clearBtn.style.opacity = "0";
+      input.focus();
     });
 
     // Gestione dell'invio con Enter
@@ -117,16 +158,24 @@ export class TableSqlAssistant {
   }
 
   /**
-   * Mostra la risposta nell'interfaccia con formattazione migliorata
-   * @param {Object} response - Oggetto risposta dall'API
+   * Mostra la risposta dell'assistente nell'interfaccia
+   * Gestisce la visualizzazione della query SQL, la sua spiegazione
+   * e i controlli per copiare la query e fare nuove domande
+   *
+   * @param {Object} response - La risposta dall'API
+   * @param {string} response.query - La query SQL generata
+   * @param {string} response.explanation - La spiegazione in linguaggio naturale
    */
   showResponse(response) {
+    // Recupera il container delle risposte
     const responseContainer = this.container.querySelector(
       ".sql-assistant-response"
     );
 
+    // Inizia a costruire l'HTML della risposta
     let html = '<div class="sql-assistant-response-content">';
 
+    // Sezione Query SQL (se presente)
     if (response.query) {
       html += `
           <div class="sql-query-container">
@@ -136,48 +185,98 @@ export class TableSqlAssistant {
                       <i class="fas fa-copy"></i>
                   </button>
               </div>
-              <div class="sql-query">${this.formatSQLQuery(
-                response.query
-              )}</div>
+              <div class="sql-query">
+                  ${this.formatSQLQuery(response.query)}
+              </div>
           </div>
       `;
     }
 
+    // Sezione Spiegazione (se presente)
     if (response.explanation) {
       html += `
           <div class="explanation">
               <i class="fas fa-info-circle" style="color: var(--brand-accent);"></i>
-              <div>${response.explanation}</div>
+              <div>
+                  ${response.explanation}
+              </div>
           </div>
       `;
     }
 
+    // Aggiungi il pulsante per fare una nuova domanda
+    html += `
+      <button class="sql-assistant-new-question">
+          <i class="fas fa-plus-circle"></i>
+          Ask another question
+      </button>
+  `;
+
     html += "</div>";
+
+    // Inserisce l'HTML nel container
     responseContainer.innerHTML = html;
 
-    // Setup copy button
+    // Setup del pulsante di copia
     const copyBtn = responseContainer.querySelector(".copy-button");
     if (copyBtn) {
       copyBtn.addEventListener("click", async () => {
         try {
+          // Copia la query negli appunti
           await navigator.clipboard.writeText(response.query);
-          const originalIcon = copyBtn.innerHTML;
-          copyBtn.innerHTML = '<i class="fas fa-check"></i>';
 
+          // Feedback visivo di successo
+          copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+          copyBtn.style.backgroundColor = "rgba(34, 197, 94, 0.2)";
+
+          // Ripristina il pulsante dopo 2 secondi
           setTimeout(() => {
-            copyBtn.innerHTML = originalIcon;
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+            copyBtn.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
           }, 2000);
         } catch (err) {
+          // Feedback visivo di errore
+          copyBtn.innerHTML = '<i class="fas fa-times"></i>';
+          copyBtn.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
+
+          // Ripristina il pulsante dopo 2 secondi
+          setTimeout(() => {
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+            copyBtn.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+          }, 2000);
+
           console.error("Failed to copy:", err);
+        }
+      });
+    }
+
+    // Setup del pulsante "New Question"
+    const newQuestionBtn = responseContainer.querySelector(
+      ".sql-assistant-new-question"
+    );
+    if (newQuestionBtn) {
+      newQuestionBtn.addEventListener("click", () => {
+        // Pulisci l'area delle risposte
+        responseContainer.innerHTML = "";
+
+        // Recupera, pulisci e focalizza l'input
+        const input = this.container.querySelector(".sql-assistant-input");
+        input.value = "";
+        input.focus();
+
+        // Disabilita il pulsante di submit
+        const submitBtn = this.container.querySelector(".sql-assistant-submit");
+        if (submitBtn) {
+          submitBtn.disabled = true;
         }
       });
     }
   }
 
   /**
-   * Formatta una query SQL con evidenziazione della sintassi
+   * Formatta una query SQL per la visualizzazione con layout strutturato
    * @param {string} query - Query SQL da formattare
-   * @returns {string} Query formattata con keywords evidenziate
+   * @returns {string} Query formattata con sintassi evidenziata e layout strutturato
    * @private
    */
   formatSQLQuery(query) {
@@ -210,8 +309,34 @@ export class TableSqlAssistant {
       "AS",
     ];
 
-    // Escape HTML special characters
-    let formattedQuery = query.replace(
+    // Prima rimuovi spazi extra e normalizza gli spazi bianchi
+    let formattedQuery = query.trim().replace(/\s+/g, " ");
+
+    // Aggiungi interruzioni di riga dopo le keyword principali
+    const mainKeywords = [
+      "SELECT",
+      "FROM",
+      "WHERE",
+      "GROUP BY",
+      "ORDER BY",
+      "HAVING",
+    ];
+    mainKeywords.forEach((keyword) => {
+      const regex = new RegExp(`\\b${keyword}\\b`, "gi");
+      formattedQuery = formattedQuery.replace(regex, `\n${keyword}`);
+    });
+
+    // Indenta le linee dopo la prima
+    formattedQuery = formattedQuery
+      .split("\n")
+      .map((line, index) => {
+        if (index === 0) return line.trim();
+        return "    " + line.trim(); // 4 spazi per l'indentazione
+      })
+      .join("\n");
+
+    // Escape dei caratteri HTML
+    formattedQuery = formattedQuery.replace(
       /[&<>]/g,
       (char) =>
         ({
@@ -221,7 +346,7 @@ export class TableSqlAssistant {
         }[char])
     );
 
-    // Replace SQL keywords with styled spans
+    // Evidenzia tutte le keywords SQL
     keywords.forEach((keyword) => {
       const regex = new RegExp(`\\b${keyword}\\b`, "gi");
       formattedQuery = formattedQuery.replace(
@@ -230,7 +355,18 @@ export class TableSqlAssistant {
       );
     });
 
-    return formattedQuery;
+    // Evidenzia le funzioni
+    const functions = ["AVG", "COUNT", "SUM", "MAX", "MIN"];
+    functions.forEach((func) => {
+      const regex = new RegExp(`\\b${func}\\b\\s*\\(`, "gi");
+      formattedQuery = formattedQuery.replace(
+        regex,
+        (match) => `<span class="sql-function">${match.slice(0, -1)}</span>(`
+      );
+    });
+
+    // Aggiungi style per preservare gli spazi bianchi e le interruzioni di riga
+    return `<pre style="margin: 0; white-space: pre-wrap;">${formattedQuery}</pre>`;
   }
 
   /**
