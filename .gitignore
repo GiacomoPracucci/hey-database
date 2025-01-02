@@ -16,3 +16,4 @@ data/**/.lock
 
 src/frontend/
 src/backend/
+src/web/static/styles/
