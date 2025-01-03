@@ -8,6 +8,7 @@ from src.config.config_loader import ConfigLoader
 from src.factories import ServiceFactory 
 from src.web.chat_routes import create_chat_routes
 from src.web.schema_routes import create_schema_routes
+from src.web.preview_routes import create_preview_routes
 
 
 logging.basicConfig(
@@ -43,6 +44,7 @@ def create_app():
         # registra le routes
         create_chat_routes(app, chat_service)
         create_schema_routes(app, chat_service.sql_agent.metadata_retriever)
+        create_preview_routes(app, chat_service.sql_agent.db)
         
         # route principale
         @app.route('/')

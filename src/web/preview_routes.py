@@ -29,8 +29,9 @@ def create_preview_routes(app, db):
         try:
             logger.debug(f"Retrieving preview data for table: {table_name}")
             
-            # Esegue una query semplice per ottenere i primi 10 record
-            query = f"SELECT * FROM {table_name} LIMIT 10"
+            # Costruisce la query con lo schema corretto
+            query = f"SELECT * FROM northwind.{table_name} LIMIT 10"
+            
             result = db.execute_query(query)
             
             if not result:

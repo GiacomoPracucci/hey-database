@@ -1,4 +1,5 @@
 import { TableSqlAssistant } from "./tableSqlAssistant.js";
+import { TablePreview } from "./tablePreview.js";
 
 /**
  * TableDetails gestisce la visualizzazione e l'interazione con il pannello dei dettagli
@@ -193,104 +194,136 @@ export class TableDetails {
     // Recupera le relazioni per la tabella corrente
     const relationships = this.getTableRelationships(table.name);
 
-    // Genera il contenuto delle tab
-    const tabsContent = {
-      overview: `
-          <div class="section">
-              <h3 class="section-title">TABLE SUMMARY</h3>
-              <p class="table-description">${
-                table.description || "No description available for this table."
-              }</p>
-          </div>
-          
-          <div class="section">
-              <h3 class="section-title">QUICK STATS</h3>
-              <div class="quick-stats">
-                  <div class="stat-item">
-                      <span class="stat-label">Columns</span>
-                      <span class="stat-value">${table.columns.length}</span>
-                  </div>
-                  <div class="stat-item">
-                      <span class="stat-label">Primary Keys</span>
-                      <span class="stat-value">${
-                        table.columns.filter((col) => col.isPrimaryKey).length
-                      }</span>
-                  </div>
-                  <div class="stat-item">
-                      <span class="stat-label">Foreign Keys</span>
-                      <span class="stat-value">${
-                        table.columns.filter((col) => col.isForeignKey).length
-                      }</span>
-                  </div>
+    // Overview tab content
+    const overviewContent = `
+      <div class="section">
+          <h3 class="section-title">TABLE SUMMARY</h3>
+          <p class="table-description">
+              ${table.description || "No description available for this table."}
+          </p>
+      </div>
+      
+      <div class="section">
+          <h3 class="section-title">QUICK STATS</h3>
+          <div class="quick-stats">
+              <div class="stat-item">
+                  <span class="stat-label">Columns</span>
+                  <span class="stat-value">${table.columns.length}</span>
               </div>
-          </div>`,
+              <div class="stat-item">
+                  <span class="stat-label">Primary Keys</span>
+                  <span class="stat-value">
+                      ${table.columns.filter((col) => col.isPrimaryKey).length}
+                  </span>
+              </div>
+              <div class="stat-item">
+                  <span class="stat-label">Foreign Keys</span>
+                  <span class="stat-value">
+                      ${table.columns.filter((col) => col.isForeignKey).length}
+                  </span>
+              </div>
+          </div>
+      </div>
+  `;
 
-      columns: `
-          <div class="section">
-              <h4>Columns</h4>
-              ${this.generateColumnsTable(table.columns)}
-          </div>`,
+    // Columns tab content
+    const columnsContent = `
+      <div class="section">
+          <h4>Columns</h4>
+          ${this.generateColumnsTable(table.columns)}
+      </div>
+  `;
 
-      relationships: `
-          <div class="section">
-              <h4>Relationships</h4>
-              ${this.generateRelationshipsList(relationships)}
-          </div>`,
+    // Relationships tab content
+    const relationshipsContent = `
+      <div class="section">
+          <h4>Relationships</h4>
+          ${this.generateRelationshipsList(relationships)}
+      </div>
+  `;
 
-      queries: `
-          <div class="section">
-              <h4>Sample Queries</h4>
-              ${this.generateSampleQuery(table.name, table.columns)}
-          </div>`,
+    // Data Preview tab content
+    const dataPreviewContent = `
+      <div class="section">
+          <h4>Data Preview</h4>
+          <div id="previewContainer"></div>
+      </div>
+  `;
 
-      askSql: `
-          <div class="section">
-              <h4>SQL Assistant</h4>
-              <div id="sqlAssistantContainer"></div>
-          </div>`,
+    // Sample Queries tab content
+    const queriesContent = `
+      <div class="section">
+          <h4>Sample Queries</h4>
+          ${this.generateSampleQuery(table.name, table.columns)}
+      </div>
+  `;
+
+    // SQL Assistant tab content
+    const sqlAssistantContent = `
+      <div class="section">
+          <h4>SQL Assistant</h4>
+          <div id="sqlAssistantContainer"></div>
+      </div>
+  `;
+
+    // Definisce il contenuto completo di tutte le tab
+    const tabsContent = {
+      overview: overviewContent,
+      columns: columnsContent,
+      relationships: relationshipsContent,
+      dataPreview: dataPreviewContent,
+      queries: queriesContent,
+      askSql: sqlAssistantContent,
     };
 
-    // Genera il markup delle tab
+    // Genera l'header delle tab con i bottoni
+    const tabButtons = `
+      <div class="tabs-header">
+          <button class="tab-button active" data-tab="overview">
+              <i class="fas fa-info-circle"></i>
+              Overview
+          </button>
+          <button class="tab-button" data-tab="columns">
+              <i class="fas fa-table"></i>
+              Columns <span class="tab-counter">${table.columns.length}</span>
+          </button>
+          <button class="tab-button" data-tab="relationships">
+              <i class="fas fa-project-diagram"></i>
+              Relations <span class="tab-counter">${relationships.length}</span>
+          </button>
+          <button class="tab-button" data-tab="dataPreview">
+              <i class="fas fa-eye"></i>
+              Preview
+          </button>
+          <button class="tab-button" data-tab="queries">
+              <i class="fas fa-database"></i>
+              Queries
+          </button>
+          <button class="tab-button" data-tab="askSql">
+              <i class="fas fa-magic"></i>
+              Ask SQL
+          </button>
+      </div>
+  `;
+
+    // Genera il contenuto delle tab
+    const tabPanes = Object.entries(tabsContent)
+      .map(
+        ([key, content]) => `
+          <div class="tab-pane ${key === "overview" ? "active" : ""}" 
+               data-tab="${key}">
+              ${content}
+          </div>
+      `
+      )
+      .join("");
+
+    // Assembla il contenitore finale delle tab
     return `
       <div class="tabs-container">
-          <div class="tabs-header">
-              <button class="tab-button active" data-tab="overview">
-                  <i class="fas fa-info-circle"></i>
-                  Overview
-              </button>
-              <button class="tab-button" data-tab="columns">
-                  <i class="fas fa-table"></i>
-                  Columns <span class="tab-counter">${
-                    table.columns.length
-                  }</span>
-              </button>
-              <button class="tab-button" data-tab="relationships">
-                  <i class="fas fa-project-diagram"></i>
-                  Relations <span class="tab-counter">${
-                    relationships.length
-                  }</span>
-              </button>
-              <button class="tab-button" data-tab="queries">
-                  <i class="fas fa-database"></i>
-                  Queries
-              </button>
-              <button class="tab-button" data-tab="askSql">
-                  <i class="fas fa-magic"></i>
-                  Ask SQL
-              </button>
-          </div>
+          ${tabButtons}
           <div class="tabs-content">
-              ${Object.entries(tabsContent)
-                .map(
-                  ([key, content]) => `
-                      <div class="tab-pane ${
-                        key === "overview" ? "active" : ""
-                      }" data-tab="${key}">
-                          ${content}
-                      </div>
-                  `
-                )
-                .join("")}
+              ${tabPanes}
           </div>
       </div>
   `;
@@ -320,6 +353,16 @@ export class TableDetails {
       tabsContainer.querySelectorAll(".tab-pane").forEach((pane) => {
         pane.classList.toggle("active", pane.dataset.tab === tabId);
       });
+
+      // Se la tab è dataPreview, inizializza la preview
+      if (tabId === "dataPreview") {
+        const container = tabsContainer.querySelector("#previewContainer");
+        // Verifica se la preview è già stata inizializzata
+        if (container && !container.hasChildNodes()) {
+          const preview = new TablePreview(this.currentTable.name);
+          container.appendChild(preview.createPreviewElement());
+        }
+      }
 
       // Se la tab è askSql, inizializza l'assistente
       if (tabId === "askSql") {
