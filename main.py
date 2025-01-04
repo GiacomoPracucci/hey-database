@@ -44,7 +44,7 @@ def create_app():
         # registra le routes
         create_chat_routes(app, chat_service)
         create_schema_routes(app, chat_service.sql_agent.metadata_retriever)
-        create_preview_routes(app, chat_service.sql_agent.db)
+        create_preview_routes(app, chat_service.sql_agent.db, chat_service.sql_agent.metadata_retriever)
         
         # route principale
         @app.route('/')

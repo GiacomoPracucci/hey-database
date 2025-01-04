@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger('hey-database')
 logger.setLevel(logging.DEBUG)
 
-def create_preview_routes(app, db):
+def create_preview_routes(app, db, metadata_retriever):
     """ Crea e configura le routes per la preview dei dati
     
     Args:
@@ -12,6 +12,7 @@ def create_preview_routes(app, db):
         db: Istanza DatabaseConnector per l'accesso al database
     """
     preview_bp = Blueprint('preview', __name__)
+    schema = metadata_retriever.schema
     
     @preview_bp.route('/api/tables/<table_name>/preview')
     def get_table_preview(table_name):
@@ -27,10 +28,10 @@ def create_preview_routes(app, db):
             - error: messaggio di errore (solo se success=False)
         """
         try:
-            logger.debug(f"Retrieving preview data for table: {table_name}")
+            logger.debug(f"Retrieving preview data for table: {schema}.{table_name}")
             
             # Costruisce la query con lo schema corretto
-            query = f"SELECT * FROM northwind.{table_name} LIMIT 10"
+            query = f"SELECT * FROM {schema}.{table_name} LIMIT 10"
             
             result = db.execute_query(query)
             
