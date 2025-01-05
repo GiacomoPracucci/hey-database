@@ -1,0 +1,71 @@
+/* Messaggi di errore */
+.error-container {
+  background-color: var(--error-container-bg);
+  border: 1px solid var(--error-container-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  box-shadow: var(--error-message-shadow);
+  transition: all var(--transition-fast);
+}
+
+.error-container:hover {
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.15);
+  transform: translateY(-1px);
+}
+
+.error-icon {
+  font-size: 1.25rem;
+  color: var(--error-icon-color);
+  flex-shrink: 0;
+}
+
+.error-message {
+  flex: 1;
+}
+
+.error-title {
+  color: var(--error-title-color);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-details {
+  color: var(--error-text-color);
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.error-query {
+  background-color: var(--surface-white);
+  border: 1px solid var(--error-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  position: relative;
+}
+
+.error-query-label {
+  color: var(--error-text-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.error-query pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  padding: 0.5rem;
+  background-color: var(--surface-lighter);
+  border-radius: 4px;
+}

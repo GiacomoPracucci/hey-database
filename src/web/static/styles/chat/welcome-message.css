@@ -1,0 +1,51 @@
+/* Messaggio di benvenuto */
+.message.bot.welcome {
+  display: flex;
+  justify-content: center;
+  margin: 2rem auto;
+}
+
+.message.bot.welcome .message-content {
+  text-align: center;
+  max-width: fit-content;
+  width: auto;
+  padding: 2rem;
+  background-color: white;
+  border: 1px solid var(--border-color);
+}
+
+.message.bot.welcome h3 {
+  color: var(--welcome-title-color);
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.message.bot.welcome ul {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0;
+  text-align: left;
+}
+
+.message.bot.welcome li {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: var(--welcome-text-color);
+}
+
+.message.bot.welcome li::before {
+  content: "•";
+  position: absolute;
+  left: 0.5rem;
+  color: var(--welcome-bullet-color);
+}
+
+.message.bot.welcome .hint {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  color: var(--welcome-hint-color);
+  border-top: 1px solid var(--chat-container-border);
+  font-size: 0.9rem;
+}

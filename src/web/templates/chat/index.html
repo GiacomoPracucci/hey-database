@@ -1,9 +1,12 @@
 {% extends "base.html" %} {% block title %}Hey, Database! - Chat{% endblock %}
 {% block extra_css %}
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='styles/chat/chat.css') }}"
-/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-layout.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/welcome-message.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/question-text-box.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/user-message.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/bot-response.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-errors.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-responsiveness.css') }}"/>
 {% endblock %} {% block page_title %}SQL Chat{% endblock %} {% block
 navbar_actions %}
 <button class="btn" id="clearChat" title="Clear Chat">

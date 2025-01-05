@@ -1,0 +1,14 @@
+/* Container della chat */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--chat-container-bg);
+  overflow: hidden;
+  margin: 0 auto;
+  max-width: var(--layout-max-width);
+  width: 100%;
+  box-shadow: var(--chat-container-shadow);
+  border-radius: 8px;
+  border: 1px solid var(--chat-container-border);
+}

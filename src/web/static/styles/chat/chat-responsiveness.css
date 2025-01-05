@@ -1,0 +1,24 @@
+/* Responsive design */
+@media (max-width: 768px) {
+    .chat-messages {
+      padding: 1rem;
+    }
+  
+    .message-content {
+      max-width: 85%;
+    }
+  
+    .chat-input-container {
+      padding: 0.75rem;
+    }
+  
+    .results-table {
+      font-size: 0.9rem;
+    }
+  
+    .results-table th,
+    .results-table td {
+      padding: 0.5rem 0.75rem;
+    }
+  }
+  
