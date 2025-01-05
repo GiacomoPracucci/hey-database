@@ -1,0 +1,293 @@
+body {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+/* Layout container principale */
+.container {
+    max-width: var(--layout-max-width);
+    margin: 0 auto;
+    height: 100vh;
+}
+
+/* Header principale e navigazione */
+.main-header {
+    background-color: var(--header-background);
+    box-shadow: var(--header-shadow);
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    max-width: var(--layout-max-width);
+    margin: 0 auto;
+    padding: var(--layout-spacing-md) var(--layout-spacing-xl);
+    height: var(--header-height);
+}
+
+/* Brand e logo */
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    color: var(--brand-text-color);
+    text-decoration: none;
+    font-size: var(--brand-font-size);
+    font-weight: var(--nav-font-weight);
+    margin-right: calc(var(--layout-spacing-xl) * 2);
+}
+
+.navbar-brand i {
+    margin-right: var(--layout-spacing-md);
+    font-size: var(--brand-icon-size);
+}
+
+/* Navigazione principale */
+.navbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: auto;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--nav-link-color);
+    text-decoration: none;
+    padding: var(--layout-spacing-sm) var(--layout-spacing-lg);
+    border-radius: var(--nav-border-radius);
+    transition: all 0.2s ease;
+    font-weight: var(--nav-font-weight);
+}
+
+.nav-link:hover {
+    color: var(--nav-link-hover-color);
+    background-color: var(--nav-link-hover-bg);
+}
+
+.nav-link.active {
+    color: var(--nav-link-active-color);
+    background-color: var(--nav-link-active-bg)
+}
+
+.nav-link i {
+    font-size: 1rem;
+}
+
+/* Area del titolo della pagina */
+.page-title {
+    color: var(--page-title-color);
+    font-size: var(--page-title-font-size);
+    font-weight: var(--nav-font-weight);
+    margin-right: var(--layout-spacing-xl);
+    padding-right: var(--layout-spacing-xl);
+    border-right: 1px solid var(--page-title-border);
+}
+
+/* Area delle azioni contestuali */
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Barra degli strumenti contestuale */
+.context-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: var(--layout-spacing-sm) var(--layout-spacing-xl);
+    background-color: var(--toolbar-bg);
+    min-height: var(--toolbar-height);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    color: var(--breadcrumb-color);
+    font-size: var(--breadcrumb-font-size);
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item:not(:last-child)::after {
+    content: "/";
+    margin-left: 0.5rem;
+    color: var(--text-muted);
+}
+
+.breadcrumb-item a {
+    color: var(--breadcrumb-color);
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--breadcrumb-hover-color);
+}
+
+.breadcrumb-item.active {
+    color: var(--breadcrumb-active-color);
+}
+
+/* Layout principale */
+.main-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Pulsanti e controlli comuni */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: var(--btn-padding-y) var(--btn-padding-x);
+    border: 1px solid var(--btn-border-color);
+    border-radius: var(--btn-border-radius);
+    background: none;
+    color: var(--btn-color);
+    font-size: var(--btn-font-size);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    color: var(--btn-hover-color);
+    background-color: var(--btn-hover-bg);
+}
+
+.btn i {
+    font-size: 1rem;
+}
+
+/* Campo di ricerca comune */
+.search-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: var(--layout-spacing-xs) var(--layout-spacing-md);
+    background-color: var(--search-field-bg);
+    border: 1px solid var(--search-field-border);
+    border-radius: 6px;
+    min-width: var(--search-field-min-width);
+}
+
+.search-field input {
+    background: none;
+    border: none;
+    color: var(--search-field-color);
+    font-size: 0.875rem;
+    width: 100%;
+}
+
+.search-field input::placeholder {
+    color: var(--search-field-placeholder);
+}
+
+.search-field input:focus {
+    outline: none;
+}
+
+.search-field i {
+    font-size: var(--search-icon-size);
+    color: var(--search-field-placeholder);
+}
+
+/* Toast notifications */
+.toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    top: var(--toast-spacing);
+    padding: var(--layout-spacing-lg) var(--layout-spacing-xl);
+    border-radius: var(--toast-border-radius);
+    color: var(--message-bg);
+    font-size: var(--toast-font-size);
+    z-index: var(--toast-z-index);
+    box-shadow: var(--toast-shadow);
+    animation: slideDown 0.3s ease;
+    min-width: var(--toast-min-width);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.toast.success {
+    background-color: var(--toast-success-bg);
+}
+
+.toast.error {
+    background-color: var(--error-base);
+    color: var(--text-light);
+}
+
+.toast.warning {
+    background-color: var(--toast-warning-bg);
+    color: var(--toast-warning-color);
+}
+
+.toast i {
+    font-size: var(--toast-icon-size);
+}
+
+@keyframes slideDown {
+    from {
+        transform: translate(-50%, -100%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+/* Area contenuto principale */
+.main-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.75rem;
+    }
+
+    .page-title {
+        display: none;
+    }
+
+    .nav-link span {
+        display: none;
+    }
+
+    .navbar-actions {
+        gap: 0.5rem;
+    }
+
+    .search-field {
+        min-width: auto;
+    }
+}
