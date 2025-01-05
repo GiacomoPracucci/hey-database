@@ -1,4 +1,4 @@
-import { ChatStorage } from "../../utils/chastStorage.js";
+import { ChatStorage } from "../../utils/chatStorage.js";
 import {
   MessageFactory,
   MessageType,
