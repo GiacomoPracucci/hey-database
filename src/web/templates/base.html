@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}hey-database{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/constants.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/reset.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/constants.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/reset.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/notifications.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/responsiveness.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     {% block extra_css %}{% endblock %}
 </head>

@@ -1,0 +1,22 @@
+/* Responsiveness */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.75rem;
+    }
+
+    .page-title {
+        display: none;
+    }
+
+    .nav-link span {
+        display: none;
+    }
+
+    .navbar-actions {
+        gap: 0.5rem;
+    }
+
+    .search-field {
+        min-width: auto;
+    }
+}
