@@ -1,0 +1,38 @@
+/* Lista delle relazioni */
+.relationships-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+.relationship-item {
+    padding: 0.75rem;
+    background-color: var(--relationship-item-background);
+    border: 1px solid var(--relationship-item-border);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+  
+.relationship-item div {
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    color: var(--relationship-title-color);
+  }
+  
+.relationship-item small {
+    display: block;
+    color: var(--relationship-detail-color);
+    font-size: 0.8125rem;
+  }
+  
+.relationship-link {
+  color: var(--brand-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.relationship-link:hover {
+  color: var(--brand-accent);
+  text-decoration: underline;
+}

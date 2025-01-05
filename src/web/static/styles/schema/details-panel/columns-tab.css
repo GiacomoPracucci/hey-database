@@ -1,0 +1,28 @@
+/* Badge per i flag delle colonne */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 0.25rem;
+  }
+  
+  .badge.pk {
+    background-color: var(--badge-pk-background);
+    color: var(--badge-pk-text);
+    border: 1px solid var(--badge-pk-border);
+  }
+  
+  .badge.fk {
+    background-color: var(--badge-fk-background);
+    color: var(--badge-fk-text);
+    border: 1px solid var(--badge-fk-border);
+  }
+  
+  .badge.required {
+    background-color: var(--badge-required-background);
+    color: var(--badge-required-text);
+    border: 1px solid var(--badge-required-border);
+  }

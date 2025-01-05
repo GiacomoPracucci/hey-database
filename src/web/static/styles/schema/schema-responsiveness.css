@@ -1,0 +1,24 @@
+@media (max-width: 768px) {
+  .table-details {
+    right: 1rem;
+    top: 1rem;
+    width: calc(100% - 2rem);
+    max-height: calc(100vh - 180px);
+    //width: 95vw;
+    height: 95vh;
+  }
+
+  .details-content {
+    max-height: calc(100vh - 240px);
+  }
+
+  .table-preview-container {
+    height: calc(100vh - 300px);
+  }
+
+  .preview-table th,
+  .preview-table td {
+    min-width: 100px;
+    padding: 0.5rem 0.75rem;
+  }
+}

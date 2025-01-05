@@ -1,0 +1,38 @@
+.cytoscape-node {
+    background-color: var(--schema-node-background);
+    border: 2px solid var(--schema-node-border);
+    padding: 0.75rem;
+    width: 180px;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    box-shadow: var(--schema-node-shadow);
+  }
+  
+  .cytoscape-node:hover {
+    border-color: var(--schema-node-border-hover);
+    box-shadow: var(--schema-node-shadow-hover);
+  }
+  
+  .node-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    color: var(--schema-node-title-color);
+    border-bottom: 1px solid var(--schema-node-border);
+  }
+  
+  .node-content {
+    font-size: 0.8125rem;
+    color: var(--schema-node-text-color);
+  }
+
+/* Effetti di transizione per gli elementi del grafo */
+.faded {
+  opacity: var(--schema-element-fade-opacity);
+  transition: opacity var(--schema-transition-duration) ease;
+}
+
+.highlighted {
+  border-color: var(--schema-highlight-color);
+  transition: all var(--schema-transition-duration) ease;
+}

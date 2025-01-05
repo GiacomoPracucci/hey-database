@@ -1,9 +1,16 @@
 {% extends "base.html" %} {% block title %}Hey, Database! - Schema{% endblock %}
 {% block extra_css %}
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='styles/schema/schema.css') }}"
-/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/schema-layout.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/cytoscape-nodes.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/controls.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/details-panel/details-panel-layout.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/details-panel/columns-tab.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/details-panel/data-preview-tab.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/details-panel/overview-tab.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/details-panel/relationships-tab.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/details-panel/sql-assistant-tab.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/details-panel/sql-examples-tab.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/schema/schema-responsiveness.css') }}"/>
 {% endblock %} {% block page_title %}Entity Relationship Diagram{% endblock %}
 {% block navbar_actions %}
 <div class="search-field">

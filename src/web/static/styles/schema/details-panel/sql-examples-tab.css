@@ -1,0 +1,17 @@
+/* Query di esempio */
+.query-container {
+    background-color: var(--query-container-background);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  
+  .query-container pre {
+    margin: 0;
+    padding: 1rem;
+    color: var(--query-container-text);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  

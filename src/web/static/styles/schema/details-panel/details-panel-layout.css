@@ -1,0 +1,239 @@
+/* ============================
+   Panel Overlay Styles 
+   ============================ */
+   .panel-overlay {
+    /* Overlay che copre l'intera viewport */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  
+    /* Effetto di sfocatura sullo sfondo */
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(2px);
+  
+    /* Gestione z-index e transizioni */
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  
+  .panel-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+
+/* Pannello dei dettagli */
+.table-details {
+    /* Posizionamento centrale fisso */
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+  
+    /* Dimensioni responsive con limiti */
+    width: min(85vw, 900px);
+    height: min(85vh, 800px);
+  
+    /* Stile visivo */
+    background: var(--details-panel-background);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  
+    /* Gestione z-index e transizioni */
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+    /* Layout interno */
+    display: flex;
+    flex-direction: column;
+  }
+  
+/* Stati del panel */
+.table-details.visible {
+    opacity: 1;
+    pointer-events: all;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  
+.table-details.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  
+/* Header del panel */
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--details-header-border);
+    background-color: var(--details-header-background);
+    border-radius: 12px 12px 0 0;
+    flex-shrink: 0;
+  }
+  
+.details-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--details-title-color);
+  }
+
+/* Pulsante di chiusura */
+.close-button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: var(--surface-lighter);
+  color: var(--error-base);
+}
+
+/* Contenuto del panel */
+.details-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ---- STILI PER LE TAB DEL PANEL ----- */
+.tabs-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tabs-header {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--border-default);
+  background-color: var(--surface-white);
+}
+
+.tab-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.tab-button i {
+  font-size: 1rem;
+}
+
+.tab-button:hover {
+  color: var(--brand-primary);
+}
+
+.tab-button.active {
+  color: var(--brand-primary);
+}
+
+.tab-button.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--brand-primary);
+}
+
+/* Stili per i titoli delle sezioni */
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+}
+
+.tab-counter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background-color: var(--surface-white);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tabs-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.details-back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.details-back-button:hover {
+  background-color: var(--surface-lighter);
+  color: var(--brand-primary);
+}
+
+/* Animazione per il cambio tabella */
+.details-content {
+  transition: opacity 0.2s ease-out;
+}
+
+.details-content.transitioning {
+  opacity: 0;
+}
