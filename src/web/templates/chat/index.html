@@ -15,14 +15,18 @@
 
 {# Toolbar specifica della chat #}
 {% block toolbar %}
-<div class="toolbar-left">
-   <h1 class="page-title">SQL Chat</h1>
-</div>
-<div class="toolbar-right">
-   <button id="clearChat" class="btn btn-secondary" title="Clear Chat">
-       <i class="fas fa-trash"></i>
-       <span>Clear Chat</span>
-   </button>
+<div class="page-toolbar">
+    <div class="toolbar-content">
+        <div class="toolbar-left">
+            <h1 class="page-title">SQL Chat</h1>
+        </div>
+        <div class="toolbar-right">
+            <button id="clearChat" class="btn btn-secondary" title="Clear Chat">
+                <i class="fas fa-trash"></i>
+                <span>Clear Chat</span>
+            </button>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -31,20 +35,24 @@
 <div class="chat-container">
    {# Area messaggi con messaggio di benvenuto #}
    <div id="chatMessages" class="chat-messages">
-       <div class="message bot welcome">
-           <div class="message-content">
-               <h3>👋 Welcome to your SQL Assistant!</h3>
-               <p>I'm here to help you explore and query the database.</p>
-               <ul>
-                   <li>Ask for information about available data</li>
-                   <li>Request specific SQL queries</li>
-                   <li>Explore relationships between tables</li>
-               </ul>
-               <p class="hint">
-                   💡 Tip: start by asking "Show me available tables" or "What data can I query?"
-               </p>
-           </div>
-       </div>
+    <div class="message bot welcome">
+        <div class="message-content">
+            <h3>
+                <i class="fas fa-robot"></i>
+                Welcome to your SQL Assistant!
+            </h3>
+            <p>I'm here to help you explore and query the database.</p>
+            <ul>
+                <li>Ask for information about available data</li>
+                <li>Request specific SQL queries</li>
+                <li>Explore relationships between tables</li>
+            </ul>
+            <div class="hint">
+                <i class="fas fa-lightbulb"></i>
+                Start by asking "Show me available tables" or "What data can I query?"
+            </div>
+        </div>
+    </div>
    </div>
 
    {# Area input utente #}

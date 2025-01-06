@@ -1,14 +1,17 @@
 /* Container principale */
 .schema-container {
-  position: relative;
-  height: 100%;
-  background-color: var(--schema-viewer-background);
-  margin: 0 auto;
-  max-width: var(--layout-max-width);
-  width: 100%;
-  box-shadow: var(--schema-container-shadow);
+  /* Manteniamo il box visual */
+  background-color: var(--surface-white);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
-  border: 1px solid var(--schema-viewer-border);
+  box-shadow: var(--shadow-sm);
+  /* Dimensioni e margin */
+  max-width: 1200px; /* coerente con la chat */
+  width: 100%;
+  height: calc(100% - 2rem); /* spazio per margin */
+  margin: 1rem auto;
+  /* Position relative per i controlli interni */
+  position: relative;
 }
 
 /* Viewer dello schema */

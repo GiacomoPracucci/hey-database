@@ -1,58 +1,58 @@
 /* Area input */
 .chat-input-container {
-    padding: 1rem 1.5rem;
-    background-color: white;
-    border-top: 1px solid var(--border-color);
-    max-width: 1800px;
-    margin: 0 auto;
-    width: 100%;
-  }
-  
-  .input-wrapper {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-end;
-    max-width: 1300px;
-    margin: 0 auto;
-  }
-  
-  textarea {
-    flex: 1;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--chat-input-border);
-    border-radius: 8px;
-    resize: none;
-    font-family: inherit;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    max-height: 120px;
-    transition: all 0.2s ease;
-  }
-  
-  textarea:focus {
-    outline: none;
-    border-color: var(--chat-input-focus-border);
-    box-shadow: 0 0 0 2px var(--chat-input-focus-shadow);
-  }
-  
-  .send-button {
-    padding: 0.75rem 1rem;
-    background-color: var(--send-button-bg);
-    color: var(--text-light);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .send-button:hover {
-    background-color: var(--send-button-hover);
-  }
-  
-  .send-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-top: 1px solid var(--border-default);
+  z-index: 10;
+  padding: 1rem 0; /* Rimuoviamo il padding laterale */
+}
+
+
+.input-wrapper {
+  display: flex;
+  gap: 0.75rem;
+}
+
+textarea {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--chat-input-border);
+  border-radius: 8px;
+  resize: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-height: 120px;
+  transition: all 0.2s ease;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--chat-input-focus-border);
+  box-shadow: 0 0 0 2px var(--chat-input-focus-shadow);
+}
+
+.send-button {
+  padding: 0.75rem 1rem;
+  background-color: var(--send-button-bg);
+  color: var(--text-light);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.send-button:hover {
+  background-color: var(--send-button-hover);
+}
+
+.send-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
   
   /* Indicatore di digitazione */
   .typing-indicator-container {

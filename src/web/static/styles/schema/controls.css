@@ -1,8 +1,14 @@
 /* Zoom controls nella navbar */
 .zoom-controls {
-    display: flex;
-    gap: 0.25rem;
-  }
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+}
   
   .zoom-controls .btn {
     padding: 0.5rem;
@@ -24,8 +30,7 @@
     background-color: var(--zoom-control-hover-background);
     color: var(--zoom-control-hover-color);
   }
-  
-  /* Barra di ricerca nella navbar */
+
   .search-field {
     background-color: var(--schema-search-background);
     border: 1px solid var(--schema-search-border);
@@ -44,3 +49,26 @@
     border-color: var(--secondary-color) !important;
     box-shadow: 0 0 0 2px var(--hover-color);
   }
+
+/* Controlli dentro il viewer */
+.schema-controls {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.25rem;
+  background: white;
+  padding: 0.25rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.schema-controls .btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
