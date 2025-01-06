@@ -1,0 +1,247 @@
+/* ------------------------------
+   View Transitions
+------------------------------ */
+.fade-out {
+    animation: crossFadeOut 0.4s ease forwards;  /* o zoomFadeOut o crossFadeOut */
+}
+
+.fade-in {
+    animation: crossFadeIn 0.4s ease forwards;  /* o zoomFadeIn o crossFadeIn */
+}
+
+/* Classe per gli elementi che devono sparire immediatamente */
+.instant-hide {
+    display: none !important;
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease-out forwards;
+}
+
+.slide-down {
+    animation: slideDown 0.3s ease-out forwards;
+}
+
+/* ------------------------------
+   Message Animations
+------------------------------ */
+.message-appear {
+    animation: messageAppear 0.3s ease-out forwards;
+}
+
+.typing-appear {
+    animation: typingAppear 0.3s ease-out forwards;
+}
+
+/* ------------------------------
+   Input Animations
+------------------------------ */
+.input-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+.button-pop {
+    animation: pop 0.3s ease-out;
+}
+
+/* Opzione 1: Transizione con fade e slide delicato */
+@keyframes smoothTransitionOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes smoothTransitionIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Opzione 2: Transizione con zoom e fade */
+@keyframes zoomFadeOut {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes zoomFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Opzione 3: Transizione con cross-fade */
+@keyframes crossFadeOut {
+    0% {
+        opacity: 1;
+        filter: blur(0);
+    }
+    100% {
+        opacity: 0;
+        filter: blur(8px);
+    }
+}
+
+@keyframes crossFadeIn {
+    0% {
+        opacity: 0;
+        filter: blur(8px);
+    }
+    100% {
+        opacity: 1;
+        filter: blur(0);
+    }
+}
+
+/* ------------------------------
+   Animation Keyframes
+------------------------------ */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes typingAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ------------------------------
+   Transition Classes
+------------------------------ */
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+.transition-transform {
+    transition: transform 0.3s ease;
+}
+
+.transition-opacity {
+    transition: opacity 0.3s ease;
+}
+
+/* ------------------------------
+   State Classes
+------------------------------ */
+.entering {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.entered {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.exiting {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* ------------------------------
+   Helper Classes
+------------------------------ */
+.animate-once {
+    animation-iteration-count: 1;
+}
+
+.animate-infinite {
+    animation-iteration-count: infinite;
+}

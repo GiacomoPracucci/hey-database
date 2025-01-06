@@ -69,3 +69,27 @@
 .select:hover {
     border-color: var(--brand-secondary);
 }
+
+#clearChat {
+    display: none; /* Hidden by default */
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: var(--text-secondary);
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#clearChat:hover {
+    color: var(--error-base);
+    border-color: var(--error-border);
+    background-color: var(--error-light);
+}
+
+#clearChat i {
+    font-size: 1rem;
+}

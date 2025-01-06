@@ -70,6 +70,18 @@ export const CSS_CLASSES = {
     DETAILS: "error-details",
     QUERY: "error-query",
   },
+  VIEW: {
+    HIDDEN: "hidden",
+    VISIBLE: "visible",
+    FADE_OUT: "fade-out",
+    FADE_IN: "fade-in",
+  },
+  WELCOME: {
+      CONTAINER: "welcome-view",
+      CONTENT: "welcome-content",
+      SUGGESTIONS: "suggestions",
+      SUGGESTION_BUTTON: "suggestion-btn",
+  },
 };
 
 /**
@@ -140,4 +152,10 @@ export const DOM_ELEMENTS = {
   SEND_BUTTON: "sendButton",
   TYPING_INDICATOR: "typingIndicator",
   CLEAR_BUTTON: "clearChat",
+  WELCOME_VIEW: "welcomeView",
+  CHAT_VIEW: "chatView",
+  WELCOME_INPUT: "welcomeInput",
+  CHAT_INPUT: "chatInput",
+  WELCOME_SEND_BUTTON: "welcomeSendButton",
+  CHAT_SEND_BUTTON: "chatSendButton",
 };

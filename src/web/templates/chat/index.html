@@ -5,15 +5,16 @@
 {# CSS specifici della chat #}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-layout.css') }}"/>
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/welcome-message.css') }}"/>
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/question-text-box.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/welcome-view.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-view.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/messages.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/animations.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/sql-response-box.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-errors.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-responsiveness.css') }}"/>
 {% endblock %}
 
-{# Toolbar specifica della chat #}
+{# Toolbar specifica della chat - mantenuta come richiesto #}
 {% block toolbar %}
 <div class="page-toolbar">
     <div class="toolbar-content">
@@ -33,46 +34,76 @@
 {# Contenuto principale della chat #}
 {% block content %}
 <div class="chat-container">
-   {# Area messaggi con messaggio di benvenuto #}
-   <div id="chatMessages" class="chat-messages">
-    <div class="message bot welcome">
-        <div class="message-content">
-            <h3>
-                <i class="fas fa-robot"></i>
-                Welcome to your SQL Assistant!
-            </h3>
-            <p>I'm here to help you explore and query the database.</p>
-            <ul>
-                <li>Ask for information about available data</li>
-                <li>Request specific SQL queries</li>
-                <li>Explore relationships between tables</li>
-            </ul>
-            <div class="hint">
-                <i class="fas fa-lightbulb"></i>
-                Start by asking "Show me available tables" or "What data can I query?"
+    {# Welcome View - visibile solo all'inizio #}
+    <div id="welcomeView" class="welcome-view">
+        <div class="welcome-content">
+            {# Logo/Icona principale #}
+            <div class="welcome-icon">
+                <i class="fas fa-database"></i>
+            </div>
+
+            {# Titolo e descrizione #}
+            <h1 class="welcome-title">Hey, database!</h1>
+            <p class="welcome-description">Choose a prompt below or write your own to start chatting with your SQL Assistant</p>
+
+            {# Suggestion buttons #}
+            <div class="suggestions">
+                <button class="suggestion-btn" data-query="Show me available tables">
+                    <i class="fas fa-table"></i>
+                    Show available tables
+                </button>
+                <button class="suggestion-btn" data-query="Explain the schema">
+                    <i class="fas fa-project-diagram"></i>
+                    Explain the schema
+                </button>
+                <button class="suggestion-btn" data-query="What data can I query?">
+                    <i class="fas fa-search"></i>
+                    What data can I query?
+                </button>
+            </div>
+
+            {# Input box per la welcome view #}
+            <div class="welcome-input-container">
+                <div class="input-wrapper">
+                    <i class="fas fa-search input-icon"></i>
+                    <textarea
+                        id="welcomeInput"
+                        placeholder="Ask AI a question or make a request..."
+                        rows="1"
+                    ></textarea>
+                    <button id="welcomeSendButton" class="send-button" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-   </div>
 
-   {# Area input utente #}
-   <div class="chat-input-container">
-       <div class="input-wrapper">
-           <textarea
-               id="userInput"
-               placeholder="Write your question here..."
-               rows="1"
-           ></textarea>
-           <button id="sendButton" class="send-button">
-               <i class="fas fa-paper-plane"></i>
-           </button>
-       </div>
-   </div>
+    {# Chat View - visibile dopo la prima interazione #}
+    <div id="chatView" class="chat-view hidden">
+        {# Area messaggi #}
+        <div id="chatMessages" class="chat-messages">
+            {# I messaggi verranno inseriti qui dinamicamente #}
+        </div>
+
+        {# Input box per la chat view #}
+        <div class="chat-input-container">
+            <div class="input-wrapper">
+                <textarea
+                    id="chatInput"
+                    placeholder="Write your question here..."
+                    rows="1"
+                ></textarea>
+                <button id="chatSendButton" class="send-button" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {# Script JavaScript necessari per la chat #}
 {% block extra_js %}
-   {# Main Application #}
-   <script type="module" src="{{ url_for('static', filename='js/chat/main.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/chat/main.js') }}"></script>
 {% endblock %}

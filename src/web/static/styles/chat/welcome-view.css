@@ -1,0 +1,135 @@
+/* ------------------------------
+   Welcome View Components
+------------------------------ */
+
+/* Icon styles */
+.welcome-icon {
+    font-size: 3rem;
+    color: var(--brand-primary);
+    margin-bottom: 1.5rem;
+    animation: scaleIn 0.5s ease-out;
+}
+
+/* Title styles */
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    animation: slideUp 0.5s ease-out;
+}
+
+/* Description styles */
+.welcome-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    animation: slideUp 0.6s ease-out;
+}
+
+/* ------------------------------
+   Suggestion Buttons
+------------------------------ */
+.suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    animation: slideUp 0.7s ease-out;
+}
+
+.suggestion-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: var(--surface-lighter);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggestion-btn:hover {
+    background-color: var(--surface-light);
+    border-color: var(--brand-secondary);
+    transform: translateY(-1px);
+}
+
+.suggestion-btn i {
+    color: var(--brand-secondary);
+    font-size: 1.1rem;
+}
+
+/* ------------------------------
+   Welcome Input Container
+------------------------------ */
+.welcome-input-container {
+    animation: slideUp 0.8s ease-out;
+}
+
+.welcome-input-container .input-wrapper {
+    position: relative;
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.welcome-input-container .input-wrapper:focus-within {
+    border-color: var(--brand-secondary);
+    box-shadow: 0 0 0 2px var(--chat-input-focus-shadow);
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+/* ------------------------------
+   Animation Keyframes
+------------------------------ */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ------------------------------
+   Responsive Styles
+------------------------------ */
+@media (max-width: 768px) {
+    .welcome-title {
+        font-size: 2rem;
+    }
+
+    .welcome-description {
+        font-size: 1rem;
+    }
+
+    .suggestions {
+        padding: 0 1rem;
+    }
+}

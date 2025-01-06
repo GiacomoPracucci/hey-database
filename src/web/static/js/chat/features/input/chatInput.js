@@ -1,243 +1,291 @@
 import { chatDomService } from "../../utils/chatDom.js";
 import { DOM_ELEMENTS, TIMING } from "../../config/constants.js";
+import { chatViewManager } from "../../utils/chatViewManager.js";
 
 /**
  * ChatInput gestisce l'input utente nella chat.
- * Si occupa della textarea, del pulsante di invio e di tutte le interazioni correlate.
+ * Si occupa della gestione degli input in entrambe le viste (welcome e chat)
+ * e di tutte le interazioni correlate.
  */
 export class ChatInput {
-  /**
-   * Inizializza il gestore dell'input
-   * @param {Function} onSubmit - Callback da chiamare quando viene inviato un messaggio
-   */
-  constructor(onSubmit) {
-    // Riferimenti DOM
-    this.textarea = document.getElementById(DOM_ELEMENTS.USER_INPUT);
-    this.sendButton = document.getElementById(DOM_ELEMENTS.SEND_BUTTON);
+    /**
+     * Inizializza il gestore dell'input
+     * @param {Function} onSubmit - Callback da chiamare quando viene inviato un messaggio
+     */
+    constructor(onSubmit) {
+        // Welcome View elements
+        this.welcomeInput = document.getElementById(DOM_ELEMENTS.WELCOME_INPUT);
+        this.welcomeSendButton = document.getElementById(DOM_ELEMENTS.WELCOME_SEND_BUTTON);
 
-    // Validazione elementi necessari
-    if (!this.textarea || !this.sendButton) {
-      throw new Error("Required input elements not found");
+        // Chat View elements
+        this.chatInput = document.getElementById(DOM_ELEMENTS.CHAT_INPUT);
+        this.chatSendButton = document.getElementById(DOM_ELEMENTS.CHAT_SEND_BUTTON);
+
+        // Validazione elementi necessari
+        this.validateElements();
+
+        this.onSubmit = onSubmit;
+        this.isDisabled = false;
+        this.currentView = 'welcome';
+
+        // Inizializza gli event listener
+        this.initializeEventListeners();
+
+        // Imposta l'altezza iniziale
+        this.adjustHeight(this.welcomeInput);
+        this.adjustHeight(this.chatInput);
     }
 
-    this.onSubmit = onSubmit;
-    this.isDisabled = false;
-
-    // Inizializza gli event listener
-    this.initializeEventListeners();
-
-    // Imposta l'altezza iniziale
-    this.adjustHeight();
-  }
-
-  /**
-   * Inizializza tutti gli event listener necessari
-   * @private
-   */
-  initializeEventListeners() {
-    // Gestione invio con pulsante
-    this.sendButton.addEventListener("click", () => this.handleSubmit());
-
-    // Gestione eventi textarea
-    this.textarea.addEventListener("input", () => this.adjustHeight());
-    this.textarea.addEventListener("keypress", (e) => this.handleKeyPress(e));
-    this.textarea.addEventListener("keydown", (e) => this.handleKeyDown(e));
-    this.textarea.addEventListener("paste", () => {
-      // Aggiusta l'altezza dopo il paste
-      setTimeout(() => this.adjustHeight(), 0);
-    });
-  }
-
-  /**
-   * Gestisce la pressione dei tasti nella textarea
-   * @param {KeyboardEvent} event - Evento keyboard
-   * @private
-   */
-  handleKeyPress(event) {
-    // Invio senza shift preme il tasto di invio
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      this.handleSubmit();
-    }
-  }
-
-  /**
-   * Gestisce gli eventi keydown nella textarea
-   * @param {KeyboardEvent} event - Evento keyboard
-   * @private
-   */
-  handleKeyDown(event) {
-    // Impedisce l'invio se il testo è vuoto
-    if (event.key === "Enter" && !event.shiftKey && !this.getValue().trim()) {
-      event.preventDefault();
-    }
-  }
-
-  /**
-   * Gestisce l'invio del messaggio
-   * @private
-   */
-  handleSubmit() {
-    const value = this.getValue().trim();
-    if (!value || this.isDisabled) return;
-
-    // Chiama il callback di submit
-    if (this.onSubmit) {
-      this.onSubmit(value);
+    /**
+     * Valida la presenza di tutti gli elementi DOM necessari
+     * @private
+     * @throws {Error} Se mancano elementi necessari
+     */
+    validateElements() {
+        if (!this.welcomeInput || !this.welcomeSendButton || 
+            !this.chatInput || !this.chatSendButton) {
+            throw new Error("Required input elements not found");
+        }
     }
 
-    // Pulisce l'input
-    this.clear();
-  }
+    /**
+     * Inizializza tutti gli event listener necessari
+     * @private
+     */
+    initializeEventListeners() {
+        // Welcome View listeners
+        this.welcomeInput.addEventListener("input", () => {
+            this.adjustHeight(this.welcomeInput);
+            this.updateButtonState(this.welcomeInput, this.welcomeSendButton);
+        });
 
-  /**
-   * Aggiusta l'altezza della textarea in base al contenuto
-   * @private
-   */
-  adjustHeight() {
-    this.textarea.style.height = "auto";
-    this.textarea.style.height = `${this.textarea.scrollHeight}px`;
-  }
+        this.welcomeInput.addEventListener("keypress", (e) => 
+            this.handleKeyPress(e, this.welcomeInput));
 
-  /**
-   * Imposta il focus sulla textarea
-   */
-  focus() {
-    this.textarea.focus();
-  }
+        this.welcomeSendButton.addEventListener("click", () => 
+            this.handleSubmit(this.welcomeInput));
 
-  /**
-   * Rimuove il focus dalla textarea
-   */
-  blur() {
-    this.textarea.blur();
-  }
+        // Chat View listeners
+        this.chatInput.addEventListener("input", () => {
+            this.adjustHeight(this.chatInput);
+            this.updateButtonState(this.chatInput, this.chatSendButton);
+        });
 
-  /**
-   * Ottiene il valore corrente della textarea
-   * @returns {string} Il valore corrente
-   */
-  getValue() {
-    return this.textarea.value;
-  }
+        this.chatInput.addEventListener("keypress", (e) => 
+            this.handleKeyPress(e, this.chatInput));
 
-  /**
-   * Imposta il valore della textarea
-   * @param {string} value - Il nuovo valore
-   */
-  setValue(value) {
-    this.textarea.value = value;
-    this.adjustHeight();
-  }
+        this.chatSendButton.addEventListener("click", () => 
+            this.handleSubmit(this.chatInput));
 
-  /**
-   * Pulisce la textarea
-   */
-  clear() {
-    this.setValue("");
-  }
+        // Paste handlers
+        [this.welcomeInput, this.chatInput].forEach(input => {
+            input.addEventListener("paste", () => {
+                setTimeout(() => this.adjustHeight(input), 0);
+            });
+        });
+    }
 
-  /**
-   * Disabilita l'input
-   */
-  disable() {
-    this.isDisabled = true;
-    this.textarea.disabled = true;
-    this.sendButton.disabled = true;
-  }
+    /**
+     * Gestisce la pressione dei tasti
+     * @param {KeyboardEvent} event - Evento keyboard
+     * @param {HTMLElement} input - Input element corrente
+     * @private
+     */
+    handleKeyPress(event, input) {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            this.handleSubmit(input);
+        }
+    }
 
-  /**
-   * Abilita l'input
-   */
-  enable() {
-    this.isDisabled = false;
-    this.textarea.disabled = false;
-    this.sendButton.disabled = false;
-  }
+    /**
+     * Gestisce l'invio del messaggio
+     * @param {HTMLElement} input - Input element da cui proviene il messaggio
+     * @private
+     */
+    handleSubmit(input) {
+        const value = input.value.trim();
+        if (!value || this.isDisabled) return;
 
-  /**
-   * Verifica se l'input è vuoto
-   * @returns {boolean} true se l'input è vuoto
-   */
-  isEmpty() {
-    return !this.getValue().trim();
-  }
+        // Chiama il callback di submit
+        if (this.onSubmit) {
+            this.onSubmit(value);
+        }
 
-  /**
-   * Verifica se l'input è disabilitato
-   * @returns {boolean} true se l'input è disabilitato
-   */
-  isInputDisabled() {
-    return this.isDisabled;
-  }
+        // Pulisce l'input
+        this.clear(input);
+    }
 
-  /**
-   * Seleziona tutto il testo nella textarea
-   */
-  selectAll() {
-    this.textarea.select();
-  }
+    /**
+     * Aggiusta l'altezza dell'input in base al contenuto
+     * @param {HTMLElement} input - Input element da aggiustare
+     * @private
+     */
+    adjustHeight(input) {
+        input.style.height = "auto";
+        input.style.height = `${input.scrollHeight}px`;
+    }
 
-  /**
-   * Imposta la posizione del cursore
-   * @param {number} position - Posizione del cursore
-   */
-  setCursorPosition(position) {
-    this.textarea.setSelectionRange(position, position);
-  }
+    /**
+     * Aggiorna lo stato del pulsante di invio
+     * @param {HTMLElement} input - Input element di riferimento
+     * @param {HTMLElement} button - Button element da aggiornare
+     * @private
+     */
+    updateButtonState(input, button) {
+        button.disabled = !input.value.trim();
+    }
 
-  /**
-   * Inserisce il testo nella posizione corrente del cursore
-   * @param {string} text - Testo da inserire
-   */
-  insertAtCursor(text) {
-    const start = this.textarea.selectionStart;
-    const end = this.textarea.selectionEnd;
-    const current = this.getValue();
+    /**
+     * Imposta il focus sull'input appropriato
+     */
+    focus() {
+        const input = this.currentView === 'welcome' ? this.welcomeInput : this.chatInput;
+        input.focus();
+    }
 
-    this.setValue(current.substring(0, start) + text + current.substring(end));
+    /**
+     * Rimuove il focus dall'input appropriato
+     */
+    blur() {
+        const input = this.currentView === 'welcome' ? this.welcomeInput : this.chatInput;
+        input.blur();
+    }
 
-    this.setCursorPosition(start + text.length);
-  }
+    /**
+     * Ottiene il valore dell'input corrente
+     * @returns {string} Il valore corrente
+     */
+    getValue() {
+        const input = this.currentView === 'welcome' ? this.welcomeInput : this.chatInput;
+        return input.value;
+    }
 
-  /**
-   * Gestisce il resize della textarea quando la finestra cambia dimensione
-   */
-  handleResize() {
-    this.adjustHeight();
-  }
+    /**
+     * Imposta il valore dell'input
+     * @param {string} value - Il nuovo valore
+     * @param {HTMLElement} input - Input element da aggiornare
+     */
+    setValue(value, input) {
+        input.value = value;
+        this.adjustHeight(input);
+        this.updateButtonState(input, 
+            input === this.welcomeInput ? this.welcomeSendButton : this.chatSendButton);
+    }
 
-  /**
-   * Aggiunge una classe CSS alla textarea
-   * @param {string} className - Classe da aggiungere
-   */
-  addClass(className) {
-    this.textarea.classList.add(className);
-  }
+    /**
+     * Pulisce l'input specificato
+     * @param {HTMLElement} input - Input element da pulire
+     */
+    clear(input) {
+        this.setValue("", input);
+    }
 
-  /**
-   * Rimuove una classe CSS dalla textarea
-   * @param {string} className - Classe da rimuovere
-   */
-  removeClass(className) {
-    this.textarea.classList.remove(className);
-  }
+    /**
+     * Disabilita entrambi gli input
+     */
+    disable() {
+        this.isDisabled = true;
+        [this.welcomeInput, this.chatInput].forEach(input => {
+            input.disabled = true;
+        });
+        [this.welcomeSendButton, this.chatSendButton].forEach(button => {
+            button.disabled = true;
+        });
+    }
+
+    /**
+     * Abilita entrambi gli input
+     */
+    enable() {
+        this.isDisabled = false;
+        [this.welcomeInput, this.chatInput].forEach(input => {
+            input.disabled = false;
+        });
+        // Aggiorna lo stato dei pulsanti in base al contenuto
+        this.updateButtonState(this.welcomeInput, this.welcomeSendButton);
+        this.updateButtonState(this.chatInput, this.chatSendButton);
+    }
+
+    /**
+     * Cambia la vista corrente
+     * @param {string} view - Vista da attivare ('welcome' o 'chat')
+     */
+    switchView(view) {
+        if (view !== 'welcome' && view !== 'chat') return;
+        this.currentView = view;
+        
+        // Reset e focus appropriato
+        if (view === 'chat') {
+            this.clear(this.welcomeInput);
+            this.chatInput.focus();
+        } else {
+            this.clear(this.chatInput);
+            this.welcomeInput.focus();
+        }
+    }
+
+    /**
+     * Verifica se l'input corrente è vuoto
+     * @returns {boolean} true se l'input è vuoto
+     */
+    isEmpty() {
+        return !this.getValue().trim();
+    }
+
+    /**
+     * Verifica se l'input è disabilitato
+     * @returns {boolean} true se l'input è disabilitato
+     */
+    isInputDisabled() {
+        return this.isDisabled;
+    }
+
+    /**
+     * Gestisce il resize della finestra
+     */
+    handleResize() {
+        this.adjustHeight(this.welcomeInput);
+        this.adjustHeight(this.chatInput);
+    }
+
+    /**
+     * Aggiunge una classe CSS all'input corrente
+     * @param {string} className - Classe da aggiungere
+     */
+    addClass(className) {
+        const input = this.currentView === 'welcome' ? this.welcomeInput : this.chatInput;
+        input.classList.add(className);
+    }
+
+    /**
+     * Rimuove una classe CSS dall'input corrente
+     * @param {string} className - Classe da rimuovere
+     */
+    removeClass(className) {
+        const input = this.currentView === 'welcome' ? this.welcomeInput : this.chatInput;
+        input.classList.remove(className);
+    }
 }
 
 // Creiamo un'istanza del gestore input quando il DOM è pronto
 let chatInput;
 document.addEventListener("DOMContentLoaded", () => {
-  chatInput = new ChatInput((message) => {
-    // Qui verrà iniettato il gestore del submit dal main.js
-    console.log("Message submitted:", message);
-  });
+    try {
+        chatInput = new ChatInput((message) => {
+            // Qui verrà iniettato il gestore del submit dal main.js
+            console.log("Message submitted:", message);
+        });
 
-  // Gestisce il resize della finestra
-  window.addEventListener("resize", () => {
-    if (chatInput) {
-      chatInput.handleResize();
+        // Gestisce il resize della finestra
+        window.addEventListener("resize", () => {
+            if (chatInput) {
+                chatInput.handleResize();
+            }
+        });
+    } catch (error) {
+        console.error("Error initializing chat input:", error);
     }
-  });
 });
 
 export { chatInput };

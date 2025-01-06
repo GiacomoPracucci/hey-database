@@ -1,0 +1,182 @@
+/* ------------------------------
+   Chat View Layout
+------------------------------ */
+.chat-view {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease-out;
+}
+
+.chat-view.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ------------------------------
+   Chat Input Container
+------------------------------ */
+.chat-input-container {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--surface-white);
+    border-top: 1px solid var(--border-default);
+    padding: 1rem 0;
+    z-index: 10;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: var(--surface-white);
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 0 2px var(--brand-accent-light);
+}
+
+
+textarea {
+    flex: 1;
+    padding: 0.875rem 3rem 0.875rem 1rem;
+    border: none;
+    background: none;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    min-height: 54px; /* Consistent starting height */
+    max-height: 150px;
+}
+
+
+textarea:focus {
+    outline: none;
+    border-color: var(--brand-secondary);
+    box-shadow: 0 0 0 2px var(--chat-input-focus-shadow);
+}
+
+
+.send-button {
+    position: absolute;
+    right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    color: var(--brand-accent);
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.send-button:not(:disabled):hover {
+    color: var(--brand-accent-dark);
+    background-color: var(--brand-accent-light);
+    transform: scale(1.05);
+}
+
+.send-button:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+/* Welcome view specific styles */
+.welcome-input-container .input-wrapper {
+    background-color: var(--surface-lighter);
+    border-color: transparent;
+}
+
+.welcome-input-container .input-wrapper:focus-within {
+    background-color: var(--surface-white);
+    border-color: var(--brand-accent);
+}
+
+.welcome-input-container .input-icon {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-muted);
+}
+
+.welcome-input-container textarea {
+    padding-left: 2.5rem; /* Space for the search icon */
+}
+
+/* Animation for send button */
+@keyframes sendButtonPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.send-button:not(:disabled):active {
+    animation: sendButtonPop 0.3s ease;
+}
+
+/* ------------------------------
+   Loading Indicator
+------------------------------ */
+.typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1rem;
+    background-color: var(--surface-lighter);
+    border-radius: 16px;
+    margin: 0.5rem 0;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background-color: var(--brand-secondary);
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+}
+
+/* ------------------------------
+   Responsive Styles
+------------------------------ */
+@media (max-width: 768px) {
+    .chat-input-container {
+        padding: 0.75rem 0;
+    }
+
+    textarea {
+        font-size: 1rem; /* Larger font size for mobile */
+    }
+
+    .send-button {
+        padding: 0.75rem;
+        right: 1rem; /* Adjust position for mobile */
+    }
+
+    .input-wrapper {
+        padding: 0 0.75rem;
+    }
+    
+    .typing-indicator {
+        padding: 0.75rem;
+        margin: 0.25rem 0;
+    }
+}

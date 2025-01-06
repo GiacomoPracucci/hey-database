@@ -34,15 +34,18 @@ export class MessageStore {
    */
   loadMessages() {
     try {
-      const savedMessages = this.storage.loadMessages();
-      // Converte i messaggi salvati in istanze appropriate
-      this.messages = savedMessages.map((msg) =>
-        MessageFactory.fromSerialized(msg)
-      );
-      this.notifyObservers();
+        const savedMessages = this.storage.loadMessages();
+        // Converte i messaggi salvati in istanze appropriate
+        this.messages = savedMessages.map((msg) =>
+            MessageFactory.fromSerialized(msg)
+        );
+        this.notifyObservers();
+        // Restituiamo i messaggi
+        return this.messages;
     } catch (error) {
-      console.error("Error loading messages:", error);
-      chatNotificationService.showError("Error loading chat history");
+        console.error("Error loading messages:", error);
+        this.messages = [];
+        return this.messages;
     }
   }
 

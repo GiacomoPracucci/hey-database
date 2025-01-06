@@ -1,4 +1,6 @@
-/* Base message styles */
+/* ------------------------------
+   Message Container
+------------------------------ */
 .message {
   display: flex;
   animation: messageSlideIn 0.3s ease forwards;
@@ -28,7 +30,7 @@
 /* Hover effect for messages */
 .message-content:hover {
   transform: translateY(-1px);
-  box-shadow: var(--message-shadow-hover);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* User message specific styles */
@@ -45,16 +47,50 @@
   border-radius: 16px 16px 16px 0;
 }
 
-
-
-/* Special handling for error containers */
-.message.bot .message-content:has(.error-container) {
-  background-color: transparent;
-  box-shadow: none;
-  padding: 0;
+/* SQL Query results in bot messages */
+.message.bot .sql-result {
+  margin-top: 0.5rem;
+  background-color: var(--surface-white);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-/* Message slide-in animation */
+.message.bot .sql-result pre {
+  margin: 0;
+  padding: 1rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9rem;
+  overflow-x: auto;
+}
+
+/* Table results styling */
+.message.bot .result-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  background-color: var(--surface-white);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.message.bot .result-table th,
+.message.bot .result-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.message.bot .result-table th {
+  background-color: var(--surface-light);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.message.bot .result-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Message animations */
 @keyframes messageSlideIn {
   from {
       opacity: 0;
@@ -63,5 +99,59 @@
   to {
       opacity: 1;
       transform: translateY(0);
+  }
+}
+
+/* ------------------------------
+ Error Messages
+------------------------------ */
+.message.error .message-content {
+  background-color: var(--error-light);
+  border: 1px solid var(--error-border);
+  color: var(--error-text-color);
+}
+
+.message.error .error-title {
+  color: var(--error-dark);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* ------------------------------
+ Code Blocks in Messages
+------------------------------ */
+.message-content code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.message.user .message-content code {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ------------------------------
+ Responsive Styles
+------------------------------ */
+@media (max-width: 768px) {
+  .message {
+      max-width: 90%;
+  }
+
+  .message-content {
+      padding: 0.625rem 0.875rem;
+      font-size: 0.95rem;
+  }
+
+  .message.bot .sql-result pre {
+      font-size: 0.85rem;
+  }
+
+  .message.bot .result-table th,
+  .message.bot .result-table td {
+      padding: 0.625rem 0.875rem;
+      font-size: 0.9rem;
   }
 }

@@ -17,6 +17,18 @@ export class FeedbackView {
   }
 
   /**
+   * Imposta lo stato dell'interfaccia
+   * @param {boolean} disabled - Se true, disabilita l'interfaccia
+   */
+  setInterfaceState(disabled) {
+    if (disabled) {
+        this.disableAllButtons();
+    } else {
+        this.enableAllButtons();
+    }
+  }
+
+  /**
    * Crea un nuovo pulsante di feedback
    * @param {Object} feedbackData - Dati associati al feedback
    * @returns {HTMLButtonElement} Pulsante di feedback creato

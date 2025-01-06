@@ -6,22 +6,20 @@ import {
 } from "../config/constants.js";
 
 /**
- * ChatDomService gestisce tutte le manipolazioni del DOM per l'interfaccia chat.
- * Fornisce metodi per creare, manipolare e gestire elementi dell'interfaccia.
- */
+* ChatDomService gestisce tutte le manipolazioni del DOM per l'interfaccia chat.
+* Fornisce metodi per creare, manipolare e gestire elementi dell'interfaccia.
+*/
 export class ChatDomService {
   /**
    * Inizializza il servizio DOM
    * Recupera e memorizza i riferimenti agli elementi DOM principali
    */
   constructor() {
-    this.chatMessages = document.getElementById(DOM_ELEMENTS.CHAT_MESSAGES);
-    this.userInput = document.getElementById(DOM_ELEMENTS.USER_INPUT);
-    this.sendButton = document.getElementById(DOM_ELEMENTS.SEND_BUTTON);
-
-    if (!this.chatMessages || !this.userInput || !this.sendButton) {
-      throw new Error("Required DOM elements not found");
-    }
+      // Riferimento principale all'area messaggi
+      this.chatMessages = document.getElementById(DOM_ELEMENTS.CHAT_MESSAGES);
+      if (!this.chatMessages) {
+          throw new Error("Chat messages container not found");
+      }
   }
 
   /**
@@ -31,45 +29,54 @@ export class ChatDomService {
    * @returns {HTMLElement} L'elemento messaggio creato
    */
   addMessage(content, type = "user") {
-    const messageDiv = document.createElement("div");
-    messageDiv.className = `${CSS_CLASSES.MESSAGE.CONTAINER} ${type}`;
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `${CSS_CLASSES.MESSAGE.CONTAINER} ${type}`;
 
-    const contentDiv = document.createElement("div");
-    contentDiv.className = CSS_CLASSES.MESSAGE.CONTENT;
+      const contentDiv = document.createElement("div");
+      contentDiv.className = CSS_CLASSES.MESSAGE.CONTENT;
 
-    if (type === "bot") {
-      this.populateBotMessage(contentDiv, content);
-    } else {
-      contentDiv.textContent = content;
-    }
+      if (type === "bot") {
+          this.populateBotMessage(contentDiv, content);
+      } else {
+          contentDiv.textContent = content;
+      }
 
-    messageDiv.appendChild(contentDiv);
-    this.chatMessages.appendChild(messageDiv);
-    this.scrollToBottom();
+      messageDiv.appendChild(contentDiv);
+      this.chatMessages.appendChild(messageDiv);
+      this.scrollToBottom();
 
-    return messageDiv;
+      // Aggiungiamo l'animazione di comparsa
+      messageDiv.classList.add('message-appear');
+
+      return messageDiv;
   }
 
-  /**
-   * Popola il contenuto di un messaggio bot
-   * @param {HTMLElement} contentDiv - Elemento contenitore del messaggio
-   * @param {Object} content - Contenuto del messaggio
-   * @private
-   */
-  populateBotMessage(contentDiv, content) {
-    if (!content.success) {
-      this.createErrorMessage(contentDiv, content);
-    } else {
-      if (content.query) {
-        contentDiv.appendChild(this.createQueryContainer(content));
+
+    /**
+     * Popola il contenuto di un messaggio bot
+     * @param {HTMLElement} contentDiv - Elemento contenitore del messaggio
+     * @param {Object} content - Contenuto del messaggio
+     * @private
+     */
+    populateBotMessage(contentDiv, content) {
+      if (!content.success) {
+          this.createErrorMessage(contentDiv, content);
+      } else {
+          if (content.query) {
+              const queryContainer = this.createQueryContainer(content);
+              contentDiv.appendChild(queryContainer);
+          }
+          if (content.explanation) {
+              const explanation = this.createExplanation(content.explanation);
+              explanation.classList.add('slide-up');
+              contentDiv.appendChild(explanation);
+          }
+          if (content.results?.length > 0) {
+              const resultsTable = this.createResultsTable(content.results);
+              resultsTable.classList.add('slide-up');
+              contentDiv.appendChild(resultsTable);
+          }
       }
-      if (content.explanation) {
-        contentDiv.appendChild(this.createExplanation(content.explanation));
-      }
-      if (content.results?.length > 0) {
-        contentDiv.appendChild(this.createResultsTable(content.results));
-      }
-    }
   }
 
   /**
@@ -256,76 +263,53 @@ export class ChatDomService {
     return container;
   }
 
-  /**
-   * Aggiunge l'indicatore di digitazione
-   * @returns {HTMLElement} L'elemento indicatore aggiunto
-   */
-  addLoadingIndicator() {
-    const loadingDiv = document.createElement("div");
-    loadingDiv.className = CSS_CLASSES.LOADING.CONTAINER;
-    loadingDiv.id = DOM_ELEMENTS.TYPING_INDICATOR;
+    /**
+     * Aggiunge l'indicatore di digitazione
+     * @returns {HTMLElement} L'elemento indicatore aggiunto
+     */
+    addLoadingIndicator() {
+      const loadingDiv = document.createElement("div");
+      loadingDiv.className = CSS_CLASSES.LOADING.CONTAINER;
+      loadingDiv.id = DOM_ELEMENTS.TYPING_INDICATOR;
 
-    loadingDiv.innerHTML = `
-            <div class="${CSS_CLASSES.LOADING.INDICATOR}">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        `;
+      loadingDiv.innerHTML = `
+          <div class="${CSS_CLASSES.LOADING.INDICATOR}">
+              <span></span>
+              <span></span>
+              <span></span>
+          </div>
+      `;
 
-    this.chatMessages.appendChild(loadingDiv);
-    this.scrollToBottom();
+      this.chatMessages.appendChild(loadingDiv);
+      this.scrollToBottom();
 
-    return loadingDiv;
+      // Aggiungiamo l'animazione di comparsa
+      loadingDiv.classList.add('typing-appear');
+
+      return loadingDiv;
   }
 
   /**
-   * Rimuove l'indicatore di digitazione
+   * Rimuove l'indicatore di digitazione con animazione
    */
   removeLoadingIndicator() {
-    const indicator = document.getElementById(DOM_ELEMENTS.TYPING_INDICATOR);
-    if (indicator) {
-      indicator.remove();
-    }
+      const indicator = document.getElementById(DOM_ELEMENTS.TYPING_INDICATOR);
+      if (indicator) {
+          indicator.classList.add('fade-out');
+          setTimeout(() => {
+              indicator.remove();
+          }, 300); // Durata dell'animazione
+      }
   }
 
   /**
-   * Gestisce l'altezza dinamica della textarea
-   */
-  adjustInputHeight() {
-    this.userInput.style.height = "auto";
-    this.userInput.style.height = `${this.userInput.scrollHeight}px`;
-  }
-
-  /**
-   * Scorre la chat fino in fondo
+   * Scorre la chat fino in fondo con animazione smooth
    */
   scrollToBottom() {
-    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-  }
-
-  /**
-   * Pulisce l'input utente
-   */
-  clearInput() {
-    this.userInput.value = "";
-    this.adjustInputHeight();
-  }
-
-  /**
-   * Disabilita l'interfaccia durante l'invio
-   * @param {boolean} disabled - Stato di disabilitazione
-   */
-  setInterfaceDisabled(disabled) {
-    this.userInput.disabled = disabled;
-    this.sendButton.disabled = disabled;
-  }
-
-  /**
-   * Imposta il focus sull'input
-   */
-  focusInput() {
-    this.userInput.focus();
+      this.chatMessages.scrollTo({
+          top: this.chatMessages.scrollHeight,
+          behavior: 'smooth'
+      });
   }
 }
 
