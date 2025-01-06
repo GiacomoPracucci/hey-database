@@ -4,6 +4,7 @@ import {
   UI_TEXTS,
   DOM_ELEMENTS,
 } from "../config/constants.js";
+import { feedbackApiService } from "../features/feedback/feedbackApi.js";
 
 /**
 * ChatDomService gestisce tutte le manipolazioni del DOM per l'interfaccia chat.
@@ -52,31 +53,31 @@ export class ChatDomService {
   }
 
 
-    /**
-     * Popola il contenuto di un messaggio bot
-     * @param {HTMLElement} contentDiv - Elemento contenitore del messaggio
-     * @param {Object} content - Contenuto del messaggio
-     * @private
-     */
-    populateBotMessage(contentDiv, content) {
-      if (!content.success) {
-          this.createErrorMessage(contentDiv, content);
-      } else {
-          if (content.query) {
-              const queryContainer = this.createQueryContainer(content);
-              contentDiv.appendChild(queryContainer);
-          }
-          if (content.explanation) {
-              const explanation = this.createExplanation(content.explanation);
-              explanation.classList.add('slide-up');
-              contentDiv.appendChild(explanation);
-          }
-          if (content.results?.length > 0) {
-              const resultsTable = this.createResultsTable(content.results);
-              resultsTable.classList.add('slide-up');
-              contentDiv.appendChild(resultsTable);
-          }
-      }
+  /**
+   * Popola il contenuto di un messaggio bot
+   * @param {HTMLElement} contentDiv - Elemento contenitore del messaggio
+   * @param {Object} content - Contenuto del messaggio
+   * @private
+   */
+  populateBotMessage(contentDiv, content) {
+    if (!content.success) {
+        this.createErrorMessage(contentDiv, content);
+    } else {
+        if (content.query) {
+            const queryContainer = this.createQueryContainer(content);
+            contentDiv.appendChild(queryContainer);
+        }
+        if (content.explanation) {
+            const explanation = this.createExplanation(content.explanation);
+            explanation.classList.add('slide-up');
+            contentDiv.appendChild(explanation);
+        }
+        if (content.results?.length > 0) {
+            const resultsTable = this.createResultsTable(content.results);
+            resultsTable.classList.add('slide-up');
+            contentDiv.appendChild(resultsTable);
+        }
+    }
   }
 
   /**
@@ -148,7 +149,7 @@ export class ChatDomService {
     toolbar.className = CSS_CLASSES.SQL.TOOLBAR;
 
     toolbar.appendChild(this.createCopyButton(content.query));
-    //toolbar.appendChild(this.createFeedbackButton(content));
+    toolbar.appendChild(this.createFeedbackButton(content));
 
     return toolbar;
   }
@@ -199,11 +200,27 @@ export class ChatDomService {
     button.innerHTML = `<i class="fas ${ICONS.THUMBS_UP}"></i>`;
     button.title = UI_TEXTS.FEEDBACK_BUTTON;
 
-    // Il listener verrà aggiunto dal FeedbackService
-    button.dataset.feedbackData = JSON.stringify({
-      question: content.original_question,
-      sql_query: content.query,
-      explanation: content.explanation,
+    const feedbackData = {
+        question: content.original_question,
+        sql_query: content.query,
+        explanation: content.explanation
+    };
+
+    button.addEventListener("click", async () => {
+        try {
+            button.disabled = true;
+            const success = await feedbackApiService.sendFeedbackWithNotification(feedbackData);
+            if (success) {
+                button.classList.add(CSS_CLASSES.FEEDBACK.VOTED);
+                button.innerHTML = `<i class="fas fa-check"></i>`;
+                button.title = UI_TEXTS.FEEDBACK_THANKS;
+            } else {
+                button.disabled = false;
+            }
+        } catch (error) {
+            console.error("Error sending feedback:", error);
+            button.disabled = false;
+        }
     });
 
     return button;

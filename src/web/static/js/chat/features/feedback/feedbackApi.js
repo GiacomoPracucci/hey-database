@@ -19,6 +19,7 @@ export class FeedbackApiService {
     try {
       // Valida i dati prima dell'invio
       this.validateFeedbackData(feedbackData);
+      console.log('Sending feedback data:', feedbackData);
 
       const response = await fetch(API.FEEDBACK, {
         method: "POST",
@@ -37,7 +38,7 @@ export class FeedbackApiService {
         }
         throw new Error(data.error || ERROR_MESSAGES.GENERIC);
       }
-
+      console.log('Response from server:', data);
       return data;
     } catch (error) {
       console.error("Error submitting feedback:", error);
