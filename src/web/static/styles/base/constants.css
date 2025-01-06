@@ -65,6 +65,14 @@
     --brand-icon-size: 1.3rem;
     --brand-text-color: var(--text-light);
 
+    /* Sidebar */
+    --sidebar-width: 64px;
+    --sidebar-width-expanded: 200px;
+    --sidebar-bg: var(--brand-primary);
+    --sidebar-hover-bg: rgba(255, 255, 255, 0.1);
+    --sidebar-border: rgba(255, 255, 255, 0.1);
+    --icon-size: 20px;
+
     /* Navigation */
     --nav-link-color: var(--text-muted);
     --nav-link-hover-color: var(--text-light);

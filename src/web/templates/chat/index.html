@@ -73,28 +73,6 @@
 
 {# Script JavaScript necessari per la chat #}
 {% block extra_js %}
-   {# Configurazione #}
-   <script type="module" src="{{ url_for('static', filename='js/chat/config/constants.js') }}"></script>
-   
-   {# Utility #}
-   <script type="module" src="{{ url_for('static', filename='js/chat/utils/storage.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/chat/utils/api.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/chat/utils/dom.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/chat/utils/notifications.js') }}"></script>
-   
-   {# Features - Gestione Messaggi #}
-   <script type="module" src="{{ url_for('static', filename='js/chat/features/messages/messageTypes.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/chat/features/messages/messageStore.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/chat/features/messages/messageView.js') }}"></script>
-   
-   {# Features - Input Management #}
-   <script type="module" src="{{ url_for('static', filename='js/chat/features/input/chatInput.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/chat/features/input/inputUtils.js') }}"></script>
-   
-   {# Features - Feedback System #}
-   <script type="module" src="{{ url_for('static', filename='js/chat/features/feedback/feedbackView.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/chat/features/feedback/feedbackApi.js') }}"></script>
-   
    {# Main Application #}
    <script type="module" src="{{ url_for('static', filename='js/chat/main.js') }}"></script>
 {% endblock %}

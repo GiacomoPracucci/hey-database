@@ -106,17 +106,6 @@
    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.19.1/cytoscape.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.3.2/cytoscape-dagre.min.js"></script>
-
-   {# Configurazione e utilities #}
-   <script type="module" src="{{ url_for('static', filename='js/schema/config/styles.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/schema/utils/graphUtils.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/schema/utils/layoutUtils.js') }}"></script>
-
-   {# Features dello schema viewer #}
-   <script type="module" src="{{ url_for('static', filename='js/schema/features/search.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/schema/features/details.js') }}"></script>
-   <script type="module" src="{{ url_for('static', filename='js/schema/features/controls.js') }}"></script>
-
    {# Entry point dell'applicazione #}
    <script type="module" src="{{ url_for('static', filename='js/schema/main.js') }}"></script>
 {% endblock %}
