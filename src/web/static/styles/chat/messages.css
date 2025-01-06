@@ -45,55 +45,7 @@
   border-radius: 16px 16px 16px 0;
 }
 
-/* Welcome message specific styles */
-.message.bot.welcome {
-  max-width: 85%;
-}
 
-.message.bot.welcome .message-content {
-  background-color: var(--surface-lighter);
-  padding: 1.25rem;
-}
-
-.message.bot.welcome h3 {
-  color: var(--brand-primary);
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.message.bot.welcome ul {
-  padding-left: 1rem;
-  margin: 0.75rem 0;
-}
-
-.message.bot.welcome li {
-  margin: 0.5rem 0;
-  color: var(--text-primary);
-  position: relative;
-  padding-left: 1.5rem;
-}
-
-.message.bot.welcome li::before {
-  content: "•";
-  position: absolute;
-  left: 0;
-  color: var(--brand-accent);
-}
-
-.message.bot.welcome .hint {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
 
 /* Special handling for error containers */
 .message.bot .message-content:has(.error-container) {

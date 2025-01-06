@@ -25,26 +25,11 @@
 .toolbar-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
-}
-
-/* Page title */
-.page-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-/* Control groups (per lo schema viewer) */
-.control-group {
-    display: flex;
-    align-items: center;
     gap: 0.75rem;
 }
 
 /* Button styles */
-.btn {
+.btn-secondary {
     height: 36px;
     padding: 0 0.75rem;
     display: inline-flex;
@@ -61,8 +46,26 @@
     transition: all 0.2s ease;
 }
 
-.btn:hover {
+.btn-secondary:hover {
     background-color: var(--surface-light);
     border-color: var(--brand-secondary);
     color: var(--brand-primary);
+}
+
+/* Select control */
+.select {
+    height: 36px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    background-color: var(--surface-white);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.select:hover {
+    border-color: var(--brand-secondary);
 }

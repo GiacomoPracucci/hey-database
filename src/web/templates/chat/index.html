@@ -7,8 +7,8 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-layout.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/welcome-message.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/question-text-box.css') }}"/>
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/user-message.css') }}"/>
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/bot-response.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/messages.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/sql-response-box.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-errors.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-responsiveness.css') }}"/>
 {% endblock %}
@@ -18,7 +18,7 @@
 <div class="page-toolbar">
     <div class="toolbar-content">
         <div class="toolbar-left">
-            <h1 class="page-title">SQL Chat</h1>
+            {# Area vuota a sinistra #}
         </div>
         <div class="toolbar-right">
             <button id="clearChat" class="btn btn-secondary" title="Clear Chat">

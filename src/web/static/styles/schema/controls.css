@@ -1,55 +1,3 @@
-/* Zoom controls nella navbar */
-.zoom-controls {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 10;
-  background: white;
-  padding: 0.5rem;
-  border-radius: 6px;
-  box-shadow: var(--shadow-sm);
-}
-  
-  .zoom-controls .btn {
-    padding: 0.5rem;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--zoom-control-color);
-    background-color: var(--zoom-control-background);
-    border: 1px solid var(--zoom-control-border);
-  }
-  
-  .zoom-controls .btn i {
-    font-size: 0.875rem;
-  }
-  
-  .zoom-controls .btn:hover {
-    background-color: var(--zoom-control-hover-background);
-    color: var(--zoom-control-hover-color);
-  }
-
-  .search-field {
-    background-color: var(--schema-search-background);
-    border: 1px solid var(--schema-search-border);
-  }
-  
-  .search-field input {
-    color: var(--schema-search-text);
-  }
-  
-  .search-field input::placeholder {
-    color: var(--schema-search-placeholder);
-  }
-  
-  /* Evidenziazione ricerca */
-  .search-match {
-    border-color: var(--secondary-color) !important;
-    box-shadow: 0 0 0 2px var(--hover-color);
-  }
-
 /* Controlli dentro il viewer */
 .schema-controls {
   position: absolute;
@@ -72,3 +20,36 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Zoom controls nella navbar */
+.zoom-controls {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+}
+  
+.zoom-controls .btn {
+    padding: 0.5rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--zoom-control-color);
+    background-color: var(--zoom-control-background);
+    border: 1px solid var(--zoom-control-border);
+  }
+  
+.zoom-controls .btn i {
+    font-size: 0.875rem;
+  }
+  
+.zoom-controls .btn:hover {
+    background-color: var(--zoom-control-hover-background);
+    color: var(--zoom-control-hover-color);
+  }
