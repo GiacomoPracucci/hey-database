@@ -312,47 +312,21 @@ export class SchemaControls {
    * Aggiunge controlli per la manipolazione visiva del grafo
    */
   setupVisualizationControls() {
-    // Aggiungiamo i controlli all'interfaccia
-    this.addVisualizationControlsToUI();
+    // Rimuoviamo l'aggiunta dinamica dei bottoni
+    // this.addVisualizationControlsToUI();
 
-    // Aggiungiamo gli event listener per i controlli
-    const controls = document.querySelector(".visualization-controls");
-    if (controls) {
-      controls.addEventListener("click", (e) => {
-        const target = e.target;
-        if (target.matches("[data-action]")) {
-          const action = target.dataset.action;
-          this.handleVisualizationAction(action);
-        }
-      });
+    // aggiungiamo gli event listener per i controlli - ora sulla toolbar
+    const toolbar = document.querySelector(".page-toolbar");
+    if (toolbar) {
+        toolbar.addEventListener("click", (e) => {
+            const button = e.target.closest("[data-action]");
+            if (button) {
+                const action = button.dataset.action;
+                this.handleVisualizationAction(action);
+            }
+        });
     }
-  }
-
-  /**
-   * Aggiunge l'interfaccia dei controlli di visualizzazione
-   * Crea e inserisce gli elementi DOM necessari
-   */
-  addVisualizationControlsToUI() {
-    const controlsContainer = document.querySelector(".context-toolbar");
-    if (!controlsContainer) return;
-
-    const controls = document.createElement("div");
-    controls.className = "visualization-controls";
-    controls.innerHTML = `
-            <div class="control-group">
-                <button class="btn btn-secondary" data-action="highlight-central">
-                    <i class="fas fa-star"></i>
-                    Highlight Central Nodes
-                </button>
-                <button class="btn btn-secondary" data-action="reset">
-                    <i class="fas fa-undo"></i>
-                    Reset View
-                </button>
-            </div>
-        `;
-
-    controlsContainer.appendChild(controls);
-  }
+}
 
   /**
    * Gestisce le azioni di visualizzazione

@@ -1,63 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}hey-database{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/layout.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/constants.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/reset.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/navbar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/notifications.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/responsiveness.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    {% block extra_css %}{% endblock %}
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>{% block title %}hey-database{% endblock %}</title>
+
+   <!-- Core CSS: ordine importante per la cascata delle regole -->
+   <!-- Reset CSS per normalizzare gli stili base tra browser -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/reset.css') }}">
+   
+   <!-- Variabili CSS e costanti per il design system -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/constants.css') }}">
+   
+   <!-- Layout principale dell'applicazione -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/layout.css') }}">
+   
+   <!-- Stili della sidebar laterale -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/sidebar.css') }}">
+   
+   <!-- Stili della toolbar superiore -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/toolbar.css') }}">
+   
+   <!-- Sistema di notifiche toast -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/notifications.css') }}">
+   
+   <!-- Media queries per responsive design -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='styles/base/responsiveness.css') }}">
+
+   <!-- Font Awesome per le icone -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+   <!-- Stili specifici per pagina, definiti nei template figli -->
+   {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <header class="main-header">
-        <!-- Navbar principale -->
-        <nav class="navbar">
-            <!-- Brand -->
-            <a href="/" class="navbar-brand">
-                <i class="fas fa-database"></i>
-                <span class="brand-text">Hey, Database!</span>
-            </a>
+   <!-- Container principale dell'applicazione -->
+   <div class="app-container">
+       <!-- Sidebar laterale con navigazione -->
+       <aside class="sidebar">
+           <!-- Logo e nome applicazione -->
+           <div class="brand">
+               <i class="fas fa-database brand-icon"></i>
+               <span class="brand-text">Hey Database</span>
+           </div>
+           
+           <!-- Menu di navigazione principale -->
+           <nav class="sidebar-nav">
+               <!-- Link alla pagina Chat -->
+               <div class="nav-item">
+                   <a href="{{ url_for('chat.index') }}" class="nav-link {{ 'active' if request.blueprint == 'chat' }}">
+                       <i class="fas fa-comments nav-icon"></i>
+                       <span class="nav-text">Chat</span>
+                   </a>
+               </div>
+               
+               <!-- Link alla pagina Schema -->
+               <div class="nav-item">
+                   <a href="{{ url_for('schema.view') }}" class="nav-link {{ 'active' if request.blueprint == 'schema' }}">
+                       <i class="fas fa-project-diagram nav-icon"></i>
+                       <span class="nav-text">Schema</span>
+                   </a>
+               </div>
+           </nav>
+       </aside>
 
-            <!-- Navigazione principale -->
-            <div class="navbar-nav">
-                <div class="nav-item">
-                    <a href="{{ url_for('chat.index') }}" class="nav-link {% if request.endpoint == 'chat.index' %}active{% endif %}">
-                        <i class="fas fa-comments"></i>
-                        <span>Chat</span>
-                    </a>
-                </div>
-                <div class="nav-item">
-                    <a href="{{ url_for('schema.view') }}" class="nav-link {% if request.endpoint == 'schema.view' %}active{% endif %}">
-                        <i class="fas fa-project-diagram"></i>
-                        <span>Schema</span>
-                    </a>
-                </div>
-            </div>
+       <!-- Container principale del contenuto -->
+       <div class="main-container">
+           <!-- Toolbar superiore personalizzabile per pagina -->
+           <div class="page-toolbar">
+               {% block toolbar %}
+               <!-- Il contenuto della toolbar viene definito nei template figli -->
+               {% endblock %}
+           </div>
 
-            <!-- Titolo della pagina corrente -->
-            <div class="page-title">
-                {% block page_title %}{% endblock %}
-            </div>
+           <!-- Area del contenuto principale -->
+           <div class="content-area">
+               <div class="content-container">
+                   {% block content %}
+                   <!-- Il contenuto principale viene definito nei template figli -->
+                   {% endblock %}
+               </div>
+           </div>
+       </div>
+   </div>
 
-            <!-- Azioni contestuali -->
-            <div class="navbar-actions">
-                {% block navbar_actions %}{% endblock %}
-            </div>
-        </nav>
-
-        <!-- Toolbar contestuale (opzionale) -->
-        {% block context_toolbar %}{% endblock %}
-    </header>
-
-    <main class="main-content">
-        {% block content %}{% endblock %}
-    </main>
-
-    {% block scripts %}{% endblock %}
+   <!-- Script JavaScript di base -->
+   <script src="{{ url_for('static', filename='utils/constants.js') }}" type="module"></script>
+   
+   <!-- Script specifici per pagina, definiti nei template figli -->
+   {% block extra_js %}{% endblock %}
 </body>
 </html>

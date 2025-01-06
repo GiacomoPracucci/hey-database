@@ -1,4 +1,8 @@
-{% extends "base.html" %} {% block title %}Hey, Database! - Chat{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Hey, Database! - Chat{% endblock %}
+
+{# CSS specifici della chat #}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-layout.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/welcome-message.css') }}"/>
@@ -7,103 +11,82 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/bot-response.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-errors.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/chat/chat-responsiveness.css') }}"/>
-{% endblock %} {% block page_title %}SQL Chat{% endblock %} {% block
-navbar_actions %}
-<button class="btn" id="clearChat" title="Clear Chat">
-  <i class="fas fa-trash"></i>
-  <span>Clear</span>
-</button>
-{% endblock %} {% block content %}
-<div class="chat-container">
-  <div id="chatMessages" class="chat-messages">
-    <div class="message bot welcome">
-      <div class="message-content">
-        <h3>👋 Welcome to your SQL Assistant!</h3>
-        <p>I'm here to help you explore and query the database.</p>
-        <ul>
-          <li>Ask for information about available data</li>
-          <li>Request specific SQL queries</li>
-          <li>Explore relationships between tables</li>
-        </ul>
-        <p class="hint">
-          💡 Tip: start by asking "Show me available tables" or "What data can I
-          query?"
-        </p>
-      </div>
-    </div>
-  </div>
+{% endblock %}
 
-  <div class="chat-input-container">
-    <div class="input-wrapper">
-      <textarea
-        id="userInput"
-        placeholder="Write your question here..."
-        rows="1"
-      ></textarea>
-      <button id="sendButton" class="send-button">
-        <i class="fas fa-paper-plane"></i>
-      </button>
-    </div>
-  </div>
+{# Toolbar specifica della chat #}
+{% block toolbar %}
+<div class="toolbar-left">
+   <h1 class="page-title">SQL Chat</h1>
 </div>
-{% endblock %} {% block scripts %}
-<!-- Config -->
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/config/constants.js') }}"
-></script>
+<div class="toolbar-right">
+   <button id="clearChat" class="btn btn-secondary" title="Clear Chat">
+       <i class="fas fa-trash"></i>
+       <span>Clear Chat</span>
+   </button>
+</div>
+{% endblock %}
 
-<!-- Utils -->
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/utils/storage.js') }}"
-></script>
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/utils/api.js') }}"
-></script>
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/utils/dom.js') }}"
-></script>
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/utils/notifications.js') }}"
-></script>
+{# Contenuto principale della chat #}
+{% block content %}
+<div class="chat-container">
+   {# Area messaggi con messaggio di benvenuto #}
+   <div id="chatMessages" class="chat-messages">
+       <div class="message bot welcome">
+           <div class="message-content">
+               <h3>👋 Welcome to your SQL Assistant!</h3>
+               <p>I'm here to help you explore and query the database.</p>
+               <ul>
+                   <li>Ask for information about available data</li>
+                   <li>Request specific SQL queries</li>
+                   <li>Explore relationships between tables</li>
+               </ul>
+               <p class="hint">
+                   💡 Tip: start by asking "Show me available tables" or "What data can I query?"
+               </p>
+           </div>
+       </div>
+   </div>
 
-<!-- Features -->
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/features/messages/messageTypes.js') }}"
-></script>
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/features/messages/messageStore.js') }}"
-></script>
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/features/messages/messageView.js') }}"
-></script>
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/features/input/chatInput.js') }}"
-></script>
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/features/input/inputUtils.js') }}"
-></script>
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/features/feedback/feedbackView.js') }}"
-></script>
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/features/feedback/feedbackApi.js') }}"
-></script>
+   {# Area input utente #}
+   <div class="chat-input-container">
+       <div class="input-wrapper">
+           <textarea
+               id="userInput"
+               placeholder="Write your question here..."
+               rows="1"
+           ></textarea>
+           <button id="sendButton" class="send-button">
+               <i class="fas fa-paper-plane"></i>
+           </button>
+       </div>
+   </div>
+</div>
+{% endblock %}
 
-<!-- Main -->
-<script
-  type="module"
-  src="{{ url_for('static', filename='js/chat/main.js') }}"
-></script>
+{# Script JavaScript necessari per la chat #}
+{% block extra_js %}
+   {# Configurazione #}
+   <script type="module" src="{{ url_for('static', filename='js/chat/config/constants.js') }}"></script>
+   
+   {# Utility #}
+   <script type="module" src="{{ url_for('static', filename='js/chat/utils/storage.js') }}"></script>
+   <script type="module" src="{{ url_for('static', filename='js/chat/utils/api.js') }}"></script>
+   <script type="module" src="{{ url_for('static', filename='js/chat/utils/dom.js') }}"></script>
+   <script type="module" src="{{ url_for('static', filename='js/chat/utils/notifications.js') }}"></script>
+   
+   {# Features - Gestione Messaggi #}
+   <script type="module" src="{{ url_for('static', filename='js/chat/features/messages/messageTypes.js') }}"></script>
+   <script type="module" src="{{ url_for('static', filename='js/chat/features/messages/messageStore.js') }}"></script>
+   <script type="module" src="{{ url_for('static', filename='js/chat/features/messages/messageView.js') }}"></script>
+   
+   {# Features - Input Management #}
+   <script type="module" src="{{ url_for('static', filename='js/chat/features/input/chatInput.js') }}"></script>
+   <script type="module" src="{{ url_for('static', filename='js/chat/features/input/inputUtils.js') }}"></script>
+   
+   {# Features - Feedback System #}
+   <script type="module" src="{{ url_for('static', filename='js/chat/features/feedback/feedbackView.js') }}"></script>
+   <script type="module" src="{{ url_for('static', filename='js/chat/features/feedback/feedbackApi.js') }}"></script>
+   
+   {# Main Application #}
+   <script type="module" src="{{ url_for('static', filename='js/chat/main.js') }}"></script>
 {% endblock %}
