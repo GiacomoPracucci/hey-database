@@ -125,16 +125,21 @@ export class FeedbackApiService {
    */
   async sendFeedbackWithNotification(feedbackData) {
     try {
-      const response = await this.submitFeedback(feedbackData);
-      return true;
+        const response = await this.submitFeedback(feedbackData);
+        if (response.success) {  // Verifica che la risposta sia avvenuta con successo
+            chatNotificationService.showSuccess("Thank you for your feedback!");
+            return true;
+        } else {
+            chatNotificationService.showError(response.error || ERROR_MESSAGES.GENERIC);
+            return false;
+        }
     } catch (error) {
-      // Gestione specifica per errore vector store
-      if (FeedbackApiService.isVectorStoreError(error)) {
-        chatNotificationService.showWarning(error.message);
-      } else {
-        chatNotificationService.showError(error.message);
-      }
-      return false;
+        if (FeedbackApiService.isVectorStoreError(error)) {
+            chatNotificationService.showWarning(error.message);
+        } else {
+            chatNotificationService.showError(error.message);
+        }
+        return false;
     }
   }
 
