@@ -87,7 +87,7 @@ export class MessageView {
     }
 
     /**
-     * Renderizza un messaggio del bot con animazione
+     * Renderizza un messaggio del bot
      * @param {Object} message - Messaggio bot
      * @returns {HTMLElement} Elemento messaggio
      * @private
@@ -104,35 +104,25 @@ export class MessageView {
             const queryContainer = chatDomService.createQueryContainer({
                 query: message.content.query,
                 original_question: message.content.original_question,
-                explanation: message.content.explanation,
+                explanation: message.content.explanation
             });
-
-            // Crea il bottone di feedback e aggiungilo alla toolbar
-            const feedbackButton = feedbackView.createFeedbackButton({
-                question: message.content.original_question,
-                sql_query: message.content.query,
-                explanation: message.content.explanation,
-            });
-
-            queryContainer
-                .querySelector(`.${CSS_CLASSES.SQL.TOOLBAR}`)
-                .appendChild(feedbackButton);
-
+            
+            // Non aggiungiamo più il feedback button qui, viene gestito da chatDomService
             contentDiv.appendChild(queryContainer);
         }
 
         // Aggiungi spiegazione se presente
         if (message.content.explanation) {
-            const explanation = chatDomService.createExplanation(message.content.explanation);
-            explanation.classList.add('slide-up'); // Animazione per la spiegazione
-            contentDiv.appendChild(explanation);
+            contentDiv.appendChild(
+                chatDomService.createExplanation(message.content.explanation)
+            );
         }
 
         // Aggiungi risultati se presenti
         if (message.content.results?.length > 0) {
-            const resultsTable = chatDomService.createResultsTable(message.content.results);
-            resultsTable.classList.add('slide-up'); // Animazione per i risultati
-            contentDiv.appendChild(resultsTable);
+            contentDiv.appendChild(
+                chatDomService.createResultsTable(message.content.results)
+            );
         }
 
         messageDiv.appendChild(contentDiv);

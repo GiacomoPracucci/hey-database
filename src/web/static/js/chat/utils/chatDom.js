@@ -148,8 +148,17 @@ export class ChatDomService {
     const toolbar = document.createElement("div");
     toolbar.className = CSS_CLASSES.SQL.TOOLBAR;
 
+    // Aggiungi bottone copia
     toolbar.appendChild(this.createCopyButton(content.query));
-    toolbar.appendChild(this.createFeedbackButton(content));
+
+    // Aggiungi bottone feedback solo se abbiamo tutti i dati necessari
+    if (content.query && content.original_question && content.explanation) {
+        toolbar.appendChild(this.createFeedbackButton({
+            question: content.original_question,
+            sql_query: content.query,
+            explanation: content.explanation
+        }));
+    }
 
     return toolbar;
   }
@@ -190,21 +199,15 @@ export class ChatDomService {
 
   /**
    * Crea un pulsante di feedback
-   * @param {Object} content - Contenuto del messaggio
+   * @param {Object} feedbackData - Dati per il feedback
    * @returns {HTMLButtonElement} Pulsante di feedback
    * @private
    */
-  createFeedbackButton(content) {
+  createFeedbackButton(feedbackData) {
     const button = document.createElement("button");
     button.className = CSS_CLASSES.FEEDBACK.BUTTON;
     button.innerHTML = `<i class="fas ${ICONS.THUMBS_UP}"></i>`;
     button.title = UI_TEXTS.FEEDBACK_BUTTON;
-
-    const feedbackData = {
-        question: content.original_question,
-        sql_query: content.query,
-        explanation: content.explanation
-    };
 
     button.addEventListener("click", async () => {
         try {
