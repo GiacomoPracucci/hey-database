@@ -171,78 +171,61 @@ export class SchemaControls {
    * @param {Object} metrics - Metriche della rete calcolate
    */
   highlightImportantNodes(metrics) {
-    // Prima resetta tutti i nodi
+    // Reset iniziale con transizione fluida
     this.cy.nodes().style({
-      "background-color": "#ffffff",
-      "border-width": 1,
-      "border-color": "#e2e8f0",
-      "shadow-blur": 0,
-      "shadow-color": "transparent",
-      "shadow-opacity": 0,
+      'background-color': '#ffffff',
+      'border-width': 1,
+      'border-color': '#3182ce',
+      'transition-property': 'background-color, border-width, border-color',
+      'transition-duration': '0.3s',
+      'transition-timing-function': 'ease-in-out'
     });
 
-    // Calcola il grado massimo considerando tutte le connessioni
+    // Calcola il grado massimo
     let maxDegree = 0;
-    this.cy.nodes().forEach((node) => {
+    this.cy.nodes().forEach(node => {
       const connections = node.connectedEdges().length;
       maxDegree = Math.max(maxDegree, connections);
     });
 
     // Applica gli stili in base alla centralità
-    this.cy.nodes().forEach((node) => {
+    this.cy.nodes().forEach(node => {
       const connections = node.connectedEdges().length;
       const intensity = connections / maxDegree;
 
-      // Debug - stampa info sui nodi
-      console.log(
-        `Node ${node.id()}: connections=${connections}, intensity=${intensity}`
-      );
-
-      if (intensity > 0.3) {
-        // Nodi con almeno 30% delle connessioni del nodo più connesso
+      if (intensity > 0.20) {
         // Normalizza l'intensità per i nodi sopra la soglia
-        const normalizedIntensity = (intensity - 0.3) / 0.7;
+        const normalizedIntensity = (intensity - 0.2) / 0.8;
 
-        // Colore di sfondo che varia dal bianco al blu
-        const r = Math.round(255 - normalizedIntensity * 100);
-        const g = Math.round(255 - normalizedIntensity * 100);
-        const b = 255;
+        // Funzione per interpolare colori in HSL
+        const getColor = (intensity) => {
+          // Interpola da un blu chiaro a un blu scuro
+          const h = 215;  // Tonalità blu
+          const s = 40 + (intensity * 40);  // Saturazione da 40% a 80%
+          const l = 90 - (intensity * 30);  // Luminosità da 90% a 60%
+          return `hsl(${h}, ${s}%, ${l}%)`;
+        };
 
+        // Calcola dimensione del bordo con un limite massimo
+        const borderWidth = Math.min(1 + (normalizedIntensity * 3), 4);
+
+        // Applica gli stili migliorati
         node.style({
-          "background-color": `rgb(${r},${g},${b})`,
-          "border-width": 2 + normalizedIntensity * 2,
-          "border-color": "#3182ce",
-          "shadow-blur": 5 + normalizedIntensity * 15,
-          "shadow-color": "#3182ce",
-          "shadow-opacity": 0.3 + normalizedIntensity * 0.4,
-          "z-index": 999,
+          'background-color': getColor(normalizedIntensity),
+          'border-width': borderWidth,
+          'border-color': '#2b6cb0', // Blu leggermente più scuro per il bordo
+          'z-index': Math.floor(900 + (normalizedIntensity * 99)), // z-index progressivo
+          // Aggiunge un sottile effetto di box shadow usando il filtro CSS
+          'overlay-opacity': 0.1,
+          'overlay-color': '#000000',
+          'overlay-padding': normalizedIntensity * 5
         });
 
-        // Effetto pulsante per i nodi più centrali (top 40%)
-        if (intensity > 0.6) {
-          node.style("shadow-color", "#2c5282");
-          node
-            .animation({
-              style: {
-                "shadow-blur": 20,
-                "shadow-opacity": 0.8,
-              },
-              duration: 1000,
-              complete: function () {
-                node
-                  .animation({
-                    style: {
-                      "shadow-blur": 10,
-                      "shadow-opacity": 0.5,
-                    },
-                    duration: 1000,
-                  })
-                  .play();
-              },
-            })
-            .play()
-            .repeat();
-        }
+        // Aggiungi classe per stili CSS aggiuntivi
+        node.addClass('highlighted');
+      } else {
+        // Rimuovi classe se il nodo non è più evidenziato
+        node.removeClass('highlighted');
       }
     });
   }
@@ -326,7 +309,7 @@ export class SchemaControls {
             }
         });
     }
-}
+  }
 
   /**
    * Gestisce le azioni di visualizzazione
@@ -356,22 +339,26 @@ export class SchemaControls {
 
     // Reset degli stili dei nodi allo stato originale
     this.cy.nodes().style({
-      "background-color": "#ffffff",
-      "border-width": 1,
-      "border-color": "#3182ce", // Colore blu originale dei bordi
-      "shadow-blur": 0,
-      "shadow-color": "transparent",
-      "shadow-opacity": 0,
-      "z-index": 1,
+      'background-color': '#ffffff',
+      'border-width': 1,
+      'border-color': '#3182ce',
+      'z-index': 1,
+      'overlay-opacity': 0,
+      'overlay-color': '#ffffff',
+      'overlay-padding': 0,
+      'transition-property': 'none'  // Disabilita le transizioni per il reset
     });
 
-    // Reset della vista con animazione
+    // Rimuove tutte le classi CSS aggiunte
+    this.cy.nodes().removeClass('highlighted');
+
+    // Reset della vista
     this.cy.animate({
       fit: {
-        padding: 50,
+        padding: 50
       },
       duration: 300,
-      easing: "ease-out",
+      easing: 'ease-out'
     });
   }
 }
