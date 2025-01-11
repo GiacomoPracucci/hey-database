@@ -106,19 +106,39 @@ export class ChatViewManager {
         // Fade in chat view
         this.chatView.classList.add(CSS_CLASSES.VIEW.VISIBLE);
         
-        // Show clear button
-        const clearButton = document.getElementById(DOM_ELEMENTS.CLEAR_BUTTON);
-        if (clearButton) {
-            clearButton.style.display = 'flex';
-            clearButton.style.opacity = '0';
-            setTimeout(() => {
-                clearButton.style.opacity = '1';
-                clearButton.style.transition = 'opacity 0.3s ease';
-            }, 100);
-        }
+        // Show clear button with animation
+        this.toggleClearButton(true);
         
         this.currentView = 'chat';
         this.chatInput.focus();
+    }
+
+    toggleClearButton(show, animate = true) {
+        const clearButton = document.getElementById(DOM_ELEMENTS.CLEAR_BUTTON);
+        if (!clearButton) return;
+    
+        if (show) {
+            // Invece di impostare display: flex direttamente, aggiungiamo una classe CSS
+            clearButton.classList.add('visible');
+            if (animate) {
+                clearButton.style.opacity = '0';
+                requestAnimationFrame(() => {
+                    clearButton.style.opacity = '1';
+                });
+            } else {
+                clearButton.style.opacity = '1';
+            }
+        } else {
+            if (animate) {
+                clearButton.style.opacity = '0';
+                setTimeout(() => {
+                    clearButton.classList.remove('visible');
+                }, 300);
+            } else {
+                clearButton.classList.remove('visible');
+                clearButton.style.opacity = '0';
+            }
+        }
     }
 
     /**

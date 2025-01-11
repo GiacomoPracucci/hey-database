@@ -81,7 +81,12 @@
     border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 0.2s ease;
+    opacity: 0;
+    transition: all 0.2s ease, opacity 0.3s ease;
+}
+
+#clearChat.visible {
+    display: flex; /* Override display: none when visible class is present */
 }
 
 #clearChat:hover {

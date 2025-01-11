@@ -207,9 +207,38 @@ class ChatApplication {
         event.preventDefault();
         const button = event.target;
         button.disabled = true;
-
+        
+        console.log("Starting chat clear process");
+        console.log("Current messages:", messageStore.messages);
+    
         try {
             messageStore.clearMessages();
+            console.log("Messages after clear:", messageStore.messages);
+            
+            // Verifica se siamo nella chat view
+            if (chatViewManager.currentView === 'chat') {
+                console.log("Transitioning back to welcome view");
+                // Torna alla welcome view
+                const welcomeView = document.getElementById(DOM_ELEMENTS.WELCOME_VIEW);
+                const chatView = document.getElementById(DOM_ELEMENTS.CHAT_VIEW);
+                
+                if (welcomeView && chatView) {
+                    welcomeView.style.display = '';
+                    chatView.classList.add('hidden');
+                    chatView.classList.remove('visible');
+                    
+                    // Nascondi il bottone Clear
+                    const clearButton = document.getElementById(DOM_ELEMENTS.CLEAR_BUTTON);
+                    if (clearButton) {
+                        clearButton.classList.remove('visible');
+                        clearButton.style.opacity = '0';
+                    }
+                    
+                    // Resetta lo stato corrente
+                    chatViewManager.currentView = 'welcome';
+                }
+            }
+            
             chatViewManager.clearCurrentInput();
             chatNotificationService.showSuccess("Chat cleared successfully");
         } catch (error) {
@@ -266,14 +295,20 @@ class ChatApplication {
                 const messages = messageStore.loadMessages();
                 
                 if (messages && messages.length > 0) {
-                    // Nascondiamo immediatamente la welcome view
                     const welcomeView = document.getElementById(DOM_ELEMENTS.WELCOME_VIEW);
                     const chatView = document.getElementById(DOM_ELEMENTS.CHAT_VIEW);
+                    const clearButton = document.getElementById(DOM_ELEMENTS.CLEAR_BUTTON);
                     
                     if (welcomeView && chatView) {
                         welcomeView.style.display = 'none';
                         chatView.classList.remove('hidden');
                         chatView.classList.add('visible');
+                        
+                        // Mostra il bottone Clear se ci sono messaggi
+                        if (clearButton) {
+                            clearButton.classList.add('visible');
+                            clearButton.style.opacity = '1';
+                        }
                     }
                 }
             }
