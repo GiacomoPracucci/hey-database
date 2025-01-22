@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Optional, Dict, List, Tuple, Any
 
 from src.connettori.connector import DatabaseConnector
@@ -8,33 +7,29 @@ from src.llm_output.response_handler import ResponseHandler
 from src.store.vectorstore import VectorStore
 from src.config.languages import SupportedLanguage
 from src.agents.agent import Agent
+from src.models.agent import SQLAgentResponse
+from src.llm_output.parser import ResponseParser as parser
+from src.llm_output.formatter import ResponseFormatter as formatter
+from src.llm_output.sql_query_executor import SQLQueryExecutor as executor
 
 import logging
-logger = logging.getLogger('hey-database')
 
-@dataclass
-class SQLAgentResponse:
-    """Classe che rappresenta la risposta dell'agente SQL"""
-    success: bool
-    query: Optional[str] = None
-    explanation: Optional[str] = None
-    results: Optional[List[Dict]] = None
-    preview: Optional[List[Dict]] = None
-    error: Optional[str] = None
-    from_vector_store: bool = False
-    original_question: Optional[str] = None
+logger = logging.getLogger("hey-database")
+
 
 class SQLAgent(Agent):
     """Agente incaricato della generazione e dell'esecuzione di query SQL"""
 
-    def __init__(self,
-                 db: DatabaseConnector,
-                 llm_manager: LLMHandler,
-                 metadata_retriever: DatabaseMetadataRetriever,
-                 schema_name: str,
-                 prompt_config: Any,
-                 vector_store: Optional[VectorStore] = None,
-                 language: SupportedLanguage = SupportedLanguage.get_default()):
+    def __init__(
+        self,
+        db: DatabaseConnector,
+        llm_manager: LLMHandler,
+        metadata_retriever: DatabaseMetadataRetriever,
+        schema_name: str,
+        prompt_config: Any,
+        vector_store: Optional[VectorStore] = None,
+        language: SupportedLanguage = SupportedLanguage.get_default(),
+    ):
         """Inizializza l'agente SQL
 
         Args:
@@ -76,9 +71,7 @@ class SQLAgent(Agent):
 
             # costruisce ed esegue il prompt
             prompt = self.build_prompt(
-                message,
-                similar_tables=similar_tables,
-                similar_queries=similar_queries
+                message, similar_tables=similar_tables, similar_queries=similar_queries
             )
             logger.debug(f"Generated prompt: {prompt}\n")
 
@@ -87,12 +80,13 @@ class SQLAgent(Agent):
                 return SQLAgentResponse(
                     success=False,
                     error="Failed to get LLM response",
-                    original_question=message
+                    original_question=message,
                 )
             logger.debug(f"LLM response: {llm_response}\n")
 
-            # Processa risposta ed esegue query
-            result = self.response_handler.process_response(llm_response)
+            parsed_response = parser.parse_llm_response(llm_response)
+            query_result = executor.execute(parsed_response["query"], self.db)
+            result = formatter.format_response(query_result, parsed_response)
 
             return SQLAgentResponse(
                 success=result["success"],
@@ -101,21 +95,21 @@ class SQLAgent(Agent):
                 results=result.get("results"),
                 preview=result.get("preview"),
                 error=result.get("error"),
-                original_question=message
+                original_question=message,
             )
 
         except Exception as e:
             logger.exception(f"Error in SQL agent: {str(e)}")
             return SQLAgentResponse(
-                success=False,
-                error=str(e),
-                original_question=message
+                success=False, error=str(e), original_question=message
             )
 
-    def build_prompt(self,
-                     message: str,
-                     similar_tables: Optional[List[Dict]] = None,
-                     similar_queries: Optional[List[Dict]] = None) -> str:
+    def build_prompt(
+        self,
+        message: str,
+        similar_tables: Optional[List[Dict]] = None,
+        similar_queries: Optional[List[Dict]] = None,
+    ) -> str:
         """Costruisce il prompt per il LLM
         Args:
             message: Domanda dell'utente
@@ -157,10 +151,11 @@ Response must be valid JSON - do not include any other text or markdown formatti
             prompt_parts.append("\nRelevant Tables:")
             for table_info in similar_tables:
                 prompt_parts.append(self._format_table_metadata(table_info))
-                if self.prompt_config.include_sample_data: # se in config abbiamo specificato che vogliamo records di esempio
+                if (
+                    self.prompt_config.include_sample_data
+                ):  # se in config abbiamo specificato che vogliamo records di esempio
                     sample_data = self._get_sample_data(
-                        table_info["table_name"],
-                        self.prompt_config.max_sample_rows
+                        table_info["table_name"], self.prompt_config.max_sample_rows
                     )
                     if sample_data:
                         prompt_parts.append(sample_data)
@@ -197,7 +192,7 @@ Response must be valid JSON - do not include any other text or markdown formatti
         # prendiamo query SQL e spiegazione
         stored_response = {
             "query": exact_match.sql_query.strip(),
-            "explanation": exact_match.explanation
+            "explanation": exact_match.explanation,
         }
         # e le formattiamo
         result = self.response_handler.process_response(stored_response)
@@ -210,7 +205,7 @@ Response must be valid JSON - do not include any other text or markdown formatti
                 results=result.get("results"),
                 preview=result.get("preview"),
                 from_vector_store=True,
-                original_question=message
+                original_question=message,
             )
         # se la risposta non è stata processata correttamente, restituiamo None
         return None
@@ -228,28 +223,33 @@ Response must be valid JSON - do not include any other text or markdown formatti
         if self.vector_store:
             # tabelle simili
             table_results = self.vector_store.search_similar_tables(message, limit=4)
-            similar_tables = [{
-                "table_name": t.metadata.table_name,
-                "relevance_score": t.relevance_score,
-                "row_count": t.metadata.row_count,
-                "description": t.metadata.description,
-                "columns": t.metadata.columns,
-                "primary_keys": t.metadata.primary_keys,
-                "foreign_keys": t.metadata.foreign_keys
-            } for t in table_results]
+            similar_tables = [
+                {
+                    "table_name": t.metadata.table_name,
+                    "relevance_score": t.relevance_score,
+                    "row_count": t.metadata.row_count,
+                    "description": t.metadata.description,
+                    "columns": t.metadata.columns,
+                    "primary_keys": t.metadata.primary_keys,
+                    "foreign_keys": t.metadata.foreign_keys,
+                }
+                for t in table_results
+            ]
 
             # query simili
             query_results = self.vector_store.search_similar_queries(message, limit=1)
-            similar_queries = [{
-                "question": q.question,
-                "sql_query": q.sql_query,
-                "explanation": q.explanation,
-                "score": q.score,
-                "positive_votes": q.positive_votes
-            } for q in query_results]
+            similar_queries = [
+                {
+                    "question": q.question,
+                    "sql_query": q.sql_query,
+                    "explanation": q.explanation,
+                    "score": q.score,
+                    "positive_votes": q.positive_votes,
+                }
+                for q in query_results
+            ]
 
         return similar_tables, similar_queries
-
 
     @staticmethod
     def _format_table_metadata(table_info: Dict) -> str:
@@ -263,7 +263,7 @@ Response must be valid JSON - do not include any other text or markdown formatti
             f"\nTable: {table_info['table_name']} ({table_info['row_count']} rows)",
             f"Relevance Score: {table_info['relevance_score']:.2f}",
             f"Description: {table_info['description']}",
-            "Columns:"
+            "Columns:",
         ]
 
         for col in table_info["columns"]:
@@ -292,10 +292,10 @@ Response must be valid JSON - do not include any other text or markdown formatti
             str: Query formattata
         """
         return f"""
-Similar Question (Score: {query_info['score']:.2f}, Positive Votes: {query_info['positive_votes']}):
-Q: {query_info['question']}
-SQL: {query_info['sql_query']}
-Explanation: {query_info['explanation']}"""
+Similar Question (Score: {query_info["score"]:.2f}, Positive Votes: {query_info["positive_votes"]}):
+Q: {query_info["question"]}
+SQL: {query_info["sql_query"]}
+Explanation: {query_info["explanation"]}"""
 
     def _get_sample_data(self, table_name: str, max_rows: int = 3) -> str:
         """Recupera e formatta dati di esempio da una tabella
@@ -337,12 +337,10 @@ Explanation: {query_info['explanation']}"""
             return False
 
         return self.vector_store.handle_positive_feedback(
-            question=question,
-            sql_query=sql_query,
-            explanation=explanation
+            question=question, sql_query=sql_query, explanation=explanation
         )
 
     def __del__(self):
         """Cleanup when the agent is destroyed"""
-        if hasattr(self, 'db'):
+        if hasattr(self, "db"):
             self.db.close()
