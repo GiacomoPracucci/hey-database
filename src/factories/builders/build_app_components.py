@@ -102,6 +102,9 @@ class AppComponentsBuilder:
 
         self.build_database()
         self.build_vector_store()
+        self.build_sql_llm()
+        self.build_metadata_extractor()
+        self.build_cache()
 
         # se abbiamo un vector store, lo popoliamo in automatico con i metadati estratti
         if self.vector_store:
