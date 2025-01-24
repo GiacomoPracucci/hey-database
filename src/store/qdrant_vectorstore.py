@@ -12,26 +12,28 @@ from src.config.models.vector_store import (
     TablePayload,
     QueryPayload,
     TableSearchResult,
-    QuerySearchResult
+    QuerySearchResult,
 )
 
-logger = logging.getLogger('hey-database')
+logger = logging.getLogger("hey-database")
+
 
 class QdrantStore(VectorStore):
     """Implementazione del vectorstore Qdrant
     TODO sta classe è arrivata a fare troppa roba, andrebbero divisi i vari servizi che offre
     TODO disassociare il concetto di metadati enhanced allo store e integrarlo all'estrazione dei metadati dallo schema
     """
-    
-    def __init__(self,
-                collection_name: str,
-                embedding_model: Embedder,
-                path: Optional[str] = None,
-                url: Optional[str] = None,
-                api_key: Optional[str] = None
-                ) -> None:
-        """ Inizializza il client Qdrant
-        
+
+    def __init__(
+        self,
+        collection_name: str,
+        embedding_model: Embedder,
+        path: Optional[str] = None,
+        url: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ) -> None:
+        """Inizializza il client Qdrant
+
         Args:
             collection_name: Nome della collezione
             path: Path per storage locale (opzionale)
@@ -67,9 +69,8 @@ class QdrantStore(VectorStore):
                 self.client.create_collection(
                     collection_name=self.collection_name,
                     vectors_config=VectorParams(
-                        size=self.vector_size,
-                        distance=Distance.COSINE
-                    )
+                        size=self.vector_size, distance=Distance.COSINE
+                    ),
                 )
                 logger.info(f"Collection {self.collection_name} created successfully")
             else:
@@ -85,7 +86,9 @@ class QdrantStore(VectorStore):
             logger.error(f"Error in store initialization: {str(e)}")
             return False
 
-    def populate_store_with_metadata(self, metadata: Dict[str, EnhancedTableMetadata]) -> bool:
+    def populate_store_with_metadata(
+        self, metadata: Dict[str, EnhancedTableMetadata]
+    ) -> bool:
         """Popola lo store con i metadati enhanced se è una nuova collection.
         Args:
             metadata: Dizionario dei metadati enhanced delle tabelle
@@ -94,8 +97,13 @@ class QdrantStore(VectorStore):
         """
         try:
             # popola solo se la collection è vuota
-            if self.collection_exists() and self.client.count(self.collection_name).count > 0:
-                logger.info("Collection already populated, skipping metadata population")
+            if (
+                self.collection_exists()
+                and self.client.count(self.collection_name).count > 0
+            ):
+                logger.info(
+                    "Collection already populated, skipping metadata population"
+                )
                 return True
 
             logger.info("Populating collection with metadata")
@@ -109,7 +117,7 @@ class QdrantStore(VectorStore):
         except Exception as e:
             logger.error(f"Error in metadata population: {str(e)}")
             return False
-        
+
     def _table_exists(self, table_name: str) -> bool:
         """Verifica se i metadati di una tabella esistono già nello store"""
         try:
@@ -118,16 +126,14 @@ class QdrantStore(VectorStore):
                 scroll_filter=models.Filter(
                     must=[
                         models.FieldCondition(
-                            key="type",
-                            match=models.MatchValue(value="table")
+                            key="type", match=models.MatchValue(value="table")
                         ),
                         models.FieldCondition(
-                            key="table_name",
-                            match=models.MatchValue(value=table_name)
-                        )
+                            key="table_name", match=models.MatchValue(value=table_name)
+                        ),
                     ]
                 ),
-                limit=1
+                limit=1,
             )
             return len(response[0]) > 0
         except Exception as e:
@@ -144,52 +150,54 @@ class QdrantStore(VectorStore):
         try:
             # costruiamo il payload nel formato stabilito a partire dai metadati arricchiti
             payload = TablePayload.from_enhanced_metadata(payload_metadata)
-            
+
             # embedding dalla descrizione e keywords
             embedding_text = f"{payload.table_name} {payload.description} {' '.join(payload.keywords)}"
             vector = self.embedding_model.encode(embedding_text)
-            
+
             # upsert del documento
             self.client.upsert(
                 collection_name=self.collection_name,
-                points=[models.PointStruct(
-                    id=self._generate_table_id(payload.table_name),
-                    vector=vector,
-                    payload=asdict(payload)
-                )]
+                points=[
+                    models.PointStruct(
+                        id=self._generate_table_id(payload.table_name),
+                        vector=vector,
+                        payload=asdict(payload),
+                    )
+                ],
             )
             logger.debug(f"Metadata added/updated for table: {payload.table_name}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Error adding table metadata: {str(e)}")
             return False
-        
-        
-    def search_similar_tables(self, question: str, limit: int = 3) -> List[TableSearchResult]:
+
+    def search_similar_tables(
+        self, question: str, limit: int = 3
+    ) -> List[TableSearchResult]:
         """Trova le tabelle più rilevanti per domanda utente usando similarità del coseno"""
         try:
             vector = self.embedding_model.encode(question)
-            
+
             search_result = self.client.search(
                 collection_name=self.collection_name,
                 query_vector=vector,
                 query_filter=models.Filter(
                     must=[
                         models.FieldCondition(
-                            key="type",
-                            match=models.MatchValue(value="table")
+                            key="type", match=models.MatchValue(value="table")
                         )
                     ]
                 ),
-                limit=limit
+                limit=limit,
             )
-        
+
             return [
                 TableSearchResult(
                     table_name=hit.payload["table_name"],
                     metadata=TablePayload(
-                        type='table',
+                        type="table",
                         table_name=hit.payload["table_name"],
                         description=hit.payload["description"],
                         keywords=hit.payload["keywords"],
@@ -197,74 +205,76 @@ class QdrantStore(VectorStore):
                         primary_keys=hit.payload["primary_keys"],
                         foreign_keys=hit.payload["foreign_keys"],
                         row_count=hit.payload["row_count"],
-                        importance_score=hit.payload.get("importance_score", 0.0)
+                        importance_score=hit.payload.get("importance_score", 0.0),
                     ),
-                    relevance_score=hit.score
+                    relevance_score=hit.score,
                 )
                 for hit in search_result
             ]
-                
+
         except Exception as e:
             logger.error(f"Errore nella ricerca delle tabelle: {str(e)}")
             return []
-        
-        
+
     def add_query(self, query: QueryPayload) -> bool:
         """Aggiunge una risposta del LLM al vector store (domanda utente + query sql + spiegazione)"""
         try:
             vector = self.embedding_model.encode(query.question)
-            
+
             self.client.upsert(
                 collection_name=self.collection_name,
-                points=[models.PointStruct(
-                    id=self._generate_query_id(query.question),
-                    vector=vector,
-                    payload=asdict(query)
-                )]
+                points=[
+                    models.PointStruct(
+                        id=self._generate_query_id(query.question),
+                        vector=vector,
+                        payload=asdict(query),
+                    )
+                ],
             )
             return True
-            
+
         except Exception as e:
             logger.error(f"Error adding query: {str(e)}")
             return False
-        
 
-    def search_similar_queries(self, question: str, limit: int = 3) -> List[QuerySearchResult]:
+    def search_similar_queries(
+        self, question: str, limit: int = 3
+    ) -> List[QuerySearchResult]:
         """Cerca query simili nel vector store"""
         try:
             vector = self.embedding_model.encode(question)
-            
+
             search_result = self.client.search(
                 collection_name=self.collection_name,
                 query_vector=vector,
                 query_filter=models.Filter(
                     must=[
                         models.FieldCondition(
-                            key="type",
-                            match=models.MatchValue(value="query")
+                            key="type", match=models.MatchValue(value="query")
                         )
                     ]
                 ),
-                limit=limit
+                limit=limit,
             )
-            
+
             return [
                 QuerySearchResult(
                     question=hit.payload["question"],
                     sql_query=hit.payload["sql_query"],
                     explanation=hit.payload["explanation"],
                     score=hit.score,
-                    positive_votes=hit.payload["positive_votes"]
+                    positive_votes=hit.payload["positive_votes"],
                 )
                 for hit in search_result
             ]
-            
+
         except Exception as e:
             logger.error(f"Error searching similar queries: {str(e)}")
             return []
-        
-        
-    def handle_positive_feedback(self, question: str, sql_query: str, explanation: str) -> bool:
+
+    def handle_positive_feedback(
+        self, question: str, sql_query: str, explanation: str
+    ) -> bool:
         """Gestisce il feedback positivo per una query"""
         try:
             # checkiamo se la domanda è già presente nello store
@@ -273,23 +283,21 @@ class QdrantStore(VectorStore):
                 scroll_filter=models.Filter(
                     must=[
                         models.FieldCondition(
-                            key="type",
-                            match=models.MatchValue(value="query")
+                            key="type", match=models.MatchValue(value="query")
                         ),
                         models.FieldCondition(
-                            key="question",
-                            match=models.MatchValue(value=question)
-                        )
+                            key="question", match=models.MatchValue(value=question)
+                        ),
                     ]
                 ),
-                limit=1
+                limit=1,
             )[0]
-            
+
             # se è già presente, semplicemente incrementiamo i voti
             if search_result:
                 existing = search_result[0].payload
                 votes = existing["positive_votes"] + 1
-            else: # altrimenti è il primo voto
+            else:  # altrimenti è il primo voto
                 votes = 1
 
             # se è una nuova domanda
@@ -298,15 +306,15 @@ class QdrantStore(VectorStore):
                 question=question,
                 sql_query=sql_query,
                 explanation=explanation,
-                positive_votes=votes
+                positive_votes=votes,
             )
-            
+
             return self.add_query(query)
-            
+
         except Exception as e:
             logger.error(f"Errore nella gestione del feedback: {str(e)}")
             return False
-        
+
     def find_exact_match(self, question: str) -> Optional[QuerySearchResult]:
         """Cerca una corrispondenza esatta della domanda nel database"""
         logger.debug(f"Cercando match esatto per: {question}")
@@ -316,14 +324,13 @@ class QdrantStore(VectorStore):
                 scroll_filter=models.Filter(
                     must=[
                         models.FieldCondition(
-                            key="question",
-                            match=models.MatchValue(value=question)
+                            key="question", match=models.MatchValue(value=question)
                         )
                     ]
                 ),
-                limit=1
+                limit=1,
             )[0]  # scroll returns (results, next_page_offset)
-            
+
             logger.debug(f"Risultati trovati: {len(results)}")
             if results:
                 point = results[0]
@@ -333,14 +340,14 @@ class QdrantStore(VectorStore):
                     sql_query=point.payload["sql_query"],
                     explanation=point.payload["explanation"],
                     score=1.0,  # match esatto = score 1
-                    positive_votes=point.payload["positive_votes"]
+                    positive_votes=point.payload["positive_votes"],
                 )
             return None
-                
+
         except Exception as e:
             logger.error(f"Errore nella ricerca esatta: {str(e)}")
             return None
-    
+
     def collection_exists(self) -> bool:
         """Verifica se una collection esiste"""
         try:
@@ -349,8 +356,10 @@ class QdrantStore(VectorStore):
         except Exception as e:
             logger.error(f"Error checking collection existence: {str(e)}")
             return False
-        
-    def update_table_documents(self, enhanced_metadata: Dict[str, EnhancedTableMetadata]) -> bool:
+
+    def update_table_documents(
+        self, enhanced_metadata: Dict[str, EnhancedTableMetadata]
+    ) -> bool:
         """Aggiorna i documenti table di una collezione"""
         try:
             for table_name, metadata in enhanced_metadata.items():

@@ -7,15 +7,13 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from src.config.models.metadata import TableMetadata, EnhancedTableMetadata
 
-logger = logging.getLogger('hey-database')
+logger = logging.getLogger("hey-database")
+
 
 class MetadataCache:
     """Thread-safe cache system for database metadata"""
 
-    def __init__(self,
-                 cache_dir: str,
-                 schema_name: str,
-                 ttl_hours: int = 24):
+    def __init__(self, cache_dir: str, file_name: str, ttl_hours: int = 24):
         """Initialize the metadata cache
 
         Args:
@@ -24,9 +22,8 @@ class MetadataCache:
             ttl_hours: Cache validity period in hours
         """
         self.cache_dir = Path(cache_dir)
-        self.schema_name = schema_name
         self.ttl = timedelta(hours=ttl_hours)
-        self.cache_file = self.cache_dir / f"metadata_cache_{schema_name}.json"
+        self.cache_file = self.cache_dir / f"{file_name}.json"
         self._lock = threading.Lock()
         self._ensure_cache_dir()
 
@@ -66,7 +63,7 @@ class MetadataCache:
                     logger.debug("Cache invalid or expired")
                     return None
 
-                with open(self.cache_file, 'r', encoding='utf-8') as f:
+                with open(self.cache_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
 
                 # Deserialize to TableMetadata objects
@@ -74,22 +71,24 @@ class MetadataCache:
                 for table_name, table_data in data.items():
                     try:
                         base_metadata = TableMetadata(
-                            name=table_data['name'],
-                            columns=table_data['columns'],
-                            primary_keys=table_data['primary_keys'],
-                            foreign_keys=table_data['foreign_keys'],
-                            row_count=table_data['row_count']
+                            name=table_data["name"],
+                            columns=table_data["columns"],
+                            primary_keys=table_data["primary_keys"],
+                            foreign_keys=table_data["foreign_keys"],
+                            row_count=table_data["row_count"],
                         )
 
                         metadata[table_name] = EnhancedTableMetadata(
                             base_metadata=base_metadata,
-                            description=table_data.get('description', ''),
-                            keywords=table_data.get('keywords', []),
-                            importance_score=table_data.get('importance_score', 0.0)
+                            description=table_data.get("description", ""),
+                            keywords=table_data.get("keywords", []),
+                            importance_score=table_data.get("importance_score", 0.0),
                         )
 
                     except KeyError as e:
-                        logger.error(f"Missing required field in cached data for table {table_name}: {e}")
+                        logger.error(
+                            f"Missing required field in cached data for table {table_name}: {e}"
+                        )
                         continue
 
                 return metadata if metadata else None
@@ -128,10 +127,12 @@ class MetadataCache:
                 }
 
                 # write to final file
-                with open(self.cache_file, 'w', encoding='utf-8') as f:
+                with open(self.cache_file, "w", encoding="utf-8") as f:
                     json.dump(serializable_data, f, indent=2, ensure_ascii=False)
 
-                logger.debug(f"Successfully cached metadata for schema {self.schema_name}")
+                logger.debug(
+                    f"Successfully cached metadata for schema {self.schema_name}"
+                )
                 return True
 
             except Exception as e:

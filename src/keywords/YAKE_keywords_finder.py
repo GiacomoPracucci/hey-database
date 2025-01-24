@@ -1,6 +1,6 @@
 import yake
 from src.keywords.keywords_finder import KeywordsFinder
-from models.keywords import KeywordsFinderResponse
+from src.models.keywords import KeywordsFinderResponse
 import logging
 
 logger = logging.getLogger("hey-database")

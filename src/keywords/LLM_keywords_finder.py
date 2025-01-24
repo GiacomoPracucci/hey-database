@@ -1,8 +1,8 @@
 import logging
 from src.llm_handler.llm_handler import LLMHandler
 from src.keywords.keywords_finder import KeywordsFinder
-from models.keywords import KeywordsFinderResponse
-from llm_output.parser import ResponseParser as parser
+from src.models.keywords import KeywordsFinderResponse
+from src.llm_output_processing.parser import ResponseParser as parser
 
 logger = logging.getLogger("hey-database")
 

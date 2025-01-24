@@ -1,4 +1,4 @@
-from models.keywords import KeywordsFinderResponse
+from src.models.keywords import KeywordsFinderResponse
 from typing import List
 from abc import ABC, abstractmethod
 

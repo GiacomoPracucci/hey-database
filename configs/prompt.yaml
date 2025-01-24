@@ -1,0 +1,2 @@
+include_sample_data: false
+max_sample_rows: 2

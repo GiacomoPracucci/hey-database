@@ -1,0 +1,3 @@
+type: ollama
+base_url: http://localhost:11434
+model: llama-3.1

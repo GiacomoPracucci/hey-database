@@ -1,11 +1,12 @@
-from src.agents.sql_agent import SQLAgent
+from src.llm_handler.llm_handler import LLMHandler
 import logging
 
-logger = logging.getLogger('hey-database')
+logger = logging.getLogger("hey-database")
+
 
 class ChatService:
-    def __init__(self, sql_agent: SQLAgent):
-        self.sql_agent = sql_agent
+    def __init__(self, llm: LLMHandler):
+        self.llm = llm
 
     def process_message(self, message: str) -> dict:
         """Process user message and return formatted results"""
@@ -19,7 +20,7 @@ class ChatService:
             "preview": response.preview,
             "error": response.error,
             "from_vector_store": response.from_vector_store,
-            "original_question": response.original_question
+            "original_question": response.original_question,
         }
 
     def handle_feedback(self, question: str, sql_query: str, explanation: str) -> bool:

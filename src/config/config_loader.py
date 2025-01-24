@@ -1,7 +1,8 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import yaml
-import os
 from dotenv import load_dotenv
+
+load_dotenv()
 from src.config.languages import SupportedLanguage
 from src.config.models.app import AppConfig
 from src.config.models.db import DatabaseConfig
@@ -11,144 +12,158 @@ from src.config.models.vector_store import VectorStoreConfig
 from src.config.models.embedding import EmbeddingConfig
 from src.config.models.cache import CacheConfig
 from src.config.models.metadata import MetadataConfig
+from src.config.models.base import BaseConfig
 
 import logging
 
-logger = logging.getLogger('hey-database')
+logger = logging.getLogger("hey-database")
 
 
 class ConfigLoader:
-    
-    @staticmethod
-    def _resolve_refs(config: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
-        """Risolve i riferimenti interni nel dizionario di configurazione"""
-        if isinstance(config, dict):
-            return {k: ConfigLoader._resolve_refs(v, context) for k, v in config.items()}
-        elif isinstance(config, list):
-            return [ConfigLoader._resolve_refs(v, context) for v in config]
-        elif isinstance(config, str) and config.startswith('${') and config.endswith('}'):
-            var_name = config[2:-1]
-            # prima cerca nelle variabili di contesto
-            if var_name in context:
-                return context[var_name]
-            # poi nelle variabili d'ambiente
-            return os.getenv(var_name, '')
-        return config
-    
-    
-    @staticmethod
-    def load_config(config_path: str) -> AppConfig:
-        
-        load_dotenv()
-        with open(config_path, 'r') as f:
-            config_data = yaml.safe_load(f)
+    """Load the configuration from a YAML file"""
 
-        context = {
-            'db_schema': config_data['database']['schema']
-        }
-            
-        config_data = ConfigLoader._resolve_refs(config_data, context)
-        
-        db_config = DatabaseConfig(
-            type=config_data['database']['type'],
-            host=config_data['database']['host'],
-            port=config_data['database']['port'],
-            database=config_data['database']['database'],
-            user=config_data['database']['user'],
-            password=config_data['database']['password'],
-            schema=config_data['database']['schema'],
-            warehouse=config_data['database'].get('warehouse'),
-            account=config_data['database'].get('account'),
-            role=config_data['database'].get('role')
-        )
-
-        # load cache configuration
-        cache_config = CacheConfig(
-            enabled=config_data.get('cache', {}).get('enabled', False),
-            directory=config_data.get('cache', {}).get('directory'),
-            ttl_hours=config_data.get('cache', {}).get('ttl_hours', 24)
-        )
-        
-        language_str = config_data['llm'].get('language', SupportedLanguage.get_default().value)
-        if not SupportedLanguage.is_supported(language_str):
-            logger.warning(
-                f"Lingua '{language_str}' non supportata. "
-                f"Lingue supportate: {', '.join(SupportedLanguage.get_supported_languages())}. "
-                f"Verrà utilizzata la lingua di default ({SupportedLanguage.get_default().value})"
-            )
-        
-        llm_config = LLMConfig(
-            type=config_data['llm']['type'],
-            api_key=config_data['llm'].get('api_key'),
-            model=config_data['llm'].get('model'),
-            base_url=config_data['llm'].get('base_url'),
-            language=SupportedLanguage.from_string(language_str)            
-        )
-
-        prompt_config = PromptConfig(
-            include_sample_data=config_data.get('prompt', {}).get('include_sample_data', True),
-            max_sample_rows=config_data.get('prompt', {}).get('max_sample_rows', 3)
-        )
-        
-        vector_store_config = ConfigLoader._load_vector_store_config(config_data)
-
-        # Resolve ${db_schema} in cache directory if needed
-        if cache_config.directory and '${db_schema}' in cache_config.directory:
-            cache_config.directory = cache_config.directory.replace('${db_schema}', context['db_schema'])
-            
-        metadata_config = MetadataConfig(
-            retrieve_distinct_values=config_data.get('metadata', {}).get('retrieve_distinct_values', False),
-            max_distinct_values=config_data.get('metadata', {}).get('max_distinct_values', 100)
-        )
+    @classmethod
+    def load_config(
+        cls,
+        db_config_path: str,
+        cache_config_path: str,
+        sql_llm_config_path: str,
+        prompt_config_path: str,
+        metadata_config_path: str,
+        vector_store_config_path: str,
+        base_config_path: str,
+    ) -> AppConfig:
+        """Load the configuration"""
+        db_config = cls.load_db_config(db_config_path)
+        cache_config = cls.load_cache_config(cache_config_path)
+        sql_llm_config = cls.load_sql_llm_config(sql_llm_config_path)
+        prompt_config = cls.load_prompt_config(prompt_config_path)
+        metadata_config = cls.load_metadata_config(metadata_config_path)
+        vector_store_config = cls.load_vector_store_config(vector_store_config_path)
+        base_config = cls.load_base_config(base_config_path)
 
         return AppConfig(
             database=db_config,
-            llm=llm_config,
+            cache=cache_config,
+            sql_llm=sql_llm_config,
             prompt=prompt_config,
-            cache = cache_config,
             metadata=metadata_config,
             vector_store=vector_store_config,
-            debug=config_data.get('debug', False)
+            base_config=base_config,
         )
-    
-    @staticmethod
-    def _load_vector_store_config(config_data: dict) -> Optional[VectorStoreConfig]:
-        """Carica la configurazione del vector store se presente"""
-        if 'vector_store' not in config_data:
-            return None
-        
-        vs_data = config_data['vector_store']
-        
-        if not vs_data.get('enabled', False):
-            return None
-        
-        # contesto per la sostituzione delle variabili nel config.yaml
-        context = {
-            'db_schema': config_data['database']['schema']
-        }
-        path = vs_data.get('path')
-        if path:
-            path = path.replace('${db_schema}', context['db_schema'])
-            
-        collection_name = vs_data['collection_name'].replace('${db_schema}', context['db_schema'])
 
-        if 'embedding' not in vs_data:
-            raise ValueError("Missing embedding configuration in vector_store config")
-            
-        embedding_data = vs_data['embedding']
-        embedding_config = EmbeddingConfig(
-            type=embedding_data['type'],
-            model_name=embedding_data['model_name'],
-            api_key=embedding_data.get('api_key')  # opzionale, richiesto solo per OpenAI
+    @staticmethod
+    def _open_config(config_path: str) -> Dict[str, Any]:
+        """Load a configuration file"""
+        with open(config_path, "r") as f:
+            config_data = yaml.safe_load(f)
+        return config_data
+
+    @classmethod
+    def load_base_config(cls, config_path: str) -> BaseConfig:
+        config_data = ConfigLoader._open_config(config_path)
+        language_str = config_data.get(
+            "language", SupportedLanguage.get_default().value
         )
-                    
+        if not SupportedLanguage.is_supported(language_str):
+            logger.warning(
+                f"Language '{language_str}' not supported"
+                f"Supported Languages: {', '.join(SupportedLanguage.get_supported_languages())}. "
+                f"Default language will be used: ({SupportedLanguage.get_default().value})"
+            )
+        return BaseConfig(
+            language=config_data.get("language", SupportedLanguage.get_default().value),
+            debug=config_data.get("debug", False),
+        )
+
+    @classmethod
+    def load_db_config(cls, config_path: str) -> DatabaseConfig:
+        """Load the database configuration"""
+        config_data = ConfigLoader._open_config(config_path)
+        return DatabaseConfig(
+            type=config_data["database"]["type"],
+            host=config_data["database"]["host"],
+            port=config_data["database"]["port"],
+            database=config_data["database"]["database"],
+            user=config_data["database"]["user"],
+            password=config_data["database"]["password"],
+            schema=config_data["database"]["schema"],
+            warehouse=config_data["database"].get("warehouse"),
+            account=config_data["database"].get("account"),
+            role=config_data["database"].get("role"),
+        )
+
+    @classmethod
+    def load_cache_config(cls, config_path: str) -> CacheConfig:
+        """Load the cache configuration"""
+        config_data = ConfigLoader._open_config(config_path)
+        return CacheConfig(
+            directory=config_data.get("cache", {}).get("directory"),
+            file_name=config_data.get("cache", {}).get("file_name"),
+            ttl_hours=config_data.get("cache", {}).get("ttl_hours", 24),
+        )
+
+    @classmethod
+    def load_sql_llm_config(cls, config_path: str) -> LLMConfig:
+        """
+        Load the SQL LLM configuration
+        """
+        config_data = ConfigLoader._open_config(config_path)
+        return LLMConfig(
+            type=config_data["llm"]["type"],
+            api_key=config_data["llm"].get("api_key"),
+            model=config_data["llm"].get("model"),
+            base_url=config_data["llm"].get("base_url"),
+        )
+
+    @classmethod
+    def load_prompt_config(cls, config_path: str) -> PromptConfig:
+        """Load the prompt configuration"""
+        config_data = ConfigLoader._open_config(config_path)
+        return PromptConfig(
+            include_sample_data=config_data.get("prompt", {}).get(
+                "include_sample_data", True
+            ),
+            max_sample_rows=config_data.get("prompt", {}).get("max_sample_rows", 3),
+        )
+
+    @classmethod
+    def load_metadata_config(cls, config_path: str) -> MetadataConfig:
+        """Load the metadata configuration"""
+        config_data = ConfigLoader._open_config(config_path)
+        return MetadataConfig(
+            retrieve_distinct_values=config_data.get("metadata", {}).get(
+                "retrieve_distinct_values", False
+            ),
+            max_distinct_values=config_data.get("metadata", {}).get(
+                "max_distinct_values", 100
+            ),
+        )
+
+    @classmethod
+    def load_vector_store_config(cls, config_path) -> VectorStoreConfig:
+        """Carica la configurazione del vector store se presente"""
+        config_data = ConfigLoader._open_config(config_path)
+
+        path = config_data.get("path")
+
+        if "embedding" not in config_data:
+            raise ValueError("Missing embedding configuration in vector_store config")
+
+        embedding_data = config_data["embedding"]
+        embedding_config = EmbeddingConfig(
+            type=embedding_data["type"],
+            model_name=embedding_data["model_name"],
+            api_key=embedding_data.get("api_key"),
+        )
+
         return VectorStoreConfig(
-            enabled=vs_data.get('enabled', False),
-            type=vs_data['type'],
-            collection_name=collection_name,
-            path=path,      
-            url=vs_data.get('url'),
+            enabled=config_data.get("enabled", False),
+            type=config_data["type"],
+            collection_name=config_data.get("collection_name"),
+            path=path if config_data.get("path") else None,
+            url=config_data.get("url") if config_data.get("url") else None,
             embedding=embedding_config,
-            api_key=vs_data.get('api_key'),
-            batch_size=vs_data.get('batch_size', 100),
+            api_key=config_data.get("api_key") if config_data.get("api_key") else None,
+            batch_size=config_data.get("batch_size", 100),
         )

@@ -3,14 +3,14 @@ from typing import Optional, Dict, List, Tuple, Any
 from src.connettori.connector import DatabaseConnector
 from src.llm_handler.llm_handler import LLMHandler
 from src.schema_metadata.metadata_retriever import DatabaseMetadataRetriever
-from src.llm_output.response_handler import ResponseHandler
+from src.llm_output_processing.response_handler import ResponseHandler
 from src.store.vectorstore import VectorStore
 from src.config.languages import SupportedLanguage
 from src.agents.agent import Agent
 from src.models.agent import SQLAgentResponse
-from src.llm_output.parser import ResponseParser as parser
-from src.llm_output.formatter import ResponseFormatter as formatter
-from src.llm_output.sql_query_executor import SQLQueryExecutor as executor
+from src.llm_output_processing.parser import ResponseParser as parser
+from src.llm_output_processing.formatter import ResponseFormatter as formatter
+from src.llm_output_processing.sql_query_executor import SQLQueryExecutor as executor
 
 import logging
 

@@ -1,0 +1,3 @@
+directory: ./data/cache/northwind
+file_name: northwind_cache
+ttl_hours: 336
