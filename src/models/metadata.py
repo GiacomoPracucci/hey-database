@@ -1,25 +1,55 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict
+
 
 @dataclass
 class MetadataConfig:
     """Configurazione per il recupero ed elaborazione dei metadati"""
-    retrieve_distinct_values: bool = False  # Se True, recupera i valori distinti delle colonne
-    max_distinct_values: int = 100         # Numero massimo di valori distinti da recuperare per colonna
+
+    retrieve_distinct_values: bool = True
+    max_distinct_values: int = 100
+
 
 @dataclass
 class TableMetadata:
-    """Metadati inferiti dallo schema"""
+    """Metadati base inferiti dallo schema"""
+
     name: str
-    columns: List[Dict[str, str]]  # [{"name": "id", "type": "integer", "nullable": false}, ...]
-    primary_keys: List[str]        
-    foreign_keys: List[Dict[str, str]]  
+    columns: List[str]
+    primary_keys: List[str]
+    foreign_keys: List[Dict[str, str]]
     row_count: int
+
 
 @dataclass
 class EnhancedTableMetadata:
     """Metadati che generiamo noi con l'enhancer"""
-    base_metadata: TableMetadata    # metadati originali
-    description: str               # descrizione generata
-    keywords: List[str]           # keywords estratte
-    importance_score: float       # score calcolato
+
+    base_metadata: TableMetadata  # metadati originali
+    description: str  # descrizione generata
+    keywords: List[str]  # keywords estratte
+    importance_score: float  # score calcolato
+
+
+@dataclass
+class ColumnMetadata:
+    """Base metadata for a column"""
+
+    name: str
+    table_name: str
+    data_type: str
+    nullable: bool
+    is_primary_key: bool
+    is_foreign_key: bool
+    distinct_values: List[str] = field(default_factory=list)
+    relationships: List[Dict[str, str]] = field(default_factory=list)
+
+
+@dataclass
+class EnhancedColumnMetadata:
+    """Enhanced metadata for a column"""
+
+    base_metadata: ColumnMetadata
+    ai_name: str
+    description: str
+    keywords: List[str]

@@ -34,16 +34,16 @@ def create_app():
             project_root, "configs", "DB_connection", "northwind_postgres.yaml"
         ),
         cache_config_path=os.path.join(
-            project_root, "configs", "northwind_postgres.yaml"
+            project_root, "configs", "cache", "northwind_cache.yaml"
         ),
         sql_llm_config_path=os.path.join(
-            project_root, "configs", "cache", "sql_llm", "openai_4o_mini.yaml"
+            project_root, "configs", "sql_llm", "openai_4o_mini.yaml"
         ),
-        prompt_config_path=os.path.join(project_root, "configs", "prompt.yaml"),
-        metadata_config_path=os.path.join(project_root, "configs", "metadata_.yaml"),
         vector_store_config_path=os.path.join(
             project_root, "configs", "vector_store", "qdrant_northwind.yaml"
         ),
+        prompt_config_path=os.path.join(project_root, "configs", "prompt.yaml"),
+        metadata_config_path=os.path.join(project_root, "configs", "metadata_.yaml"),
         base_config_path=os.path.join(project_root, "configs", "base_config.yaml"),
     )
 
@@ -60,9 +60,7 @@ def create_app():
         # registra le routes
         create_chat_routes(app, chat_service)
         create_schema_routes(app, schema_service)
-        create_preview_routes(
-            app, chat_service.sql_agent.db, chat_service.sql_agent.metadata_retriever
-        )
+        create_preview_routes(app, app_components.db, app_components.metadata_retriever)
 
         # route principale
         @app.route("/")

@@ -3,16 +3,17 @@ import yaml
 from dotenv import load_dotenv
 
 load_dotenv()
+
 from src.config.languages import SupportedLanguage
-from src.config.models.app import AppConfig
-from src.config.models.db import DatabaseConfig
-from src.config.models.llm import LLMConfig
-from src.config.models.prompt import PromptConfig
-from src.config.models.vector_store import VectorStoreConfig
-from src.config.models.embedding import EmbeddingConfig
-from src.config.models.cache import CacheConfig
-from src.config.models.metadata import MetadataConfig
-from src.config.models.base import BaseConfig
+from src.models.app import AppConfig
+from src.models.db import DatabaseConfig
+from src.models.llm import LLMConfig
+from src.models.prompt import PromptConfig
+from src.models.vector_store import VectorStoreConfig
+from src.models.embedding import EmbeddingConfig
+from src.models.cache import CacheConfig
+from src.models.metadata import MetadataConfig
+from src.models.base import BaseConfig
 
 import logging
 
