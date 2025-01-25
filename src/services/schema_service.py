@@ -1,4 +1,4 @@
-from src.schema_metadata.metadata_retriever import MetadataRetriever
+from src.metadata.metadata_retriever import MetadataRetriever
 import logging
 
 logger = logging.getLogger("hey-database")

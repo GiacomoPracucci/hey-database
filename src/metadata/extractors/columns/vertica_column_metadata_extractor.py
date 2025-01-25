@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy import text
-from src.schema_metadata.extractors.columns.column_metadata_extractor import (
+from src.metadata.extractors.columns.column_metadata_extractor import (
     ColumnMetadataExtractor,
 )
 import logging
@@ -8,13 +8,13 @@ import logging
 logger = logging.getLogger("hey-database")
 
 
-class PostgresColumnMetadataExtractor(ColumnMetadataExtractor):
-    """Implementazione PostgreSQL del retriever di metadati"""
+class VerticaColumnMetadataExtractor(ColumnMetadataExtractor):
+    """Implementazione Vertica del retriever di metadati"""
 
     def _get_distinct_values(
         self, table_name: str, column_name: str, max_values: Optional[int] = None
     ) -> List[str]:
-        """Implementazione PostgreSQL per il recupero dei valori distinti.
+        """Recupera i valori distinti per una colonna.
         Args:
             table_name: Nome della tabella
             column_name: Nome della colonna
@@ -24,8 +24,8 @@ class PostgresColumnMetadataExtractor(ColumnMetadataExtractor):
         """
         try:
             query = text(f"""
-                SELECT DISTINCT CAST({column_name} AS TEXT)
-                FROM {self.schema}.{table_name}
+                SELECT DISTINCT CAST({column_name} AS VARCHAR)
+                FROM {self.schema}.{table_name} 
                 WHERE {column_name} IS NOT NULL
                 {f"LIMIT :max_values" if max_values is not None else ""}
             """)

@@ -1,8 +1,8 @@
 from typing import Optional, Dict, List, Tuple, Any
 
-from src.connettori.connector import DatabaseConnector
+from src.connectors.connector import DatabaseConnector
 from src.llm_handler.llm_handler import LLMHandler
-from src.schema_metadata.metadata_retriever import DatabaseMetadataRetriever
+from src.metadata.metadata_retriever import DatabaseMetadataRetriever
 from src.llm_output_processing.response_handler import ResponseHandler
 from src.store.vectorstore import VectorStore
 from src.config.languages import SupportedLanguage

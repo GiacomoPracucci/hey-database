@@ -5,7 +5,7 @@ from src.factories.vector_store import VectorStoreFactory
 from src.models.app import AppComponents
 from src.factories.llm import LLMFactory
 from src.factories.cache import CacheFactory
-from src.schema_metadata.enhancement_strategy import MetadataEnhancementStrategy
+from src.metadata.enhancement_strategy import MetadataEnhancementStrategy
 
 logger = logging.getLogger("hey-database")
 

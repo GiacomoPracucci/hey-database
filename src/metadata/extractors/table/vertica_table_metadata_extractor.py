@@ -1,7 +1,7 @@
 from typing import List, Any, Dict
 from sqlalchemy import text
 from collections import defaultdict
-from src.schema_metadata.extractors.table.table_metadata_extractor import (
+from src.metadata.extractors.table.table_metadata_extractor import (
     TableMetadataExtractor,
 )
 from src.models.metadata import TableRelationship

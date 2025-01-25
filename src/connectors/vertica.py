@@ -1,16 +1,19 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-from src.connettori.connector import DatabaseConnector
+from src.connectors.connector import DatabaseConnector
+
 
 class VerticaManager(DatabaseConnector):
     """Classe per gestire la connessione e le query al database Vertica"""
 
-    def __init__(self,
-                 host: str = "localhost",
-                 port: str = "5433",
-                 database: str = "vertica",
-                 user: str = "dbadmin",
-                 password: str = None) -> None:
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: str = "5433",
+        database: str = "vertica",
+        user: str = "dbadmin",
+        password: str = None,
+    ) -> None:
         """Inizializza il connettore Vertica
 
         Args:
@@ -20,7 +23,9 @@ class VerticaManager(DatabaseConnector):
             user (str): Nome utente
             password (str): Password
         """
-        self.connection_string = f"vertica+vertica_python://{user}:{password}@{host}:{port}/{database}"
+        self.connection_string = (
+            f"vertica+vertica_python://{user}:{password}@{host}:{port}/{database}"
+        )
         self.engine = None
 
     def connect(self) -> bool:

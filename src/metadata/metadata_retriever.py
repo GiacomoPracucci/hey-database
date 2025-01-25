@@ -6,25 +6,28 @@ from typing import Dict, List, Optional, Any
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Inspector
 
-from src.config.models.metadata import TableMetadata, EnhancedTableMetadata
+from src.models.metadata import TableMetadata, EnhancedTableMetadata
 from src.cache.metadata_cache import MetadataCache
 from src.agents.metadata_enhancer_agent import MetadataAgent
 from src.llm_handler.llm_handler import LLMHandler
 from src.config.models.metadata import MetadataConfig
-from src.schema_metadata.enhancement_strategy import MetadataEnhancementStrategy
+from src.metadata.enhancement_strategy import MetadataEnhancementStrategy
 
-logger = logging.getLogger('hey-database')
+logger = logging.getLogger("hey-database")
+
 
 class DatabaseMetadataRetriever(ABC):
     """Classe base per il recupero dei metadati del database"""
 
-    def __init__(self,
-                 db_engine: sa.Engine,
-                 llm_handler: LLMHandler,
-                 enhancement_strategy: MetadataEnhancementStrategy,
-                 metadata_config: MetadataConfig,
-                 schema: str = None,
-                 cache_dir: Optional[str] = None):
+    def __init__(
+        self,
+        db_engine: sa.Engine,
+        llm_handler: LLMHandler,
+        enhancement_strategy: MetadataEnhancementStrategy,
+        metadata_config: MetadataConfig,
+        schema: str = None,
+        cache_dir: Optional[str] = None,
+    ):
         """
         Args:
             db_engine: Engine del database
@@ -67,7 +70,9 @@ class DatabaseMetadataRetriever(ABC):
                     # 1. Estrazione metadati base
                     base_metadata[table_name] = self._extract_base_metadata(table_name)
                 except Exception as e:
-                    logger.error(f"Errore nel processare la tabella {table_name}: {str(e)}")
+                    logger.error(
+                        f"Errore nel processare la tabella {table_name}: {str(e)}"
+                    )
                     continue
 
             # 2. Enhancement dei metadati se necessario
@@ -84,8 +89,9 @@ class DatabaseMetadataRetriever(ABC):
                             base_metadata=metadata,
                             description="",
                             keywords=[],
-                            importance_score=0.0
-                        ) for name, metadata in base_metadata.items()
+                            importance_score=0.0,
+                        )
+                        for name, metadata in base_metadata.items()
                     }
             else:
                 logger.info("Skipping metadata enhancement")
@@ -95,8 +101,9 @@ class DatabaseMetadataRetriever(ABC):
                         base_metadata=metadata,
                         description="",
                         keywords=[],
-                        importance_score=0.0
-                    ) for name, metadata in base_metadata.items()
+                        importance_score=0.0,
+                    )
+                    for name, metadata in base_metadata.items()
                 }
 
             if self.cache and self.tables:
@@ -135,7 +142,7 @@ class DatabaseMetadataRetriever(ABC):
             columns=columns,
             primary_keys=primary_keys,
             foreign_keys=foreign_keys,
-            row_count=row_count
+            row_count=row_count,
         )
 
     def _get_local_metadata(self) -> bool:
@@ -166,31 +173,33 @@ class DatabaseMetadataRetriever(ABC):
                 "type": str(col["type"]),
                 "nullable": col["nullable"],
             }
-            
+
             if self.metadata_config.retrieve_distinct_values:
                 column_info["distinct_values"] = self._get_column_distinct_values(
                     table_name,
                     col["name"],
-                    max_values=self.metadata_config.max_distinct_values
+                    max_values=self.metadata_config.max_distinct_values,
                 )
-            
+
             columns.append(column_info)
         return columns
 
     def _get_table_pk_metadata(self, table_name: str) -> List[str]:
         """Recupera i metadati delle chiavi primarie di una tabella"""
         pk_info = self.inspector.get_pk_constraint(table_name, schema=self.schema)
-        return pk_info['constrained_columns'] if pk_info else []
+        return pk_info["constrained_columns"] if pk_info else []
 
     def _get_table_fk_metadata(self, table_name: str) -> List[Dict[str, Any]]:
         """Recupera i metadati delle chiavi esterne di una tabella"""
         foreign_keys = []
         for fk in self.inspector.get_foreign_keys(table_name, schema=self.schema):
-            foreign_keys.append({
-                "constrained_columns": fk["constrained_columns"],
-                "referred_table": fk["referred_table"],
-                "referred_columns": fk["referred_columns"]
-            })
+            foreign_keys.append(
+                {
+                    "constrained_columns": fk["constrained_columns"],
+                    "referred_table": fk["referred_table"],
+                    "referred_columns": fk["referred_columns"],
+                }
+            )
         return foreign_keys
 
     def refresh_metadata(self) -> None:
@@ -212,14 +221,18 @@ class DatabaseMetadataRetriever(ABC):
         """Recupera dati di esempio da una tabella"""
         try:
             with self.engine.connect() as connection:
-                query = text(f"SELECT * FROM {self.schema}.{table_name} LIMIT {max_rows}")
+                query = text(
+                    f"SELECT * FROM {self.schema}.{table_name} LIMIT {max_rows}"
+                )
                 result = connection.execute(query)
 
                 columns = result.keys()
                 return [dict(zip(columns, row)) for row in result]
 
         except Exception as e:
-            logger.error(f"Errore nel recupero dei dati di esempio per {table_name}: {str(e)}")
+            logger.error(
+                f"Errore nel recupero dei dati di esempio per {table_name}: {str(e)}"
+            )
             return []
 
     @abstractmethod
@@ -233,7 +246,9 @@ class DatabaseMetadataRetriever(ABC):
         pass
 
     @abstractmethod
-    def _get_column_distinct_values(self, table_name: str, column_name: str, max_values: int = 100) -> List[str]:
+    def _get_column_distinct_values(
+        self, table_name: str, column_name: str, max_values: int = 100
+    ) -> List[str]:
         """Recupera i valori distinti per una colonna.
 
         Args:

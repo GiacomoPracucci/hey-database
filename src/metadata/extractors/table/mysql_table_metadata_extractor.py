@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from src.schema_metadata.extractors.table.table_metadata_extractor import (
+from src.metadata.extractors.table.table_metadata_extractor import (
     TableMetadataExtractor,
 )
 

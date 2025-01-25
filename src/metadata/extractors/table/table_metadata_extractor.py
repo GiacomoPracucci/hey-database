@@ -2,7 +2,7 @@ from src.models.metadata import TableMetadata
 from typing import List, Any, Dict
 from abc import ABC, abstractmethod
 
-from src.connettori.connector import DatabaseConnector
+from src.connectors.connector import DatabaseConnector
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Inspector
 
@@ -12,10 +12,10 @@ logger = logging.getLogger("hey-database")
 
 
 class TableMetadataExtractor(ABC):
-    def __init__(self, db: DatabaseConnector):
+    def __init__(self, db: DatabaseConnector, schema: str):
         self.engine = db.engine
         self.inspector: Inspector = inspect(db.engine)
-        self.schema = db.schema
+        self.schema = schema
 
     def extract_metadata(self, table_name: str) -> TableMetadata:
         """

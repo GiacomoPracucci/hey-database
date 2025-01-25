@@ -32,11 +32,23 @@ class EnhancedTableMetadata:
 
 
 @dataclass
+class TableRelationship:
+    """Rappresenta una relazione (entrante o uscente) tra due tabelle"""
+
+    related_table: str  # Nome della tabella collegata
+    direction: str  # "incoming" o "outgoing"
+    local_columns: List[str]  # Colonne della tabella corrente coinvolte nella relazione
+    remote_columns: List[
+        str
+    ]  # Colonne della tabella collegata coinvolte nella relazione
+
+
+@dataclass
 class ColumnMetadata:
     """Base metadata for a column"""
 
     name: str
-    table_name: str
+    table: str
     data_type: str
     nullable: bool
     is_primary_key: bool

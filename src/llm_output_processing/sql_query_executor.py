@@ -1,5 +1,5 @@
 from typing import Any
-from src.connettori.connector import DatabaseConnector
+from src.connectors.connector import DatabaseConnector
 
 
 class SQLQueryExecutor:

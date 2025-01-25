@@ -1,7 +1,7 @@
 from typing import Dict, List
 from sqlalchemy import text
 import logging
-from src.schema_metadata.extractors.table.table_metadata_extractor import (
+from src.metadata.extractors.table.table_metadata_extractor import (
     TableMetadataExtractor,
 )
 

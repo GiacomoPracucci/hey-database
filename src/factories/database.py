@@ -5,40 +5,41 @@ from src.config.models.db import DatabaseConfig
 from src.config.models.cache import CacheConfig
 from src.config.models.metadata import MetadataConfig
 from src.llm_handler.llm_handler import LLMHandler
-from src.schema_metadata.enhancement_strategy import MetadataEnhancementStrategy
+from src.metadata.enhancement_strategy import MetadataEnhancementStrategy
 
-from src.connettori.postgres import PostgresManager
-from src.connettori.mysql import MySQLManager
-from src.connettori.snowflake import SnowflakeManager
-from src.connettori.vertica import VerticaManager
+from src.connectors.postgres import PostgresManager
+from src.connectors.mysql import MySQLManager
+from src.connectors.snowflake import SnowflakeManager
+from src.connectors.vertica import VerticaManager
 
-from src.schema_metadata.postgres_metadata_retriever import PostgresMetadataRetriever
-from src.schema_metadata.mysql_metadata_retriever import MySQLMetadataRetriever
-from src.schema_metadata.snowflake_metadata_retriever import SnowflakeMetadataRetriever
-from src.schema_metadata.vertica_metadata_retriever import VerticaMetadataRetriever
+from src.metadata.postgres_metadata_retriever import PostgresMetadataRetriever
+from src.metadata.mysql_metadata_retriever import MySQLMetadataRetriever
+from src.metadata.snowflake_metadata_retriever import SnowflakeMetadataRetriever
+from src.metadata.vertica_metadata_retriever import VerticaMetadataRetriever
 
 
-logger = logging.getLogger('hey-database')
+logger = logging.getLogger("hey-database")
+
 
 class DatabaseFactory:
     """Factory per la creazione dei componenti database"""
-    
+
     @staticmethod
     def create_connector(config: DatabaseConfig):
         """Crea il connettore database appropriato"""
         db_types = {
-            'postgres': PostgresManager,
-            'mysql': MySQLManager,
-            'snowflake': SnowflakeManager,
-            'vertica': VerticaManager
+            "postgres": PostgresManager,
+            "mysql": MySQLManager,
+            "snowflake": SnowflakeManager,
+            "vertica": VerticaManager,
         }
-        
+
         if config.type not in db_types:
             raise ValueError(f"Database type {config.type} not supported")
-            
+
         db_class = db_types[config.type]
-        
-        if config.type == 'snowflake':
+
+        if config.type == "snowflake":
             return db_class(
                 account=config.account,
                 warehouse=config.warehouse,
@@ -46,7 +47,7 @@ class DatabaseFactory:
                 schema=config.schema,
                 user=config.user,
                 password=config.password,
-                role=config.role
+                role=config.role,
             )
         else:
             return db_class(
@@ -54,16 +55,18 @@ class DatabaseFactory:
                 port=config.port,
                 database=config.database,
                 user=config.user,
-                password=config.password
+                password=config.password,
             )
-    
+
     @staticmethod
-    def create_metadata_retriever(config: DatabaseConfig,
-                                  db,
-                                  llm_handler: LLMHandler,
-                                  enhancement_strategy: MetadataEnhancementStrategy,
-                                  metadata_config: MetadataConfig,
-                                  cache_config: Optional[CacheConfig] = None):
+    def create_metadata_retriever(
+        config: DatabaseConfig,
+        db,
+        llm_handler: LLMHandler,
+        enhancement_strategy: MetadataEnhancementStrategy,
+        metadata_config: MetadataConfig,
+        cache_config: Optional[CacheConfig] = None,
+    ):
         """Crea il metadata retriever appropriato
 
         Args:
@@ -74,15 +77,15 @@ class DatabaseFactory:
             cache_config: Configurazione opzionale della cache
         """
         retriever_types = {
-            'postgres': PostgresMetadataRetriever,
-            'mysql': MySQLMetadataRetriever,
-            'snowflake': SnowflakeMetadataRetriever,
-            'vertica': VerticaMetadataRetriever
+            "postgres": PostgresMetadataRetriever,
+            "mysql": MySQLMetadataRetriever,
+            "snowflake": SnowflakeMetadataRetriever,
+            "vertica": VerticaMetadataRetriever,
         }
-        
+
         if config.type not in retriever_types:
             raise ValueError(f"Metadata retriever for {config.type} not supported")
-            
+
         retriever_class = retriever_types[config.type]
 
         # determina la directory della cache se il caching è abilitato
@@ -97,5 +100,5 @@ class DatabaseFactory:
             enhancement_strategy=enhancement_strategy,
             metadata_config=metadata_config,
             schema=config.schema,
-            cache_dir=cache_dir
+            cache_dir=cache_dir,
         )

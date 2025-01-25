@@ -6,7 +6,7 @@ from src.config.models.vector_store import VectorStoreConfig
 from src.config.models.cache import CacheConfig
 from src.config.models.metadata import MetadataConfig
 
-from src.connettori.db import DatabaseConnector
+from src.connectors.db import DatabaseConnector
 from src.llm_handler import LLMHandler
 from src.cache.metadata_cache import MetadataCache
 from src.vector_store.vector_store import VectorStore
