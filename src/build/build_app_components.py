@@ -28,12 +28,8 @@ class AppComponentsBuilder:
 
     def build_vector_store(self):
         """Costruisce e inizializza il vector store se abilitato"""
-        if self.config.vector_store and self.config.vector_store.enabled:
-            logger.info("Vector store enabled, initializing...")
-            self.vector_store = VectorStoreFactory.create(self.config.vector_store)
-            if not self.vector_store.initialize():
-                raise RuntimeError("Failed to initialize vector store")
-            logger.info("Vector store initialized successfully")
+        logger.info("Vector store enabled, initializing client...")
+        self.vector_store = VectorStoreFactory.create(self.config.vector_store)
         return self
 
     def build_sql_llm(self):
@@ -97,13 +93,6 @@ class AppComponentsBuilder:
         self.build_table_metadata_enhancer()
         self.build_column_metadata_enhancer()
         self.build_cache()
-
-        # se abbiamo un vector store, lo popoliamo in automatico con i metadati estratti
-        if self.vector_store:
-            if not self.vector_store.populate_store_with_metadata(
-                self.metadata_retriever.tables  # TODO questa cosa qui non funziona piu e va fixata
-            ):
-                raise RuntimeError("Failed to populate vector store with metadata")
 
         return AppComponents(
             db=self.db,

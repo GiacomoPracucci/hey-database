@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Dict
+from datetime import datetime
 
 
 @dataclass
@@ -65,3 +66,17 @@ class EnhancedColumnMetadata:
     ai_name: str
     description: str
     keywords: List[str]
+
+
+@dataclass
+class MetadataState:
+    """
+    Represents the current state of database metadata.
+    Acts as an immutable container for metadata information.
+    """
+
+    tables: Dict[str, EnhancedTableMetadata]
+    columns: Dict[
+        str, Dict[str, EnhancedColumnMetadata]
+    ]  # table_name -> column_name -> metadata
+    last_update: datetime
