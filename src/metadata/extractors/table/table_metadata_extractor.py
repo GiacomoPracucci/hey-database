@@ -12,6 +12,8 @@ logger = logging.getLogger("hey-database")
 
 
 class TableMetadataExtractor(ABC):
+    """Abstract base class for extracting table metadata from database tables"""
+
     def __init__(self, db: DatabaseConnector, schema: str):
         self.engine = db.engine
         self.inspector: Inspector = inspect(db.engine)
@@ -19,23 +21,25 @@ class TableMetadataExtractor(ABC):
 
     def extract_metadata(self, table_name: str) -> TableMetadata:
         """
-        Estrae i metadati base di una tabella.
+        Extracts base metadata for a table.
 
         Args:
-            table_name: Nome della tabella
+            table_name: Name of the table
+
         Returns:
-            TableMetadata: Metadati base della tabella
+            TableMetadata: Base metadata of the table
         """
-        # 1. estrazione delle info sulle colonne
+
+        # 1. Extract column information
         columns = self._get_columns(table_name)
 
-        # 2. estrazione delle info sulle pks
+        # 2. Extract primary key information
         primary_keys = self._get_primary_keys(table_name)
 
-        # 3. estrazione delle info sulle fks
+        # 3. Extract foreign key information
         foreign_keys = self._get_foreign_keys_relationships(table_name)
 
-        # 4. row count della tabella
+        # 4. Get table row count
         row_count = self._get_row_count(table_name)
 
         return TableMetadata(
@@ -47,11 +51,14 @@ class TableMetadataExtractor(ABC):
         )
 
     def _get_columns(self, table_name: str) -> List[str]:
-        """Recupera la lista delle colonne per una tabella.
+        """
+        Retrieves the list of columns for a table.
+
         Args:
-            table_name: Nome della tabella
+            table_name: Name of the table
+
         Returns:
-            List[Dict[str, Any]]: Lista dei metadati delle colonne
+            List[str]: List of column names
         """
         columns = []
         for col in self.inspector.get_columns(table_name, schema=self.schema):
@@ -59,12 +66,28 @@ class TableMetadataExtractor(ABC):
         return columns
 
     def _get_primary_keys(self, table_name: str) -> List[str]:
-        """Recupera i metadati delle chiavi primarie di una tabella"""
+        """
+        Retrieves primary keys for a table
+
+        Args:
+            table_name: Name of the table
+
+        Returns:
+            List[str]: List of primary key column names
+        """
         pk_info = self.inspector.get_pk_constraint(table_name, schema=self.schema)
         return pk_info["constrained_columns"] if pk_info else []
 
     def _get_foreign_keys_relationships(self, table_name: str) -> List[Dict[str, Any]]:
-        """Recupera i metadati delle chiavi esterne di una tabella"""
+        """
+        Retrieves foreign key metadata for a table
+
+        Args:
+            table_name: Name of the table
+
+        Returns:
+            List[Dict[str, Any]]: List of foreign key relationships
+        """
         foreign_keys = []
         for fk in self.inspector.get_foreign_keys(table_name, schema=self.schema):
             foreign_keys.append(
@@ -78,11 +101,19 @@ class TableMetadataExtractor(ABC):
 
     @abstractmethod
     def _get_row_count(self, table_name: str) -> int:
-        """Recupera il conteggio delle righe per una tabella (implementazione specifica per database)"""
+        """Retrieves the row count for a table (database-specific implementation)"""
         pass
 
     def get_sample_data(self, table_name: str, max_rows: int = 3) -> List[Dict]:
-        """Recupera dati di esempio da una tabella"""
+        """Retrieves sample data from a table
+
+        Args:
+            table_name: Name of the table
+            max_rows: Maximum number of rows to retrieve (default: 3)
+
+        Returns:
+            List[Dict]: List of sample rows as dictionaries
+        """
         try:
             with self.engine.connect() as connection:
                 query = text(
@@ -94,7 +125,5 @@ class TableMetadataExtractor(ABC):
                 return [dict(zip(columns, row)) for row in result]
 
         except Exception as e:
-            logger.error(
-                f"Errore nel recupero dei dati di esempio per {table_name}: {str(e)}"
-            )
+            logger.error(f"Error retrieving sample data for {table_name}: {str(e)}")
             return []

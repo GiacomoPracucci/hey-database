@@ -8,17 +8,22 @@ from sqlalchemy.engine import Inspector
 
 
 class ColumnMetadataExtractor(ABC):
+    """Abstract base class for extracting column metadata from database tables"""
+
     def __init__(self, db: DatabaseConnector, schema: str):
         self.engine = db.engine
         self.inspector: Inspector = inspect(db.engine)
         self.schema = schema
 
     def extract_metadata(self, table_name: str) -> List[ColumnMetadata]:
-        """Recupera i metadati delle colonne per una tabella.
+        """
+        Retrieves column metadata for a given table.
+
         Args:
-            table_name: Nome della tabella
+            table_name: Name of the table
+
         Returns:
-            List[Dict[str, Any]]: Lista dei metadati delle colonne
+            List[ColumnMetadata]: List of column metadata objects
         """
         columns = []
         for col in self.inspector.get_columns(table_name, schema=self.schema):
@@ -29,12 +34,12 @@ class ColumnMetadataExtractor(ABC):
                 "nullable": col["nullable"],
             }
 
-            # if self.metadata_config.retrieve_distinct_values:
-            column_info["distinct_values"] = self._get_distinct_values(
-                table_name,
-                col["name"],
-                max_values=20,  # self.metadata_config.max_distinct_values,
-            )
+            if self.metadata_config.retrieve_distinct_values:
+                column_info["distinct_values"] = self._get_distinct_values(
+                    table_name,
+                    col["name"],
+                    max_values=self.metadata_config.max_distinct_values,
+                )
 
             column = ColumnMetadata(
                 name=col["name"],
@@ -53,12 +58,15 @@ class ColumnMetadataExtractor(ABC):
     def _get_distinct_values(
         self, table_name: str, column_name: str, max_values: int
     ) -> List[str]:
-        """Recupera i valori distinti per una colonna.
+        """
+        Retrieves distinct values for a given column.
+
         Args:
-            table_name: Nome della tabella
-            column_name: Nome della colonna
-            max_values: Numero massimo di valori distinti da recuperare
+            table_name: Name of the table
+            column_name: Name of the column
+            max_values: Maximum number of distinct values to retrieve
+
         Returns:
-            List[str]: Lista dei valori distinti
+            List[str]: List of distinct values
         """
         pass

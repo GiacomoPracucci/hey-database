@@ -9,31 +9,33 @@ logger = logging.getLogger("hey-database")
 
 
 class TableMetadataEnhancer:
-    """Enhancer responsabile dell'arricchimento dei metadati delle tabelle con:
-    - Descrizione semantica generata via LLM
-    - Keywords estratte dalla descrizione
-    - Score di importanza calcolato
+    """
+    Enhancer responsible for enriching table metadata with:
+    - Semantic description generated via LLM
+    - Keywords extracted from the description
+    - Calculated importance score
     """
 
     def __init__(self, llm_handler: LLMHandler):
-        self.keywords_finder = YAKEKeywordsFinder()  # potremmo usare anche quello LLM based che è più robusto, ma rallenteremmo il processo che già è lento
-        # TODO valutare se usare LLM based extractor per keywords per le tabelle,
-        # TODO che sono meno rispetto alle colonne (andrebbe generalizzato il prompt che ora parla di query, qui verrebbe passata la descrizione)
+        # We could use the LLM-based finder which is more robust, but it would slow down the already slow process
+        self.keywords_finder = YAKEKeywordsFinder()
+        # TODO: Consider using LLM-based extractor for table keywords
+        # TODO: Since tables are fewer than columns, we could adapt the query-focused prompt for description input
         self.llm_handler = llm_handler
 
     def enhance(self, base_metadata: TableMetadata) -> EnhancedTableMetadata:
-        """Arricchisce i metadati di una tabella
+        """
+        Enriches the metadata of a database table
 
         Args:
-            base_metadata: Metadati base della tabella
+            base_metadata: Base metadata of the table
 
         Returns:
-            EnhancerResponse con i metadati arricchiti o errore
+            EnhancedTableMetadata containing the enriched metadata or error information
         """
         try:
-            # Genera descrizione usando LLM
             description = self._generate_description(base_metadata)
-            # description = "placeholder"
+
             if not description:
                 return EnhancedTableMetadata(
                     base_metadata=base_metadata,
@@ -42,7 +44,6 @@ class TableMetadataEnhancer:
                     importance_score=0.0,
                 )
 
-            # Estrae keywords dalla descrizione
             keywords_response = self.keywords_finder.find_keywords(description)
             if not keywords_response.success:
                 return EnhancedTableMetadata(
@@ -71,7 +72,7 @@ class TableMetadataEnhancer:
             )
 
     def build_prompt(self, metadata: TableMetadata) -> str:
-        """Costruisce il prompt per la generazione della descrizione"""
+        """Builds the prompt for generating the table description"""
 
         foreign_keys_info = []
         for fk in metadata.foreign_keys:
@@ -80,7 +81,7 @@ class TableMetadataEnhancer:
             to_cols = ", ".join(fk["referred_columns"])
             foreign_keys_info.append(f"- {from_cols} -> {to_table}({to_cols})")
 
-        prompt = f"""Descrivi il significato business dei dati contenuti in questa tabella di database.
+        prompt = f"""Describe the business meaning of the data contained in this database table.
 
 Table: {metadata.name}
 Number of records: {metadata.row_count}
@@ -93,19 +94,19 @@ Primary Keys: {", ".join(metadata.primary_keys)}
 Foreign Keys:
 {chr(10).join(foreign_keys_info) if foreign_keys_info else "No foreign keys"}
 
-La descrizione deve focalizzarsi sul significato semantico del dato, non sugli aspetti tecnici o relazionali.
-Esempi di descrizioni efficaci:
-Table: customers -> "Contiene i dati anagrafici e di contatto dei clienti, incluse informazioni su residenza e preferenze di comunicazione"
-Table: orders -> "Raccoglie tutti gli ordini effettuati dai clienti, con dettagli su importi, date di acquisto e stato di elaborazione"
-Table: products -> "Archivio dei prodotti in vendita con relative caratteristiche tecniche, prezzi e disponibilità in magazzino"
+The description should focus on the semantic meaning of the data, not on technical or relational aspects.
+Examples of effective descriptions:
+Table: customers -> "Contains customer demographic and contact data, including residence information and communication preferences"
+Table: orders -> "Stores all customer orders, with details on amounts, purchase dates, and processing status"
+Table: products -> "Repository of products for sale with their technical specifications, prices, and warehouse availability"
 
-Non includere ragionamenti, ipotesi o assunzioni nella descrizione. Descrivi SOLO ciò che è oggettivamente presente nei dati/metadati forniti.
-La descrizione deve essere chiara e concisa (massimo due frasi), in lingua italiana"""
+Do not include reasoning, hypotheses, or assumptions in the description. Describe ONLY what is objectively present in the provided data/metadata.
+The description must be clear and concise."""
 
         return prompt
 
     def _generate_description(self, metadata: TableMetadata) -> Optional[str]:
-        """Genera una descrizione semantica della tabella usando il LLM"""
+        """Generates a semantic description of the table using the LLM"""
         prompt = self.build_prompt(metadata)
 
         description = self.llm_handler.get_completion(
@@ -117,18 +118,19 @@ La descrizione deve essere chiara e concisa (massimo due frasi), in lingua itali
         return description.strip() if description else None
 
     def _calculate_importance_score(self, metadata: TableMetadata) -> float:
-        """Calcola uno score di importanza per la tabella
-        La logica è che una tabella è più importante se ha più relazioni, colonne e chiavi primarie
+        """
+        Calculates an importance score for the table
+        The logic is that a table is more important if it has more relationships, columns, and primary keys
         """
         score = 0.0
 
-        # peso per le relazioni
+        # weight for relationships
         relations_weight = len(metadata.foreign_keys) * 0.2
-        # peso per le colonne
+        # weight for columns
         columns_weight = len(metadata.columns) * 0.1
-        # peso per chiavi primarie
+        # weight for primary keys
         pk_weight = 0.3 if metadata.primary_keys else 0
-        # normalizza e combina gli score
+        # normalize and combine scores
         score = min(1.0, relations_weight + columns_weight + pk_weight)
 
         return round(score, 2)
