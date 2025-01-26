@@ -1,37 +1,13 @@
 import logging
 from src.models.app import AppConfig
 from src.factories.database import DatabaseFactory
+from src.factories.metadata import MetadataFactory
 from src.factories.vector_store import VectorStoreFactory
 from src.models.app import AppComponents
 from src.factories.llm import LLMFactory
 from src.factories.cache import CacheFactory
-from src.metadata.enhancement_strategy import MetadataEnhancementStrategy
 
 logger = logging.getLogger("hey-database")
-
-
-class VectorStoreBasedStrategy(MetadataEnhancementStrategy):
-    """Strategy che determina se fare enhancement dei metadati basandosi sullo stato del vector store"""
-
-    def __init__(self, vector_store):
-        self.vector_store = vector_store
-
-    def should_enhance(self) -> bool:
-        """Determina se i metadati devono essere arricchiti.
-        Li arricchisce solo se il vector store non esiste già"""
-        if not self.vector_store.collection_exists():
-            return True
-        return (
-            self.vector_store.client.count(self.vector_store.collection_name).count == 0
-        )
-
-
-class DefaultEnhancementStrategy(MetadataEnhancementStrategy):
-    """Strategy di default quando non c'è un vector store"""
-
-    def should_enhance(self) -> bool:
-        """Senza vector store, non facciamo l'enhancement"""
-        return False
 
 
 class AppComponentsBuilder:
@@ -65,31 +41,44 @@ class AppComponentsBuilder:
         self.llm = LLMFactory.create_handler(self.config.llm)
         return self
 
-    def build_metadata_extractor(self):
-        """Costruisce i componenti per i metadati
-        Enhancement strategy decide se fare enhancement o meno, con la seguente logica:
-        - Se è abilitato il vector store, fa enhancement solo se il vector store non esiste
-        - Altrimenti, non fa enhancement, percchè la description ci serve principalmente per semantic search dallo store
-        """
+    def build_table_metadata_extractor(self):
+        """Builds the table metadata extractor"""
+        if not self.db:
+            raise RuntimeError("Cannot build metadata extractor without DB connection")
+
+        self.table_metadata_extractor = MetadataFactory.create_table_metadata_extractor(
+            config=self.config.database,  # DB config cause the extractor type depends on the DB type
+            db=self.db,
+        )
+        return self
+
+    def build_column_metadata_extractor(self):
+        """Builds the column metadata extractor"""
+        if not self.db:
+            raise RuntimeError("Cannot build metadata extractor without DB connection")
+
+        self.column_metadata_extractor = MetadataFactory.create_column_metadata_extractor(
+            config=self.config.database,  # DB config cause the extractor type depends on the DB type
+            db=self.db,
+        )
+        return self
+
+    def build_table_metadata_enhancer(self):
+        """Builds the table metadata enhancer"""
         if not self.llm:
-            raise RuntimeError("LLM handler must be built before metadata components")
-
-        # determina la strategia di enhancement appropriata
-        enhancement_strategy = (
-            VectorStoreBasedStrategy(self.vector_store)
-            if self.vector_store
-            else DefaultEnhancementStrategy()
+            raise RuntimeError("Cannot build metadata enhancer without LLM handler")
+        self.table_metadata_enhancer = MetadataFactory.create_table_metadata_enhancer(
+            llm_handler=self.llm
         )
+        return self
 
-        self.metadata_retriever = DatabaseFactory.create_metadata_retriever(
-            self.config.database,
-            self.db,
-            self.llm,
-            enhancement_strategy,
-            self.config.metadata,
-            self.config.cache,
+    def build_column_metadata_enhancer(self):
+        """Builds the column metadata enhancer"""
+        if not self.llm:
+            raise RuntimeError("Cannot build metadata enhancer without LLM handler")
+        self.column_metadata_enhancer = MetadataFactory.create_column_metadata_enhancer(
+            llm_handler=self.llm
         )
-
         return self
 
     def build_cache(self):
@@ -103,7 +92,10 @@ class AppComponentsBuilder:
         self.build_database()
         self.build_vector_store()
         self.build_sql_llm()
-        self.build_metadata_extractor()
+        self.build_table_metadata_extractor()
+        self.build_column_metadata_extractor()
+        self.build_table_metadata_enhancer()
+        self.build_column_metadata_enhancer()
         self.build_cache()
 
         # se abbiamo un vector store, lo popoliamo in automatico con i metadati estratti
@@ -118,5 +110,8 @@ class AppComponentsBuilder:
             vector_store=self.vector_store,
             sql_llm=self.llm,
             cache=self.cache,
-            metadata_extractor=self.metadata_retriever,
+            table_metadata_extractor=self.table_metadata_extractor,
+            column_metadata_extractor=self.column_metadata_extractor,
+            table_metadata_enhancer=self.table_metadata_enhancer,
+            column_metadata_enhancer=self.column_metadata,
         )

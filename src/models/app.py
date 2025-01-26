@@ -1,18 +1,25 @@
 from dataclasses import dataclass
-from src.config.models.db import DatabaseConfig
-from src.config.models.llm import LLMConfig
-from src.config.models.prompt import PromptConfig
-from src.config.models.vector_store import VectorStoreConfig
-from src.config.models.cache import CacheConfig
-from src.config.models.metadata import MetadataConfig
+from src.models.db import DatabaseConfig
+from src.models.llm import LLMConfig
+from src.models.prompt import PromptConfig
+from src.models.vector_store import VectorStoreConfig
+from src.models.cache import CacheConfig
+from src.models.metadata import MetadataConfig
 
-from src.connectors.db import DatabaseConnector
+from src.connectors.connector import DatabaseConnector
 from src.llm_handler import LLMHandler
 from src.cache.metadata_cache import MetadataCache
-from src.vector_store.vector_store import VectorStore
-from src.metadata.metadata_retriever import MetadataRetriever
+from src.store.vectorstore import VectorStore
+from src.metadata.extractors.table.table_metadata_extractor import (
+    TableMetadataExtractor,
+)
+from src.metadata.extractors.column.column_metadata_extractor import (
+    ColumnMetadataExtractor,
+)
+from src.metadata.enhancers.table_metadata_enhancer import TableMetadataEnhancer
+from src.metadata.enhancers.column_metadata_enhancer import ColumnMetadataEnhancer
 
-from src.config.models.base import BaseConfig
+from src.models.base import BaseConfig
 
 
 @dataclass
@@ -32,4 +39,7 @@ class AppComponents:
     vector_store: VectorStore
     sql_llm: LLMHandler
     cache: MetadataCache
-    metadata_extractor: MetadataRetriever
+    table_metadata_extractor: TableMetadataExtractor
+    column_metadata_extractor: ColumnMetadataExtractor
+    table_metadata_enhancer: TableMetadataEnhancer
+    column_metadata_enhancer: ColumnMetadataEnhancer
