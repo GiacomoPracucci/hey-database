@@ -11,7 +11,7 @@ from src.services.schema_service import SchemaService
 from src.web.chat_routes import create_chat_routes
 from src.web.schema_routes import create_schema_routes
 from src.web.preview_routes import create_preview_routes
-from src.startup.metadata_startup_manager import (
+from src.startup.metadata_startup import (
     MetadataStartupManager,
     MetadataCacheManager,
     VectorStoreManager,
@@ -69,9 +69,6 @@ def create_app():
                 column_enhancer=app_components.column_metadata_enhancer,
             ),
             cache_manager=MetadataCacheManager(app_components.cache),
-            vector_store_manager=VectorStoreManager(app_components.vector_store)
-            if app_components.vector_store
-            else None,
         )
 
         chat_service = ChatService(app_components.sql_llm)

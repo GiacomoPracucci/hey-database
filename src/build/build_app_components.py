@@ -15,9 +15,12 @@ class AppComponentsBuilder:
         self.config = app_config
         self.db = None
         self.vector_store = None
-        self.metadata_retriever = None
         self.sql_llm = None
         self.cache = None
+        self.table_metadata_extractor = None
+        self.column_metadata_extractor = None
+        self.table_metadata_enhancer = None
+        self.column_metadata_enhancer = None
 
     def build_database(self):
         """Costruisce e verifica la connessione database"""

@@ -119,10 +119,10 @@ class MetadataStartupManager:
 
     def __init__(
         self,
-        enrichment_service: MetadataService,
+        metadata_service: MetadataService,
         cache_manager: MetadataCacheManager,
     ):
-        self.enrichment_service = enrichment_service
+        self.metadata_service = metadata_service
         self.cache_manager = cache_manager
         self._current_state: Optional[MetadataState] = None
 
