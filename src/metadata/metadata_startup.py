@@ -1,9 +1,7 @@
-from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Optional
 from datetime import datetime
 import logging
 
-from src.models.metadata import EnhancedTableMetadata, EnhancedColumnMetadata
 from src.metadata.extractors.table.table_metadata_extractor import (
     TableMetadataExtractor,
 )
@@ -12,15 +10,15 @@ from src.metadata.extractors.column.column_metadata_extractor import (
 )
 from src.metadata.enhancers.table_metadata_enhancer import TableMetadataEnhancer
 from src.metadata.enhancers.column_metadata_enhancer import ColumnMetadataEnhancer
-from src.store.vectorstore import VectorStore
+from src.cache.metadata_cache import MetadataCache
 from src.models.metadata import MetadataState
 
 logger = logging.getLogger("hey-database")
 
 
-class MetadataService:
+class MetadataProcessor:
     """
-    Service responsible for extracting and enriching metadata.
+    Processor responsible for extracting and enriching metadata.
     No caching, no vector store, just pure metadata processing.
     """
 
@@ -36,7 +34,7 @@ class MetadataService:
         self.table_enhancer = table_enhancer
         self.column_enhancer = column_enhancer
 
-    def process_metadata(self) -> MetadataState:
+    def extract_and_enrich_metadata(self) -> MetadataState:
         """
         Core metadata processing:
         1. Extract base metadata from database
@@ -71,10 +69,10 @@ class MetadataService:
         )
 
 
-class MetadataCacheManager:
-    """Service responsible for cache operations and validation."""
+class MetadataCacheHandler:
+    """Handler responsible for cache operations and validation."""
 
-    def __init__(self, cache):
+    def __init__(self, cache: MetadataCache):
         self.cache = cache
 
     def get_cached_metadata(self) -> Optional[MetadataState]:
@@ -111,7 +109,7 @@ class MetadataCacheManager:
         self.cache.invalidate()
 
 
-class MetadataStartupManager:
+class MetadataManager:
     """
     Service responsible for orchestrating the metadata initialization process.
     Decides whether to use cache or trigger fresh metadata processing.
@@ -119,19 +117,19 @@ class MetadataStartupManager:
 
     def __init__(
         self,
-        metadata_service: MetadataService,
-        cache_manager: MetadataCacheManager,
+        metadata_service: MetadataProcessor,
+        cache_manager: MetadataCacheHandler,
     ):
-        self.metadata_service = metadata_service
-        self.cache_manager = cache_manager
+        self.metadata_processor = metadata_service
+        self.cache_handler = cache_manager
         self._current_state: Optional[MetadataState] = None
 
     @property
-    def metadata_state(self) -> Optional[MetadataState]:
+    def state(self) -> Optional[MetadataState]:
         """Access current metadata state"""
         return self._current_state
 
-    def initialize(self, force_refresh: bool = False) -> bool:
+    def initialize_metadata(self, force_refresh: bool = False) -> bool:
         """
         Initialize metadata system by either:
         1. Loading from cache if available and valid
@@ -139,18 +137,20 @@ class MetadataStartupManager:
         """
         try:
             if not force_refresh:
-                # Try cache first
+                # 1. Check if there is a valid cache
                 cached_state = self.cache_manager.get_cached_metadata()
                 if cached_state:
                     self._current_state = cached_state
-                    logger.info("Using cached metadata")
+                    logger.info("Found valid cached metadata.")
                     return True
 
-            # Process fresh metadata
-            logger.info("Processing fresh metadata")
-            self._current_state = self.enrichment_service.process_metadata()
+            # 2. No valid cache, process fresh metadata
+            logger.info(
+                "No valid cache found, initializing metadata extraction and enrichment process."
+            )
+            self._current_state = self.metadata_processor.extract_and_enrich_metadata()
 
-            # Update cache
+            # 3. Save new metadata to cache
             if self._current_state:
                 self.cache_manager.save_metadata(self._current_state)
                 return True
@@ -163,4 +163,4 @@ class MetadataStartupManager:
 
     def force_refresh(self) -> bool:
         """Force fresh metadata processing"""
-        return self.initialize(force_refresh=True)
+        return self.initialize_metadata(force_refresh=True)

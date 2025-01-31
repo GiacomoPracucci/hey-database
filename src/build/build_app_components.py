@@ -91,11 +91,11 @@ class AppComponentsBuilder:
         self.build_database()
         self.build_vector_store()
         self.build_sql_llm()
+        self.build_cache()
         self.build_table_metadata_extractor()
         self.build_column_metadata_extractor()
         self.build_table_metadata_enhancer()
         self.build_column_metadata_enhancer()
-        self.build_cache()
 
         return AppComponents(
             db=self.db,

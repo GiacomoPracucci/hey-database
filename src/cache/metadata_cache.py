@@ -36,7 +36,9 @@ class MetadataCache:
             raise RuntimeError(f"Failed to create cache directory: {e}")
 
     def _is_cache_valid(self) -> bool:
-        """Check if the cache file exists and is still valid
+        """
+        Check if the cache file exists and is still valid
+
         Returns:
             bool: True if cache exists and is within TTL
         """
@@ -58,11 +60,6 @@ class MetadataCache:
         """
         with self._lock:
             try:
-                # check di validità by ttl
-                if not self._is_cache_valid():
-                    logger.debug("Cache invalid or expired")
-                    return None
-
                 with open(self.cache_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
 

@@ -11,11 +11,10 @@ from src.services.schema_service import SchemaService
 from src.web.chat_routes import create_chat_routes
 from src.web.schema_routes import create_schema_routes
 from src.web.preview_routes import create_preview_routes
-from src.startup.metadata_startup import (
-    MetadataStartupManager,
-    MetadataCacheManager,
-    VectorStoreManager,
-    MetadataService,
+from src.metadata.metadata_startup import (
+    MetadataManager,
+    MetadataCacheHandler,
+    MetadataProcessor,
 )
 
 logging.basicConfig(
@@ -60,19 +59,18 @@ def create_app():
         # crea il servizio chat
         app_components = AppComponentsBuilder(config).build()
 
-        # 2. Initialize metadata system
-        metadata_startup = MetadataStartupManager(
-            enrichment_service=MetadataService(
-                table_extractor=app_components.table_metadata_extractor,
-                column_extractor=app_components.column_metadata_extractor,
-                table_enhancer=app_components.table_metadata_enhancer,
-                column_enhancer=app_components.column_metadata_enhancer,
-            ),
-            cache_manager=MetadataCacheManager(app_components.cache),
+        metadata_processor = MetadataProcessor(
+            table_extractor=app_components.table_metadata_extractor,
+            column_extractor=app_components.column_metadata_extractor,
+            table_enhancer=app_components.table_metadata_enhancer,
+            column_enhancer=app_components.column_metadata_enhancer,
         )
+        cache_handler = MetadataCacheHandler(app_components.cache)
+        metadata_manager = MetadataManager(metadata_processor, cache_handler)
+        metadata_manager.initialize_metadata()
 
         chat_service = ChatService(app_components.sql_llm)
-        schema_service = SchemaService(metadata_startup.metadata_state.tables)
+        schema_service = SchemaService(metadata_manager)
 
         # registra le routes
         create_chat_routes(app, chat_service)
