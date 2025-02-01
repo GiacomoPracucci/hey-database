@@ -17,10 +17,7 @@ logger = logging.getLogger("hey-database")
 
 
 class MetadataProcessor:
-    """
-    Processor responsible for extracting and enriching metadata.
-    No caching, no vector store, just pure metadata processing.
-    """
+    """Processor responsible for extracting and enriching metadata."""
 
     def __init__(
         self,

@@ -5,7 +5,7 @@ import threading
 from typing import Dict, Optional
 from datetime import datetime, timedelta
 from pathlib import Path
-from src.config.models.metadata import TableMetadata, EnhancedTableMetadata
+from src.models.metadata import TableMetadata, EnhancedTableMetadata
 
 logger = logging.getLogger("hey-database")
 
