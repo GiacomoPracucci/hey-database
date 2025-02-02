@@ -35,7 +35,7 @@ def create_app():
 
     config = ConfigLoader.load_config(
         db_config_path=os.path.join(
-            project_root, "configs", "DB_connection", "northwind_postgres.yaml"
+            project_root, "configs", "DB_connections", "northwind_postgres.yaml"
         ),
         cache_config_path=os.path.join(
             project_root, "configs", "cache", "northwind_cache.yaml"

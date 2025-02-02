@@ -115,10 +115,10 @@ class MetadataManager:
     def __init__(
         self,
         metadata_service: MetadataProcessor,
-        cache_manager: MetadataCacheHandler,
+        cache_handler: MetadataCacheHandler,
     ):
         self.metadata_processor = metadata_service
-        self.cache_handler = cache_manager
+        self.cache_handler = cache_handler
         self._current_state: Optional[MetadataState] = None
 
     @property
@@ -135,7 +135,7 @@ class MetadataManager:
         try:
             if not force_refresh:
                 # 1. Check if there is a valid cache
-                cached_state = self.cache_manager.get_cached_metadata()
+                cached_state = self.cache_handler.get_cached_metadata()
                 if cached_state:
                     self._current_state = cached_state
                     logger.info("Found valid cached metadata.")
