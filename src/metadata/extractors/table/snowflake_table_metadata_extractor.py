@@ -8,8 +8,8 @@ from src.metadata.extractors.table.table_metadata_extractor import (
 logger = logging.getLogger("hey-database")
 
 
-class SnowflakeTableMetadataRetriever(TableMetadataExtractor):
-    """Implementazione Snowflake del retriever di metadati"""
+class SnowflakeTableMetadataExtractor(TableMetadataExtractor):
+    """Implementazione Snowflake del extractor di metadati"""
 
     def _get_row_count(self, table_name: str) -> int:
         """Implementazione Snowflake del conteggio righe.

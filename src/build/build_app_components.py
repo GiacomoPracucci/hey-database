@@ -37,7 +37,7 @@ class AppComponentsBuilder:
 
     def build_sql_llm(self):
         """Costruisce l'handler LLM"""
-        self.llm = LLMFactory.create_handler(self.config.llm)
+        self.llm = LLMFactory.create_handler(self.config.sql_llm)
         return self
 
     def build_table_metadata_extractor(self):
@@ -105,5 +105,5 @@ class AppComponentsBuilder:
             table_metadata_extractor=self.table_metadata_extractor,
             column_metadata_extractor=self.column_metadata_extractor,
             table_metadata_enhancer=self.table_metadata_enhancer,
-            column_metadata_enhancer=self.column_metadata,
+            column_metadata_enhancer=self.column_metadata_enhancer,
         )

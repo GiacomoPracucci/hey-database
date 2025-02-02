@@ -35,7 +35,7 @@ class AppConfig:
 
 @dataclass
 class AppComponents:
-    database: DatabaseConnector
+    db: DatabaseConnector
     vector_store: VectorStore
     sql_llm: LLMHandler
     cache: MetadataCache

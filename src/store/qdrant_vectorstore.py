@@ -7,8 +7,8 @@ from dataclasses import asdict
 
 from src.store.vectorstore import VectorStore
 from src.embedding.embedding import Embedder
-from src.config.models.metadata import EnhancedTableMetadata
-from src.config.models.vector_store import (
+from src.models.metadata import EnhancedTableMetadata
+from src.models.vector_store import (
     TablePayload,
     QueryPayload,
     TableSearchResult,

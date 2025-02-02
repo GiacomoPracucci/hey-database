@@ -12,7 +12,7 @@ class CacheFactory:
     @staticmethod
     def create_cache(config: CacheConfig) -> MetadataCache:
         return MetadataCache(
-            cache_dir=config.cache_dir,
+            cache_dir=config.directory,
             file_name=config.file_name,
             ttl_hours=config.ttl_hours,
         )

@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy import text
-from src.metadata.extractors.columns.column_metadata_extractor import (
+from src.metadata.extractors.column.column_metadata_extractor import (
     ColumnMetadataExtractor,
 )
 import logging

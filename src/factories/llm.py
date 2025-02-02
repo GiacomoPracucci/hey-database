@@ -1,6 +1,6 @@
 import logging
 
-from src.config.models.llm import LLMConfig
+from src.models.llm import LLMConfig
 from src.llm_handler.anthropic_handler import AnthropicHandler
 from src.llm_handler.google_handler import GoogleHandler
 from src.llm_handler.ollama_handler import OllamaHandler
