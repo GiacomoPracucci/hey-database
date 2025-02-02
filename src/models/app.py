@@ -7,7 +7,7 @@ from src.models.cache import CacheConfig
 from src.models.metadata import MetadataConfig
 
 from src.connectors.connector import DatabaseConnector
-from src.llm_handler import LLMHandler
+from src.llm_handler.llm_handler import LLMHandler
 from src.cache.metadata_cache import MetadataCache
 from src.store.vectorstore import VectorStore
 from src.metadata.extractors.table.table_metadata_extractor import (

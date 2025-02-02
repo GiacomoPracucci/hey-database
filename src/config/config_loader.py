@@ -1,8 +1,5 @@
 from typing import Dict, Any
 import yaml
-from dotenv import load_dotenv
-
-load_dotenv()
 
 from src.config.languages import SupportedLanguage
 from src.models.app import AppConfig
@@ -15,9 +12,13 @@ from src.models.cache import CacheConfig
 from src.models.metadata import MetadataConfig
 from src.models.base import BaseConfig
 
+from dotenv import load_dotenv
+
 import logging
 
 logger = logging.getLogger("hey-database")
+
+load_dotenv()
 
 
 class ConfigLoader:
@@ -69,7 +70,7 @@ class ConfigLoader:
         if not SupportedLanguage.is_supported(language_str):
             logger.warning(
                 f"Language '{language_str}' not supported"
-                f"Supported Languages: {', '.join(SupportedLanguage.get_supported_languages())}. "
+                f"Supported Languages: {', '.join(SupportedLanguage.supported_languages())}. "
                 f"Default language will be used: ({SupportedLanguage.get_default().value})"
             )
         return BaseConfig(
@@ -82,16 +83,16 @@ class ConfigLoader:
         """Load the database configuration"""
         config_data = ConfigLoader._open_config(config_path)
         return DatabaseConfig(
-            type=config_data["database"]["type"],
-            host=config_data["database"]["host"],
-            port=config_data["database"]["port"],
-            database=config_data["database"]["database"],
-            user=config_data["database"]["user"],
-            password=config_data["database"]["password"],
-            schema=config_data["database"]["schema"],
-            warehouse=config_data["database"].get("warehouse"),
-            account=config_data["database"].get("account"),
-            role=config_data["database"].get("role"),
+            type=config_data["type"],
+            host=config_data["host"],
+            port=config_data["port"],
+            database=config_data["database"],
+            user=config_data["user"],
+            password=config_data["password"],
+            schema=config_data["schema"],
+            warehouse=config_data.get("warehouse"),
+            account=config_data.get("account"),
+            role=config_data.get("role"),
         )
 
     @classmethod
@@ -99,9 +100,9 @@ class ConfigLoader:
         """Load the cache configuration"""
         config_data = ConfigLoader._open_config(config_path)
         return CacheConfig(
-            directory=config_data.get("cache", {}).get("directory"),
-            file_name=config_data.get("cache", {}).get("file_name"),
-            ttl_hours=config_data.get("cache", {}).get("ttl_hours", 24),
+            directory=config_data["directory"],
+            file_name=config_data["file_name"],
+            ttl_hours=config_data.get("ttl_hours", 24),
         )
 
     @classmethod
@@ -111,10 +112,10 @@ class ConfigLoader:
         """
         config_data = ConfigLoader._open_config(config_path)
         return LLMConfig(
-            type=config_data["llm"]["type"],
-            api_key=config_data["llm"].get("api_key"),
-            model=config_data["llm"].get("model"),
-            base_url=config_data["llm"].get("base_url"),
+            type=config_data["type"],
+            api_key=config_data["api_key"],
+            model=config_data["model"],
+            base_url=config_data["base_url"] if "base_url" in config_data else None,
         )
 
     @classmethod
@@ -122,10 +123,8 @@ class ConfigLoader:
         """Load the prompt configuration"""
         config_data = ConfigLoader._open_config(config_path)
         return PromptConfig(
-            include_sample_data=config_data.get("prompt", {}).get(
-                "include_sample_data", True
-            ),
-            max_sample_rows=config_data.get("prompt", {}).get("max_sample_rows", 3),
+            include_sample_data=config_data.get("include_sample_data", True),
+            max_sample_rows=config_data.get("max_sample_rows", 3),
         )
 
     @classmethod
@@ -133,12 +132,8 @@ class ConfigLoader:
         """Load the metadata configuration"""
         config_data = ConfigLoader._open_config(config_path)
         return MetadataConfig(
-            retrieve_distinct_values=config_data.get("metadata", {}).get(
-                "retrieve_distinct_values", False
-            ),
-            max_distinct_values=config_data.get("metadata", {}).get(
-                "max_distinct_values", 100
-            ),
+            retrieve_distinct_values=config_data.get("retrieve_distinct_values", False),
+            max_distinct_values=config_data.get("max_distinct_values", 100),
         )
 
     @classmethod
