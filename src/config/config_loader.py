@@ -1,5 +1,6 @@
 from typing import Dict, Any
 import yaml
+import os
 
 from src.config.languages import SupportedLanguage
 from src.models.app import AppConfig
@@ -19,6 +20,37 @@ import logging
 logger = logging.getLogger("hey-database")
 
 load_dotenv()
+
+
+class ConfigResolver:
+    """Utility class to resolve configuration values"""
+
+    @staticmethod
+    def resolve_env_vars(config: Dict[str, Any]) -> Dict[str, Any]:
+        """Recursively resolves environment variables in configuration.
+
+        Environment variables should be referenced as ${VAR_NAME}
+
+        Args:
+            config: Configuration dictionary
+
+        Returns:
+            Configuration with resolved environment variables
+        """
+        if isinstance(config, dict):
+            return {k: ConfigResolver.resolve_env_vars(v) for k, v in config.items()}
+        elif isinstance(config, list):
+            return [ConfigResolver.resolve_env_vars(v) for v in config]
+        elif (
+            isinstance(config, str) and config.startswith("${") and config.endswith("}")
+        ):
+            var_name = config[2:-1]
+            env_value = os.getenv(var_name)
+            if env_value is None:
+                logger.warning(f"Environment variable {var_name} not found")
+                return ""
+            return env_value
+        return config
 
 
 class ConfigLoader:
@@ -82,6 +114,7 @@ class ConfigLoader:
     def load_db_config(cls, config_path: str) -> DatabaseConfig:
         """Load the database configuration"""
         config_data = ConfigLoader._open_config(config_path)
+        config_data = ConfigResolver.resolve_env_vars(config_data)
         return DatabaseConfig(
             type=config_data["type"],
             host=config_data["host"],
@@ -111,6 +144,7 @@ class ConfigLoader:
         Load the SQL LLM configuration
         """
         config_data = ConfigLoader._open_config(config_path)
+        config_data = ConfigResolver.resolve_env_vars(config_data)
         return LLMConfig(
             type=config_data["type"],
             api_key=config_data["api_key"],
@@ -140,6 +174,7 @@ class ConfigLoader:
     def load_vector_store_config(cls, config_path) -> VectorStoreConfig:
         """Carica la configurazione del vector store se presente"""
         config_data = ConfigLoader._open_config(config_path)
+        config_data = ConfigResolver.resolve_env_vars(config_data)
 
         path = config_data.get("path")
 
