@@ -19,6 +19,19 @@ class TableMetadataExtractor(ABC):
         self.inspector: Inspector = inspect(db.engine)
         self.schema = schema
 
+    def get_tables(self) -> List[str]:
+        """
+        Get list of tables in the schema.
+
+        Returns:
+            List[str]: List of table names in the schema
+        """
+        try:
+            return self.inspector.get_table_names(schema=self.schema)
+        except Exception as e:
+            logger.error(f"Error getting tables for schema {self.schema}: {str(e)}")
+            return []
+
     def extract_metadata(self, table_name: str) -> TableMetadata:
         """
         Extracts base metadata for a table.
