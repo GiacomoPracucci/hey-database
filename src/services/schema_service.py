@@ -1,23 +1,21 @@
-from src.metadata.metadata_startup import MetadataManager
+from src.models.metadata import Metadata
 import logging
 
 logger = logging.getLogger("hey-database")
 
 
 class SchemaService:
-    def __init__(self, metadata_manager: MetadataManager):
-        self.metadata_manager = metadata_manager
-        self.tables_metadata = metadata_manager.metadata.tables
-        self.columns_metadata = metadata_manager.metadata.columns
+    def __init__(self, metadata: Metadata):
+        self.metadata = metadata
 
     def get_tables_metadata(self):
-        if not self.metadata_manager.metadata:
+        if not self.metadata.tables:
             logger.error("Tables Metadata not initialized")
             return {}
-        return self.tables_metadata
+        return self.metadata.tables
 
     def get_columns_metadata(self):
-        if not self.metadata_manager.metadata.columns:
+        if not self.metadata.columns:
             logger.error("Columns Metadata not initialized")
             return {}
-        return self.columns_metadata
+        return self.metadata.columns

@@ -12,8 +12,7 @@ from src.web.chat_routes import create_chat_routes
 from src.web.schema_routes import create_schema_routes
 from src.web.preview_routes import create_preview_routes
 from src.metadata.metadata_startup import (
-    MetadataManager,
-    MetadataCacheHandler,
+    MetadataStartup,
     MetadataProcessor,
 )
 
@@ -56,21 +55,21 @@ def create_app():
     app.config["DEBUG"] = config.debug
 
     try:
-        # crea il servizio chat
+        # Build all app components
         app_components = AppComponentsBuilder(config).build()
 
+        # Initialization of metadata extractor and enhancer
         metadata_processor = MetadataProcessor(
             table_extractor=app_components.table_metadata_extractor,
             column_extractor=app_components.column_metadata_extractor,
             table_enhancer=app_components.table_metadata_enhancer,
             column_enhancer=app_components.column_metadata_enhancer,
         )
-        cache_handler = MetadataCacheHandler(app_components.cache)
-        metadata_manager = MetadataManager(metadata_processor, cache_handler)
-        metadata_manager.initialize_metadata()
+        metadata_startup = MetadataStartup(metadata_processor, app_components.cache)
+        metadata = metadata_startup.initialize_metadata()
 
         chat_service = ChatService(app_components.sql_llm)
-        schema_service = SchemaService(metadata_manager)
+        schema_service = SchemaService(metadata)
 
         # registra le routes
         create_chat_routes(app, chat_service)

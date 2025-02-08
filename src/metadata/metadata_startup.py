@@ -63,7 +63,7 @@ class MetadataProcessor:
         return Metadata(tables=tables_metadata, columns=columns_metadata)
 
 
-class MetadataManager:
+class MetadataStartup:
     """
     Service responsible for orchestrating the metadata initialization process.
     Decides whether to use cache or trigger fresh metadata processing.
@@ -76,14 +76,8 @@ class MetadataManager:
     ):
         self.metadata_processor = metadata_service
         self.cache_handler = cache_handler
-        self.metadata: Optional[Metadata] = None
 
-    @property
-    def state(self) -> Optional[Metadata]:
-        """Access metadata"""
-        return self.metadata
-
-    def initialize_metadata(self, force_refresh: bool = False) -> bool:
+    def initialize_metadata(self, force_refresh: bool = False) -> Optional[Metadata]:
         """
         Initialize metadata system by either:
         1. Loading from cache if available and valid
@@ -96,20 +90,19 @@ class MetadataManager:
                 if cached_metadata:
                     self.metadata = cached_metadata
                     logger.info("Found valid cached metadata.")
-                    return True
+                    return cached_metadata
 
             # 2. No valid cache, process fresh metadata
             logger.info(
                 "No valid cache found, initializing metadata extraction and enrichment process."
             )
-            self.metadata = self.metadata_processor.extract_and_enrich_metadata()
+            metadata = self.metadata_processor.extract_and_enrich_metadata()
 
             # 3. Save new metadata to cache
-            if self.metadata:
-                self.cache_handler.set(self.metadata)
-                return True
+            if metadata:
+                self.cache_handler.set(metadata)
 
-            return False
+            return metadata
 
         except Exception as e:
             logger.exception(f"Error during metadata initialization: {str(e)}")
