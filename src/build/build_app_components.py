@@ -25,8 +25,6 @@ class AppComponentsBuilder:
     def build_database(self):
         """Costruisce e verifica la connessione database"""
         self.db = DatabaseFactory.create_connector(self.config.database)
-        if not self.db.connect():
-            raise RuntimeError("Failed to connect to database")
         return self
 
     def build_vector_store(self):

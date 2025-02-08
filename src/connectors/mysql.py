@@ -48,6 +48,7 @@ class MySQLManager(DatabaseConnector):
             self.connection_string += f"&ssl_ca={ssl_ca}"
 
         self.engine = None
+        self.connect()
 
     def connect(self) -> bool:
         """Stabilisce la connessione al database.

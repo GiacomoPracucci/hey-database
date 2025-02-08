@@ -27,6 +27,7 @@ class VerticaManager(DatabaseConnector):
             f"vertica+vertica_python://{user}:{password}@{host}:{port}/{database}"
         )
         self.engine = None
+        self.connect()
 
     def connect(self) -> bool:
         """Stabilisce la connessione al database.

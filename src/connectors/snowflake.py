@@ -39,6 +39,7 @@ class SnowflakeManager(DatabaseConnector):
             "role": role,
         }
         self.engine = None
+        self.connect()
 
     def connect(self) -> bool:
         """Stabilisce la connessione a Snowflake"""
