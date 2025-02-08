@@ -69,14 +69,11 @@ class EnhancedColumnMetadata:
 
 
 @dataclass
-class MetadataState:
+class Metadata:
     """
     Represents the current state of database metadata.
     Acts as an immutable container for metadata information.
     """
 
     tables: Dict[str, EnhancedTableMetadata]
-    columns: Dict[
-        str, Dict[str, EnhancedColumnMetadata]
-    ]  # table_name -> column_name -> metadata
-    last_update: datetime
+    columns: Dict[str, Dict[str, EnhancedColumnMetadata]]

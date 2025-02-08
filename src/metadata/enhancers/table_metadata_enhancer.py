@@ -34,7 +34,8 @@ class TableMetadataEnhancer:
             EnhancedTableMetadata containing the enriched metadata or error information
         """
         try:
-            description = self._generate_description(base_metadata)
+            # description = self._generate_description(base_metadata)
+            description = "placeholder"
 
             if not description:
                 return EnhancedTableMetadata(

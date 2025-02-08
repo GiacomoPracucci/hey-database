@@ -1,5 +1,5 @@
 from src.models.cache import CacheConfig
-from src.cache.metadata_cache import MetadataCache
+from src.metadata.metadata_cache import MetadataCache
 
 import logging
 

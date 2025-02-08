@@ -1,0 +1,2573 @@
+{
+  "tables": {
+    "territories": {
+      "name": "territories",
+      "description": "placeholder",
+      "primary_keys": [
+        "territory_id"
+      ],
+      "foreign_keys": [
+        {
+          "constrained_columns": [
+            "region_id"
+          ],
+          "referred_table": "region",
+          "referred_columns": [
+            "region_id"
+          ]
+        }
+      ],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 0.8,
+      "row_count": 53,
+      "columns": [
+        "territory_id",
+        "territory_description",
+        "region_id"
+      ]
+    },
+    "order_details": {
+      "name": "order_details",
+      "description": "placeholder",
+      "primary_keys": [
+        "order_id",
+        "product_id"
+      ],
+      "foreign_keys": [
+        {
+          "constrained_columns": [
+            "order_id"
+          ],
+          "referred_table": "orders",
+          "referred_columns": [
+            "order_id"
+          ]
+        },
+        {
+          "constrained_columns": [
+            "product_id"
+          ],
+          "referred_table": "products",
+          "referred_columns": [
+            "product_id"
+          ]
+        }
+      ],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 1.0,
+      "row_count": 2155,
+      "columns": [
+        "order_id",
+        "product_id",
+        "unit_price",
+        "quantity",
+        "discount"
+      ]
+    },
+    "employee_territories": {
+      "name": "employee_territories",
+      "description": "placeholder",
+      "primary_keys": [
+        "employee_id",
+        "territory_id"
+      ],
+      "foreign_keys": [
+        {
+          "constrained_columns": [
+            "employee_id"
+          ],
+          "referred_table": "employees",
+          "referred_columns": [
+            "employee_id"
+          ]
+        },
+        {
+          "constrained_columns": [
+            "territory_id"
+          ],
+          "referred_table": "territories",
+          "referred_columns": [
+            "territory_id"
+          ]
+        }
+      ],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 0.9,
+      "row_count": 49,
+      "columns": [
+        "employee_id",
+        "territory_id"
+      ]
+    },
+    "us_states": {
+      "name": "us_states",
+      "description": "placeholder",
+      "primary_keys": [
+        "state_id"
+      ],
+      "foreign_keys": [],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 0.7,
+      "row_count": 51,
+      "columns": [
+        "state_id",
+        "state_name",
+        "state_abbr",
+        "state_region"
+      ]
+    },
+    "customers": {
+      "name": "customers",
+      "description": "placeholder",
+      "primary_keys": [
+        "customer_id"
+      ],
+      "foreign_keys": [],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 1.0,
+      "row_count": 91,
+      "columns": [
+        "customer_id",
+        "company_name",
+        "contact_name",
+        "contact_title",
+        "address",
+        "city",
+        "region",
+        "postal_code",
+        "country",
+        "phone",
+        "fax"
+      ]
+    },
+    "orders": {
+      "name": "orders",
+      "description": "placeholder",
+      "primary_keys": [
+        "order_id"
+      ],
+      "foreign_keys": [
+        {
+          "constrained_columns": [
+            "customer_id"
+          ],
+          "referred_table": "customers",
+          "referred_columns": [
+            "customer_id"
+          ]
+        },
+        {
+          "constrained_columns": [
+            "employee_id"
+          ],
+          "referred_table": "employees",
+          "referred_columns": [
+            "employee_id"
+          ]
+        },
+        {
+          "constrained_columns": [
+            "ship_via"
+          ],
+          "referred_table": "shippers",
+          "referred_columns": [
+            "shipper_id"
+          ]
+        }
+      ],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 1.0,
+      "row_count": 830,
+      "columns": [
+        "order_id",
+        "customer_id",
+        "employee_id",
+        "order_date",
+        "required_date",
+        "shipped_date",
+        "ship_via",
+        "freight",
+        "ship_name",
+        "ship_address",
+        "ship_city",
+        "ship_region",
+        "ship_postal_code",
+        "ship_country"
+      ]
+    },
+    "employees": {
+      "name": "employees",
+      "description": "placeholder",
+      "primary_keys": [
+        "employee_id"
+      ],
+      "foreign_keys": [
+        {
+          "constrained_columns": [
+            "reports_to"
+          ],
+          "referred_table": "employees",
+          "referred_columns": [
+            "employee_id"
+          ]
+        }
+      ],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 1.0,
+      "row_count": 9,
+      "columns": [
+        "employee_id",
+        "last_name",
+        "first_name",
+        "title",
+        "title_of_courtesy",
+        "birth_date",
+        "hire_date",
+        "address",
+        "city",
+        "region",
+        "postal_code",
+        "country",
+        "home_phone",
+        "extension",
+        "photo",
+        "notes",
+        "reports_to",
+        "photo_path"
+      ]
+    },
+    "shippers": {
+      "name": "shippers",
+      "description": "placeholder",
+      "primary_keys": [
+        "shipper_id"
+      ],
+      "foreign_keys": [],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 0.6,
+      "row_count": 6,
+      "columns": [
+        "shipper_id",
+        "company_name",
+        "phone"
+      ]
+    },
+    "products": {
+      "name": "products",
+      "description": "placeholder",
+      "primary_keys": [
+        "product_id"
+      ],
+      "foreign_keys": [
+        {
+          "constrained_columns": [
+            "category_id"
+          ],
+          "referred_table": "categories",
+          "referred_columns": [
+            "category_id"
+          ]
+        },
+        {
+          "constrained_columns": [
+            "supplier_id"
+          ],
+          "referred_table": "suppliers",
+          "referred_columns": [
+            "supplier_id"
+          ]
+        }
+      ],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 1.0,
+      "row_count": 77,
+      "columns": [
+        "product_id",
+        "product_name",
+        "supplier_id",
+        "category_id",
+        "quantity_per_unit",
+        "unit_price",
+        "units_in_stock",
+        "units_on_order",
+        "reorder_level",
+        "discontinued"
+      ]
+    },
+    "categories": {
+      "name": "categories",
+      "description": "placeholder",
+      "primary_keys": [
+        "category_id"
+      ],
+      "foreign_keys": [],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 0.7,
+      "row_count": 8,
+      "columns": [
+        "category_id",
+        "category_name",
+        "description",
+        "picture"
+      ]
+    },
+    "suppliers": {
+      "name": "suppliers",
+      "description": "placeholder",
+      "primary_keys": [
+        "supplier_id"
+      ],
+      "foreign_keys": [],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 1.0,
+      "row_count": 29,
+      "columns": [
+        "supplier_id",
+        "company_name",
+        "contact_name",
+        "contact_title",
+        "address",
+        "city",
+        "region",
+        "postal_code",
+        "country",
+        "phone",
+        "fax",
+        "homepage"
+      ]
+    },
+    "region": {
+      "name": "region",
+      "description": "placeholder",
+      "primary_keys": [
+        "region_id"
+      ],
+      "foreign_keys": [],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 0.5,
+      "row_count": 4,
+      "columns": [
+        "region_id",
+        "region_description"
+      ]
+    },
+    "customer_demographics": {
+      "name": "customer_demographics",
+      "description": "placeholder",
+      "primary_keys": [
+        "customer_type_id"
+      ],
+      "foreign_keys": [],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 0.5,
+      "row_count": 0,
+      "columns": [
+        "customer_type_id",
+        "customer_desc"
+      ]
+    },
+    "customer_customer_demo": {
+      "name": "customer_customer_demo",
+      "description": "placeholder",
+      "primary_keys": [
+        "customer_id",
+        "customer_type_id"
+      ],
+      "foreign_keys": [
+        {
+          "constrained_columns": [
+            "customer_type_id"
+          ],
+          "referred_table": "customer_demographics",
+          "referred_columns": [
+            "customer_type_id"
+          ]
+        },
+        {
+          "constrained_columns": [
+            "customer_id"
+          ],
+          "referred_table": "customers",
+          "referred_columns": [
+            "customer_id"
+          ]
+        }
+      ],
+      "keywords": [
+        "placeholder"
+      ],
+      "importance_score": 0.9,
+      "row_count": 0,
+      "columns": [
+        "customer_id",
+        "customer_type_id"
+      ]
+    }
+  },
+  "columns": {
+    "territories": {
+      "territory_id": {
+        "name": "territory_id",
+        "table": "territories",
+        "data_type": "VARCHAR(20)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "90405",
+          "30346",
+          "48084",
+          "95054",
+          "20852",
+          "03049",
+          "72716",
+          "01730",
+          "75234",
+          "07960"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "territory_description": {
+        "name": "territory_description",
+        "table": "territories",
+        "data_type": "VARCHAR(60)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Neward",
+          "Santa Cruz",
+          "Columbia",
+          "New York",
+          "Westboro",
+          "Philadelphia",
+          "Phoenix",
+          "San Francisco",
+          "Dallas",
+          "Roseville"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "region_id": {
+        "name": "region_id",
+        "table": "territories",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "2",
+          "1",
+          "4",
+          "3"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "order_details": {
+      "order_id": {
+        "name": "order_id",
+        "table": "order_details",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "10483",
+          "10423",
+          "10489",
+          "10992",
+          "10391",
+          "10681",
+          "10641",
+          "10703",
+          "10852",
+          "10705"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "product_id": {
+        "name": "product_id",
+        "table": "order_details",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "16",
+          "26",
+          "63",
+          "71",
+          "70",
+          "72",
+          "8",
+          "75",
+          "13",
+          "28"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "unit_price": {
+        "name": "unit_price",
+        "table": "order_details",
+        "data_type": "REAL",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "16",
+          "26",
+          "12.4",
+          "3.6",
+          "24.9",
+          "8",
+          "19.5",
+          "10.2",
+          "14.4",
+          "21.35"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "quantity": {
+        "name": "quantity",
+        "table": "order_details",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "21",
+          "24",
+          "56",
+          "33",
+          "48",
+          "30",
+          "35",
+          "66",
+          "45",
+          "22"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "discount": {
+        "name": "discount",
+        "table": "order_details",
+        "data_type": "REAL",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "0.25",
+          "0.06",
+          "0.05",
+          "0.03",
+          "0.1",
+          "0.2",
+          "0.01",
+          "0.15",
+          "0.02",
+          "0"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "employee_territories": {
+      "employee_id": {
+        "name": "employee_id",
+        "table": "employee_territories",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "7",
+          "5",
+          "6",
+          "2",
+          "1",
+          "9",
+          "4",
+          "3",
+          "8"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "territory_id": {
+        "name": "territory_id",
+        "table": "employee_territories",
+        "data_type": "VARCHAR(20)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "01730",
+          "07960",
+          "32859",
+          "02184",
+          "48075",
+          "80909",
+          "27403",
+          "95008",
+          "08837",
+          "31406"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "us_states": {
+      "state_id": {
+        "name": "state_id",
+        "table": "us_states",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "49",
+          "8",
+          "12",
+          "10",
+          "7",
+          "13",
+          "47",
+          "28",
+          "15",
+          "5"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "state_name": {
+        "name": "state_name",
+        "table": "us_states",
+        "data_type": "VARCHAR(100)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Oklahoma",
+          "North Carolina",
+          "Colorado",
+          "Mississippi",
+          "Florida",
+          "Vermont",
+          "Delaware",
+          "Nevada",
+          "Louisiana",
+          "New York"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "state_abbr": {
+        "name": "state_abbr",
+        "table": "us_states",
+        "data_type": "VARCHAR(2)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "CA",
+          "NH",
+          "OR",
+          "TX",
+          "ND",
+          "NV",
+          "OH",
+          "KY",
+          "NY",
+          "HI"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "state_region": {
+        "name": "state_region",
+        "table": "us_states",
+        "data_type": "VARCHAR(50)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "midwest",
+          "west",
+          "south",
+          "north",
+          "east"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "customers": {
+      "customer_id": {
+        "name": "customer_id",
+        "table": "customers",
+        "data_type": "VARCHAR(5)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "ALFKI",
+          "ANATR",
+          "ANTON",
+          "AROUT",
+          "BERGS",
+          "BLAUS",
+          "BLONP",
+          "BOLID",
+          "BONAP",
+          "BOTTM"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "company_name": {
+        "name": "company_name",
+        "table": "customers",
+        "data_type": "VARCHAR(40)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "FISSA Fabrica Inter. Salchichas S.A.",
+          "Wilman Kala",
+          "Magazzini Alimentari Riuniti",
+          "Wellington Importadora",
+          "The Cracker Box",
+          "Toms Spezialitäten",
+          "Let's Stop N Shop",
+          "Furia Bacalhau e Frutos do Mar",
+          "Lehmanns Marktstand",
+          "Rattlesnake Canyon Grocery"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "contact_name": {
+        "name": "contact_name",
+        "table": "customers",
+        "data_type": "VARCHAR(30)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Francisco Chang",
+          "André Fonseca",
+          "Pedro Afonso",
+          "Philip Cramer",
+          "Frédérique Citeaux",
+          "Jytte Petersen",
+          "Paolo Accorti",
+          "Paula Wilson",
+          "Patricio Simpson",
+          "Helen Bennett"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "contact_title": {
+        "name": "contact_title",
+        "table": "customers",
+        "data_type": "VARCHAR(30)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Sales Manager",
+          "Owner",
+          "Owner/Marketing Assistant",
+          "Accounting Manager",
+          "Sales Associate",
+          "Sales Agent",
+          "Assistant Sales Agent",
+          "Assistant Sales Representative",
+          "Order Administrator",
+          "Marketing Manager"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "address": {
+        "name": "address",
+        "table": "customers",
+        "data_type": "VARCHAR(60)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "C/ Moralzarzal, 86",
+          "Gran Vía, 1",
+          "Mataderos  2312",
+          "Rua do Mercado, 12",
+          "Boulevard Tirou, 255",
+          "Calle Dr. Jorge Cash 321",
+          "Åkergatan 24",
+          "Rua Orós, 92",
+          "Adenauerallee 900",
+          "Via Ludovico il Moro 22"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "city": {
+        "name": "city",
+        "table": "customers",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Butte",
+          "Paris",
+          "Cowes",
+          "Cork",
+          "Bern",
+          "Brandenburg",
+          "Aachen",
+          "Walla Walla",
+          "Warszawa",
+          "Münster"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "region": {
+        "name": "region",
+        "table": "customers",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Lara",
+          "DF",
+          "ID",
+          "Táchira",
+          "SP",
+          "Nueva Esparta",
+          "CA",
+          "AK",
+          "Isle of Wight",
+          "WY"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "postal_code": {
+        "name": "postal_code",
+        "table": "customers",
+        "data_type": "VARCHAR(10)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "12209",
+          "1675",
+          "5022",
+          "05454-876",
+          "04876-786",
+          "02389-890",
+          "51100",
+          "8200",
+          "80805",
+          "44000"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "country": {
+        "name": "country",
+        "table": "customers",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Argentina",
+          "Spain",
+          "Switzerland",
+          "Italy",
+          "Venezuela",
+          "Belgium",
+          "Norway",
+          "Sweden",
+          "USA",
+          "France"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "phone": {
+        "name": "phone",
+        "table": "customers",
+        "data_type": "VARCHAR(24)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "(5) 552-3745",
+          "(95) 555 82 82",
+          "(91) 745 6200",
+          "(5) 555-4729",
+          "(171) 555-1717",
+          "0452-076545",
+          "91.24.45.40",
+          "0372-035188",
+          "(2) 283-2951",
+          "0897-034214"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "fax": {
+        "name": "fax",
+        "table": "customers",
+        "data_type": "VARCHAR(24)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "(1) 354-2535",
+          "030-0076545",
+          "(91) 745 6210",
+          "0621-08924",
+          "30.59.85.11",
+          "089-0877451",
+          "40.67.89.89",
+          "(1) 47.55.60.20",
+          "(171) 555-6750",
+          "(307) 555-6525"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "orders": {
+      "order_id": {
+        "name": "order_id",
+        "table": "orders",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "10483",
+          "10423",
+          "10489",
+          "10992",
+          "10391",
+          "10681",
+          "10641",
+          "10703",
+          "10852",
+          "10705"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "customer_id": {
+        "name": "customer_id",
+        "table": "orders",
+        "data_type": "VARCHAR(5)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "TOMSP",
+          "LONEP",
+          "OLDWO",
+          "WARTH",
+          "MAGAA",
+          "QUEEN",
+          "VINET",
+          "ANTON",
+          "MORGK",
+          "GOURL"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "employee_id": {
+        "name": "employee_id",
+        "table": "orders",
+        "data_type": "SMALLINT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1",
+          "9",
+          "4",
+          "8",
+          "3",
+          "6",
+          "2",
+          "7",
+          "5"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "order_date": {
+        "name": "order_date",
+        "table": "orders",
+        "data_type": "DATE",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1996-07-08",
+          "1997-11-18",
+          "1996-08-01",
+          "1998-02-16",
+          "1996-09-11",
+          "1996-12-02",
+          "1997-05-02",
+          "1997-01-07",
+          "1997-10-06",
+          "1997-06-12"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "required_date": {
+        "name": "required_date",
+        "table": "orders",
+        "data_type": "DATE",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1996-11-08",
+          "1996-10-11",
+          "1996-08-12",
+          "1998-04-07",
+          "1998-03-24",
+          "1997-12-02",
+          "1997-05-29",
+          "1997-05-06",
+          "1997-02-13",
+          "1996-12-18"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "shipped_date": {
+        "name": "shipped_date",
+        "table": "orders",
+        "data_type": "DATE",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1996-09-03",
+          "1998-03-18",
+          "1998-03-30",
+          "1996-09-23",
+          "1997-02-12",
+          "1997-01-15",
+          "1998-05-06",
+          "1997-02-06",
+          "1998-01-06",
+          "1998-04-28"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "ship_via": {
+        "name": "ship_via",
+        "table": "orders",
+        "data_type": "SMALLINT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "3",
+          "2",
+          "1"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "freight": {
+        "name": "freight",
+        "table": "orders",
+        "data_type": "REAL",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "53.23",
+          "214.27",
+          "16.85",
+          "30.09",
+          "25.36",
+          "158.44",
+          "54.83",
+          "143.28",
+          "44.12",
+          "25.09"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "ship_name": {
+        "name": "ship_name",
+        "table": "orders",
+        "data_type": "VARCHAR(40)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Wilman Kala",
+          "Magazzini Alimentari Riuniti",
+          "The Cracker Box",
+          "Wellington Importadora",
+          "Let's Stop N Shop",
+          "Furia Bacalhau e Frutos do Mar",
+          "Toms Spezialitäten",
+          "Lehmanns Marktstand",
+          "Mère Paillarde",
+          "Rattlesnake Canyon Grocery"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "ship_address": {
+        "name": "ship_address",
+        "table": "orders",
+        "data_type": "VARCHAR(60)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Mataderos  2312",
+          "Gran Vía, 1",
+          "Rua do Mercado, 12",
+          "Calle Dr. Jorge Cash 321",
+          "Åkergatan 24",
+          "Boulevard Tirou, 255",
+          "Rua Orós, 92",
+          "Adenauerallee 900",
+          "Via Ludovico il Moro 22",
+          "Keskuskatu 45"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "ship_city": {
+        "name": "ship_city",
+        "table": "orders",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Butte",
+          "Paris",
+          "Cowes",
+          "Cork",
+          "Bern",
+          "Aachen",
+          "Brandenburg",
+          "Walla Walla",
+          "Warszawa",
+          "Münster"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "ship_region": {
+        "name": "ship_region",
+        "table": "orders",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Lara",
+          "DF",
+          "ID",
+          "Táchira",
+          "SP",
+          "Nueva Esparta",
+          "Essex",
+          "CA",
+          "AK",
+          "Isle of Wight"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "ship_postal_code": {
+        "name": "ship_postal_code",
+        "table": "orders",
+        "data_type": "VARCHAR(10)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "12209",
+          "1675",
+          "5022",
+          "05454-876",
+          "04876-786",
+          "02389-890",
+          "51100",
+          "8200",
+          "80805",
+          "44000"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "ship_country": {
+        "name": "ship_country",
+        "table": "orders",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Argentina",
+          "Spain",
+          "Switzerland",
+          "Italy",
+          "Venezuela",
+          "Belgium",
+          "Norway",
+          "Sweden",
+          "USA",
+          "France"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "employees": {
+      "employee_id": {
+        "name": "employee_id",
+        "table": "employees",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1",
+          "9",
+          "4",
+          "8",
+          "6",
+          "3",
+          "2",
+          "7",
+          "5"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "last_name": {
+        "name": "last_name",
+        "table": "employees",
+        "data_type": "VARCHAR(20)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Callahan",
+          "Fuller",
+          "Leverling",
+          "Peacock",
+          "Suyama",
+          "Buchanan",
+          "Dodsworth",
+          "Davolio",
+          "King"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "first_name": {
+        "name": "first_name",
+        "table": "employees",
+        "data_type": "VARCHAR(10)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Laura",
+          "Janet",
+          "Andrew",
+          "Nancy",
+          "Anne",
+          "Robert",
+          "Michael",
+          "Steven",
+          "Margaret"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "title": {
+        "name": "title",
+        "table": "employees",
+        "data_type": "VARCHAR(30)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Vice President, Sales",
+          "Inside Sales Coordinator",
+          "Sales Representative",
+          "Sales Manager"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "title_of_courtesy": {
+        "name": "title_of_courtesy",
+        "table": "employees",
+        "data_type": "VARCHAR(25)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Mrs.",
+          "Mr.",
+          "Ms.",
+          "Dr."
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "birth_date": {
+        "name": "birth_date",
+        "table": "employees",
+        "data_type": "DATE",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1937-09-19",
+          "1958-01-09",
+          "1966-01-27",
+          "1948-12-08",
+          "1952-02-19",
+          "1960-05-29",
+          "1955-03-04",
+          "1963-08-30",
+          "1963-07-02"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "hire_date": {
+        "name": "hire_date",
+        "table": "employees",
+        "data_type": "DATE",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1994-01-02",
+          "1992-08-14",
+          "1993-05-03",
+          "1993-10-17",
+          "1994-11-15",
+          "1992-05-01",
+          "1994-03-05",
+          "1992-04-01"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "address": {
+        "name": "address",
+        "table": "employees",
+        "data_type": "VARCHAR(60)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Edgeham Hollow\\nWinchester Way",
+          "4110 Old Redmond Rd.",
+          "908 W. Capital Way",
+          "14 Garrett Hill",
+          "Coventry House\\nMiner Rd.",
+          "722 Moss Bay Blvd.",
+          "4726 - 11th Ave. N.E.",
+          "507 - 20th Ave. E.\\nApt. 2A",
+          "7 Houndstooth Rd."
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "city": {
+        "name": "city",
+        "table": "employees",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Redmond",
+          "London",
+          "Tacoma",
+          "Kirkland",
+          "Seattle"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "region": {
+        "name": "region",
+        "table": "employees",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "WA"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "postal_code": {
+        "name": "postal_code",
+        "table": "employees",
+        "data_type": "VARCHAR(10)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "98033",
+          "98105",
+          "RG1 9SP",
+          "WG2 7LT",
+          "98401",
+          "98052",
+          "EC2 7JR",
+          "SW1 8JR",
+          "98122"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "country": {
+        "name": "country",
+        "table": "employees",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "UK",
+          "USA"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "home_phone": {
+        "name": "home_phone",
+        "table": "employees",
+        "data_type": "VARCHAR(24)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "(206) 555-8122",
+          "(71) 555-5598",
+          "(71) 555-7773",
+          "(71) 555-4848",
+          "(71) 555-4444",
+          "(206) 555-9482",
+          "(206) 555-3412",
+          "(206) 555-9857",
+          "(206) 555-1189"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "extension": {
+        "name": "extension",
+        "table": "employees",
+        "data_type": "VARCHAR(4)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "428",
+          "5176",
+          "2344",
+          "3453",
+          "465",
+          "452",
+          "3457",
+          "3355",
+          "5467"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "photo": {
+        "name": "photo",
+        "table": "employees",
+        "data_type": "BYTEA",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "\\x"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "notes": {
+        "name": "notes",
+        "table": "employees",
+        "data_type": "TEXT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Andrew received his BTS commercial in 1974 and a Ph.D. in international marketing from the University of Dallas in 1981.  He is fluent in French and Italian and reads German.  He joined the company as a sales representative, was promoted to sales manager in January 1992 and to vice president of sales in March 1993.  Andrew is a member of the Sales Management Roundtable, the Seattle Chamber of Commerce, and the Pacific Rim Importers Association.",
+          "Anne has a BA degree in English from St. Lawrence College.  She is fluent in French and German.",
+          "Laura received a BA in psychology from the University of Washington.  She has also completed a course in business French.  She reads and writes French.",
+          "Michael is a graduate of Sussex University (MA, economics, 1983) and the University of California at Los Angeles (MBA, marketing, 1986).  He has also taken the courses Multi-Cultural Selling and Time Management for the Sales Professional.  He is fluent in Japanese and can read and write French, Portuguese, and Spanish.",
+          "Janet has a BS degree in chemistry from Boston College (1984).  She has also completed a certificate program in food retailing management.  Janet was hired as a sales associate in 1991 and promoted to sales representative in February 1992.",
+          "Steven Buchanan graduated from St. Andrews University, Scotland, with a BSC degree in 1976.  Upon joining the company as a sales representative in 1992, he spent 6 months in an orientation program at the Seattle office and then returned to his permanent post in London.  He was promoted to sales manager in March 1993.  Mr. Buchanan has completed the courses Successful Telemarketing and International Sales Management.  He is fluent in French.",
+          "Margaret holds a BA in English literature from Concordia College (1958) and an MA from the American Institute of Culinary Arts (1966).  She was assigned to the London office temporarily from July through November 1992.",
+          "Education includes a BA in psychology from Colorado State University in 1970.  She also completed The Art of the Cold Call.  Nancy is a member of Toastmasters International.",
+          "Robert King served in the Peace Corps and traveled extensively before completing his degree in English at the University of Michigan in 1992, the year he joined the company.  After completing a course entitled Selling in Europe, he was transferred to the London office in March 1993."
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "reports_to": {
+        "name": "reports_to",
+        "table": "employees",
+        "data_type": "SMALLINT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "2",
+          "5"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "photo_path": {
+        "name": "photo_path",
+        "table": "employees",
+        "data_type": "VARCHAR(255)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "http://accweb/emmployees/davolio.bmp",
+          "http://accweb/emmployees/leverling.bmp",
+          "http://accweb/emmployees/fuller.bmp",
+          "http://accweb/emmployees/peacock.bmp",
+          "http://accweb/emmployees/buchanan.bmp"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "shippers": {
+      "shipper_id": {
+        "name": "shipper_id",
+        "table": "shippers",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "2",
+          "1",
+          "4",
+          "6",
+          "5",
+          "3"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "company_name": {
+        "name": "company_name",
+        "table": "shippers",
+        "data_type": "VARCHAR(40)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "UPS",
+          "United Package",
+          "DHL",
+          "Alliance Shippers",
+          "Federal Shipping",
+          "Speedy Express"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "phone": {
+        "name": "phone",
+        "table": "shippers",
+        "data_type": "VARCHAR(24)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1-800-222-0451",
+          "1-800-225-5345",
+          "(503) 555-9831",
+          "1-800-782-7892",
+          "(503) 555-9931",
+          "(503) 555-3199"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "products": {
+      "product_id": {
+        "name": "product_id",
+        "table": "products",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "16",
+          "26",
+          "63",
+          "71",
+          "72",
+          "70",
+          "8",
+          "75",
+          "13",
+          "28"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "product_name": {
+        "name": "product_name",
+        "table": "products",
+        "data_type": "VARCHAR(40)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Pâté chinois",
+          "Flotemysost",
+          "Camembert Pierrot",
+          "Inlagd Sill",
+          "Thüringer Rostbratwurst",
+          "Gustaf's Knäckebröd",
+          "Carnarvon Tigers",
+          "Tofu",
+          "Röd Kaviar",
+          "Rhönbräu Klosterbier"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "supplier_id": {
+        "name": "supplier_id",
+        "table": "products",
+        "data_type": "SMALLINT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "8",
+          "12",
+          "10",
+          "7",
+          "13",
+          "28",
+          "15",
+          "5",
+          "19",
+          "23"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "category_id": {
+        "name": "category_id",
+        "table": "products",
+        "data_type": "SMALLINT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1",
+          "4",
+          "8",
+          "3",
+          "6",
+          "2",
+          "7",
+          "5"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "quantity_per_unit": {
+        "name": "quantity_per_unit",
+        "table": "products",
+        "data_type": "VARCHAR(20)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "16 - 2 kg boxes",
+          "10 kg pkg.",
+          "48 pieces",
+          "18 - 500 g pkgs.",
+          "10 boxes x 12 pieces",
+          "12 - 200 ml jars",
+          "15 - 625 g jars",
+          "24 pkgs. x 4 pieces",
+          "16 kg pkg.",
+          "10 boxes x 30 bags"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "unit_price": {
+        "name": "unit_price",
+        "table": "products",
+        "data_type": "REAL",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "4.5",
+          "7.75",
+          "19.5",
+          "32.8",
+          "13",
+          "21.35",
+          "28.5",
+          "39",
+          "19",
+          "20"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "units_in_stock": {
+        "name": "units_in_stock",
+        "table": "products",
+        "data_type": "SMALLINT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "26",
+          "42",
+          "62",
+          "123",
+          "49",
+          "69",
+          "10",
+          "13",
+          "15",
+          "52"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "units_on_order": {
+        "name": "units_on_order",
+        "table": "products",
+        "data_type": "SMALLINT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "10",
+          "50",
+          "60",
+          "30",
+          "40",
+          "0",
+          "100",
+          "20",
+          "80",
+          "70"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "reorder_level": {
+        "name": "reorder_level",
+        "table": "products",
+        "data_type": "SMALLINT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "10",
+          "15",
+          "5",
+          "30",
+          "0",
+          "20",
+          "25"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "discontinued": {
+        "name": "discontinued",
+        "table": "products",
+        "data_type": "INTEGER",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1",
+          "0"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "categories": {
+      "category_id": {
+        "name": "category_id",
+        "table": "categories",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1",
+          "4",
+          "8",
+          "6",
+          "3",
+          "2",
+          "7",
+          "5"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "category_name": {
+        "name": "category_name",
+        "table": "categories",
+        "data_type": "VARCHAR(15)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Beverages",
+          "Produce",
+          "Condiments",
+          "Grains/Cereals",
+          "Meat/Poultry",
+          "Dairy Products",
+          "Confections",
+          "Seafood"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "description": {
+        "name": "description",
+        "table": "categories",
+        "data_type": "TEXT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Desserts, candies, and sweet breads",
+          "Seaweed and fish",
+          "Breads, crackers, pasta, and cereal",
+          "Dried fruit and bean curd",
+          "Prepared meats",
+          "Soft drinks, coffees, teas, beers, and ales",
+          "Sweet and savory sauces, relishes, spreads, and seasonings",
+          "Cheeses"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "picture": {
+        "name": "picture",
+        "table": "categories",
+        "data_type": "BYTEA",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "\\x"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "suppliers": {
+      "supplier_id": {
+        "name": "supplier_id",
+        "table": "suppliers",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "8",
+          "12",
+          "10",
+          "7",
+          "13",
+          "28",
+          "15",
+          "5",
+          "19",
+          "23"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "company_name": {
+        "name": "company_name",
+        "table": "suppliers",
+        "data_type": "VARCHAR(40)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Heli Süßwaren GmbH & Co. KG",
+          "New Orleans Cajun Delights",
+          "Escargots Nouveaux",
+          "New England Seafood Cannery",
+          "Grandma Kelly's Homestead",
+          "Pavlova, Ltd.",
+          "Gai pâturage",
+          "Svensk Sjöföda AB",
+          "Leka Trading",
+          "Refrescos Americanas LTDA"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "contact_name": {
+        "name": "contact_name",
+        "table": "suppliers",
+        "data_type": "VARCHAR(30)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Charlotte Cooper",
+          "Chandra Leka",
+          "Antonio del Valle Saavedra",
+          "Yoshi Nagase",
+          "Wendy Mackenzie",
+          "Robb Merchant",
+          "Martin Bein",
+          "Lars Peterson",
+          "Shelley Burke",
+          "Peter Wilson"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "contact_title": {
+        "name": "contact_title",
+        "table": "suppliers",
+        "data_type": "VARCHAR(30)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Accounting Manager",
+          "Export Administrator",
+          "Marketing Representative",
+          "Marketing Manager",
+          "Purchasing Manager",
+          "Sales Manager",
+          "Owner",
+          "Regional Account Rep.",
+          "Wholesale Account Agent",
+          "Coordinator Foreign Markets"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "address": {
+        "name": "address",
+        "table": "suppliers",
+        "data_type": "VARCHAR(60)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Brovallavägen 231",
+          "471 Serangoon Loop, Suite #402",
+          "170 Prince Edward Parade Hunter's Hill",
+          "Via dei Gelsomini, 153",
+          "203, Rue des Francs-Bourgeois",
+          "Calle del Rosal 4",
+          "P.O. Box 78934",
+          "Hatlevegen 5",
+          "49 Gilbert St.",
+          "Bat. B 3, rue des Alpes"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "city": {
+        "name": "city",
+        "table": "suppliers",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Ste-Hyacinthe",
+          "Lyngby",
+          "Paris",
+          "London",
+          "Sydney",
+          "Ravenna",
+          "Tokyo",
+          "Salerno",
+          "Berlin",
+          "Zaandam"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "region": {
+        "name": "region",
+        "table": "suppliers",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "OR",
+          "LA",
+          "MI",
+          "MA",
+          "NSW",
+          "Victoria",
+          "Asturias",
+          "Québec"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "postal_code": {
+        "name": "postal_code",
+        "table": "suppliers",
+        "data_type": "VARCHAR(10)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "2800",
+          "5442",
+          "2042",
+          "48104",
+          "J2S 7S8",
+          "75004",
+          "1320",
+          "97101",
+          "27478",
+          "3058"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "country": {
+        "name": "country",
+        "table": "suppliers",
+        "data_type": "VARCHAR(15)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Spain",
+          "Italy",
+          "Norway",
+          "Sweden",
+          "France",
+          "USA",
+          "Netherlands",
+          "Brazil",
+          "Australia",
+          "UK"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "phone": {
+        "name": "phone",
+        "table": "suppliers",
+        "data_type": "VARCHAR(24)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "(617) 555-3267",
+          "(12345) 1212",
+          "(0)2-953010",
+          "38.76.98.06",
+          "(98) 598 76 54",
+          "(03) 444-2343",
+          "(069) 992755",
+          "(03) 3555-5011",
+          "85.57.00.07",
+          "(04721) 8713"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "fax": {
+        "name": "fax",
+        "table": "suppliers",
+        "data_type": "VARCHAR(24)",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "(04721) 8714",
+          "(1) 03.83.00.62",
+          "(617) 555-3389",
+          "(03) 444-6588",
+          "38.76.98.58",
+          "(089) 6547667",
+          "(313) 555-3349",
+          "(514) 555-2921",
+          "(12345) 1210",
+          "(02) 555-4873"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "homepage": {
+        "name": "homepage",
+        "table": "suppliers",
+        "data_type": "TEXT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "G'day Mate (on the World Wide Web)#http://www.microsoft.com/accessdev/sampleapps/gdaymate.htm#",
+          "#FORMAGGI.HTM#",
+          "#CAJUN.HTM#",
+          "Plutzer (on the World Wide Web)#http://www.microsoft.com/accessdev/sampleapps/plutzer.htm#",
+          "Mayumi's (on the World Wide Web)#http://www.microsoft.com/accessdev/sampleapps/mayumi.htm#"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "region": {
+      "region_id": {
+        "name": "region_id",
+        "table": "region",
+        "data_type": "SMALLINT",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "region_description": {
+        "name": "region_description",
+        "table": "region",
+        "data_type": "VARCHAR(60)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [
+          "Eastern",
+          "Southern",
+          "Western",
+          "Northern"
+        ],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "customer_demographics": {
+      "customer_type_id": {
+        "name": "customer_type_id",
+        "table": "customer_demographics",
+        "data_type": "VARCHAR(5)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "customer_desc": {
+        "name": "customer_desc",
+        "table": "customer_demographics",
+        "data_type": "TEXT",
+        "nullable": true,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    },
+    "customer_customer_demo": {
+      "customer_id": {
+        "name": "customer_id",
+        "table": "customer_customer_demo",
+        "data_type": "VARCHAR(5)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      },
+      "customer_type_id": {
+        "name": "customer_type_id",
+        "table": "customer_customer_demo",
+        "data_type": "VARCHAR(5)",
+        "nullable": false,
+        "is_primary_key": false,
+        "is_foreign_key": false,
+        "distinct_values": [],
+        "ai_name": "placeholder",
+        "description": "placeholder",
+        "keywords": [
+          "placeholder"
+        ]
+      }
+    }
+  }
+}

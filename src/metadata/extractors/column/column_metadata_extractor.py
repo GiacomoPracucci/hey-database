@@ -34,12 +34,12 @@ class ColumnMetadataExtractor(ABC):
                 "nullable": col["nullable"],
             }
 
-            if self.metadata_config.retrieve_distinct_values:
-                column_info["distinct_values"] = self._get_distinct_values(
-                    table_name,
-                    col["name"],
-                    max_values=self.metadata_config.max_distinct_values,
-                )
+            # if self.metadata_config.retrieve_distinct_values:
+            column_info["distinct_values"] = self._get_distinct_values(
+                table_name,
+                col["name"],
+                max_values=10,
+            )
 
             column = ColumnMetadata(
                 name=col["name"],

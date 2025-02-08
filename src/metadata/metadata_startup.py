@@ -1,5 +1,4 @@
 from typing import Optional
-from datetime import datetime
 import logging
 
 from src.metadata.extractors.table.table_metadata_extractor import (
@@ -10,8 +9,8 @@ from src.metadata.extractors.column.column_metadata_extractor import (
 )
 from src.metadata.enhancers.table_metadata_enhancer import TableMetadataEnhancer
 from src.metadata.enhancers.column_metadata_enhancer import ColumnMetadataEnhancer
-from src.cache.metadata_cache import MetadataCache
-from src.models.metadata import MetadataState
+from src.metadata.metadata_cache import MetadataCache
+from src.models.metadata import Metadata
 
 logger = logging.getLogger("hey-database")
 
@@ -31,7 +30,7 @@ class MetadataProcessor:
         self.table_enhancer = table_enhancer
         self.column_enhancer = column_enhancer
 
-    def extract_and_enrich_metadata(self) -> MetadataState:
+    def extract_and_enrich_metadata(self) -> Metadata:
         """
         Core metadata processing:
         1. Extract base metadata from database
@@ -61,49 +60,7 @@ class MetadataProcessor:
                 enhanced_col_metadata = self.column_enhancer.enhance(col_metadata)
                 columns_metadata[table_name][col_metadata.name] = enhanced_col_metadata
 
-        return MetadataState(
-            tables=tables_metadata, columns=columns_metadata, last_update=datetime.now()
-        )
-
-
-class MetadataCacheHandler:
-    """Handler responsible for cache operations and validation."""
-
-    def __init__(self, cache: MetadataCache):
-        self.cache = cache
-
-    def get_cached_metadata(self) -> Optional[MetadataState]:
-        """Get metadata from cache if valid"""
-        try:
-            cached_data = self.cache.get()
-            if not cached_data:
-                return None
-
-            return MetadataState(
-                tables=cached_data.get("tables", {}),
-                columns=cached_data.get("columns", {}),
-                last_update=cached_data.get("last_update", datetime.now()),
-            )
-        except Exception as e:
-            logger.error(f"Error reading from cache: {str(e)}")
-            return None
-
-    def save_metadata(self, state: MetadataState) -> bool:
-        """Save metadata to cache"""
-        try:
-            cache_data = {
-                "tables": state.tables,
-                "columns": state.columns,
-                "last_update": state.last_update,
-            }
-            return self.cache.set(cache_data)
-        except Exception as e:
-            logger.error(f"Error saving to cache: {str(e)}")
-            return False
-
-    def invalidate(self):
-        """Invalidate current cache"""
-        self.cache.invalidate()
+        return Metadata(tables=tables_metadata, columns=columns_metadata)
 
 
 class MetadataManager:
@@ -115,16 +72,16 @@ class MetadataManager:
     def __init__(
         self,
         metadata_service: MetadataProcessor,
-        cache_handler: MetadataCacheHandler,
+        cache_handler: MetadataCache,
     ):
         self.metadata_processor = metadata_service
         self.cache_handler = cache_handler
-        self._current_state: Optional[MetadataState] = None
+        self.metadata: Optional[Metadata] = None
 
     @property
-    def state(self) -> Optional[MetadataState]:
-        """Access current metadata state"""
-        return self._current_state
+    def state(self) -> Optional[Metadata]:
+        """Access metadata"""
+        return self.metadata
 
     def initialize_metadata(self, force_refresh: bool = False) -> bool:
         """
@@ -135,9 +92,9 @@ class MetadataManager:
         try:
             if not force_refresh:
                 # 1. Check if there is a valid cache
-                cached_state = self.cache_handler.get_cached_metadata()
-                if cached_state:
-                    self._current_state = cached_state
+                cached_metadata = self.cache_handler.get()
+                if cached_metadata:
+                    self.metadata = cached_metadata
                     logger.info("Found valid cached metadata.")
                     return True
 
@@ -145,11 +102,11 @@ class MetadataManager:
             logger.info(
                 "No valid cache found, initializing metadata extraction and enrichment process."
             )
-            self._current_state = self.metadata_processor.extract_and_enrich_metadata()
+            self.metadata = self.metadata_processor.extract_and_enrich_metadata()
 
             # 3. Save new metadata to cache
-            if self._current_state:
-                self.cache_manager.save_metadata(self._current_state)
+            if self.metadata:
+                self.cache_handler.set(self.metadata)
                 return True
 
             return False
