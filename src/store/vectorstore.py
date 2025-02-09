@@ -2,7 +2,7 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import List
 from src.models.vector_store import TableSearchResult, QuerySearchResult, QueryPayload
-from src.models.metadata import EnhancedTableMetadata
+from src.models.metadata import Metadata
 
 
 class VectorStore(ABC):
@@ -30,7 +30,7 @@ class VectorStore(ABC):
         pass
 
     @abstractmethod
-    def add_table(self, payload_metadata: EnhancedTableMetadata) -> bool:
+    def add_table(self, payload: Metadata) -> bool:
         """Aggiunge una tabella al vectorstore"""
         pass
 

@@ -29,8 +29,6 @@ class VectorStoreFactory:
     @staticmethod
     def create(config: VectorStoreConfig):
         """Crea il vector store appropriato"""
-        if not config or not config.enabled:
-            return None
 
         if config.type == "qdrant":
             embedding_model = VectorStoreFactory.create_embedding_model(

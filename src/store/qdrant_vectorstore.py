@@ -86,38 +86,6 @@ class QdrantStore(VectorStore):
             logger.error(f"Error in store initialization: {str(e)}")
             return False
 
-    def populate_store_with_metadata(
-        self, metadata: Dict[str, EnhancedTableMetadata]
-    ) -> bool:
-        """Popola lo store con i metadati enhanced se è una nuova collection.
-        Args:
-            metadata: Dizionario dei metadati enhanced delle tabelle
-        Returns:
-            bool: True se il popolamento ha successo o non era necessario
-        """
-        try:
-            # popola solo se la collection è vuota
-            if (
-                self.collection_exists()
-                and self.client.count(self.collection_name).count > 0
-            ):
-                logger.info(
-                    "Collection already populated, skipping metadata population"
-                )
-                return True
-
-            logger.info("Populating collection with metadata")
-            for table_name, enhanced_metadata in metadata.items():
-                if not self.add_table(enhanced_metadata):
-                    logger.error(f"Failed to add metadata for table: {table_name}")
-                    return False
-            logger.info("Collection successfully populated")
-            return True
-
-        except Exception as e:
-            logger.error(f"Error in metadata population: {str(e)}")
-            return False
-
     def _table_exists(self, table_name: str) -> bool:
         """Verifica se i metadati di una tabella esistono già nello store"""
         try:
@@ -140,19 +108,17 @@ class QdrantStore(VectorStore):
             logger.error(f"Error checking table existence: {str(e)}")
             return False
 
-    def add_table(self, payload_metadata: EnhancedTableMetadata) -> bool:
-        """Aggiunge o aggiorna un documento tabella nella collection
+    def add_table(self, payload: Dict) -> bool:
+        """
+        Aggiunge o aggiorna un documento tabella nella collection
         Args:
             payload_metadata: Metadati arricchiti della tabella
         Returns:
             bool: True se l'operazione è andata a buon fine, False altrimenti
         """
         try:
-            # costruiamo il payload nel formato stabilito a partire dai metadati arricchiti
-            payload = TablePayload.from_enhanced_metadata(payload_metadata)
-
             # embedding dalla descrizione e keywords
-            embedding_text = f"{payload.table_name} {payload.description} {' '.join(payload.keywords)}"
+            embedding_text = f"{payload['name']} {payload['description']} {' '.join(payload['keywords'])}"
             vector = self.embedding_model.encode(embedding_text)
 
             # upsert del documento
@@ -160,17 +126,49 @@ class QdrantStore(VectorStore):
                 collection_name=self.collection_name,
                 points=[
                     models.PointStruct(
-                        id=self._generate_table_id(payload.table_name),
+                        id=self._generate_table_id(payload["name"]),
                         vector=vector,
-                        payload=asdict(payload),
+                        payload=payload,
                     )
                 ],
             )
-            logger.debug(f"Metadata added/updated for table: {payload.table_name}")
+            logger.debug(f"Metadata added/updated for table: {payload['name']}")
             return True
 
         except Exception as e:
             logger.error(f"Error adding table metadata: {str(e)}")
+            return False
+
+    def add_column(self, payload: Dict) -> bool:
+        """
+        Aggiunge o aggiorna un documento colonna nella collection
+
+        Args:
+            column_metadata: Metadati arricchiti della colonna
+        Returns:
+            bool: True se l'operazione è andata a buon fine
+        """
+        try:
+            embedding_text = f"{payload['name']} {payload['description']}"
+            vector = self.embedding_model.encode(embedding_text)
+
+            # ID deterministico basato su tabella e nome colonna
+            column_id = "placeholder"
+
+            # upsert del documento
+            self.client.upsert(
+                collection_name=self.collection_name,
+                points=[
+                    models.PointStruct(id=column_id, vector=vector, payload=payload)
+                ],
+            )
+            logger.debug(
+                f"Column metadata added/updated for: {payload['table_name']}.{payload['name']}"
+            )
+            return True
+
+        except Exception as e:
+            logger.error(f"Error adding column metadata: {str(e)}")
             return False
 
     def search_similar_tables(

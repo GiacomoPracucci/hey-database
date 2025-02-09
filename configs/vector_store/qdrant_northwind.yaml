@@ -1,7 +1,8 @@
 type: qdrant
 collection_name: northwind
-url: ${QDRANT_URL}
-api_key: ${QDRANT_API_KEY}
+path: ./data/stores/northwind_store
+#url: ${QDRANT_URL}
+#api_key: ${QDRANT_API_KEY}
 batch_size: 100
 embedding:
   type: openai

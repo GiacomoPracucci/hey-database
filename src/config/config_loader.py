@@ -189,7 +189,6 @@ class ConfigLoader:
         )
 
         return VectorStoreConfig(
-            enabled=config_data.get("enabled", False),
             type=config_data["type"],
             collection_name=config_data.get("collection_name"),
             path=path if config_data.get("path") else None,
