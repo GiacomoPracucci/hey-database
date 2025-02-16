@@ -108,10 +108,7 @@ class MetadataCache:
                 if not cached_data:
                     return None
 
-                return Metadata(
-                    tables=cached_data.get("tables", {}),
-                    columns=cached_data.get("columns", {}),
-                )
+                return Metadata.from_dict(cached_data)
             except Exception as e:
                 logger.error(f"Error reading metadata cache: {str(e)}")
                 return None

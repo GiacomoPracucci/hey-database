@@ -52,6 +52,10 @@ class VectorStore(ABC):
         # NAMESPACE_DNS è solo un namespace arbitrario ma costante
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, f"table_{table_name}"))
 
+    def _generate_column_id(self, table_name: str, column_name: str) -> str:
+        """Genera un ID deterministico per una colonna"""
+        return str(uuid.uuid5(uuid.NAMESPACE_DNS, f"column_{table_name}_{column_name}"))
+
     def _generate_query_id(self, question: str) -> str:
         """Genera un ID deterministico per una query"""
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, question))

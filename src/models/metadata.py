@@ -76,3 +76,23 @@ class Metadata:
 
     tables: Dict[str, EnhancedTableMetadata]
     columns: Dict[str, Dict[str, EnhancedColumnMetadata]]
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Metadata":
+        """
+        Builds a Metadata object from a dictionary.
+
+        This method is used when metadata are loaded from the cache.
+        """
+        tables = {
+            name: EnhancedTableMetadata.from_dict(table_data)
+            for name, table_data in data["tables"].items()
+        }
+        columns = {
+            table_name: {
+                col_name: EnhancedColumnMetadata.from_dict(col_data)
+                for col_name, col_data in table_cols.items()
+            }
+            for table_name, table_cols in data["columns"].items()
+        }
+        return cls(tables=tables, columns=columns)

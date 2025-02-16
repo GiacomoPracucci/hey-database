@@ -35,7 +35,7 @@ class BasePayload:
 class TablePayload(BasePayload):
     """Rappresenta il payload per i metadati di un documento 'tabella' nel vector store"""
 
-    table_name: str
+    name: str
     description: str
     keywords: List[str]
     columns: List[str]
@@ -49,7 +49,7 @@ class TablePayload(BasePayload):
         """Crea un payload da metadati enhanced"""
         return cls(
             type="table",
-            table_name=metadata.base_metadata.name,
+            name=metadata.base_metadata.name,
             description=metadata.description,
             keywords=metadata.keywords,
             columns=metadata.base_metadata.columns,
