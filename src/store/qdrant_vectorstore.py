@@ -108,93 +108,67 @@ class QdrantStore(VectorStore):
             logger.error(f"Error checking table existence: {str(e)}")
             return False
 
-    def add_table(self, payload: EnhancedTableMetadata) -> bool:
+    def add_table(self, metadata: EnhancedTableMetadata) -> bool:
         """
         Aggiunge o aggiorna un documento tabella nella collection
         Args:
-            payload_metadata: Metadati arricchiti della tabella
+            metadata: Metadati arricchiti della tabella
         Returns:
             bool: True se l'operazione è andata a buon fine, False altrimenti
         """
         try:
             # embedding dalla descrizione e keywords
-            embedding_text = f"{payload.base_metadata.name} {payload.description} {' '.join(payload.keywords)}"
+            embedding_text = f"{metadata.base_metadata.name} {metadata.description} {' '.join(metadata.keywords)}"
             vector = self.embedding_model.encode(embedding_text)
-
-            payload_dict = {
-                "name": payload.base_metadata.name,
-                "description": payload.description,
-                "keywords": payload.keywords,
-                "columns": payload.base_metadata.columns,
-                "primary_keys": payload.base_metadata.primary_keys,
-                "foreign_keys": payload.base_metadata.foreign_keys,
-                "row_count": payload.base_metadata.row_count,
-                "importance_score": payload.importance_score,
-            }
 
             # upsert del documento
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=[
                     models.PointStruct(
-                        id=self._generate_table_id(payload.base_metadata.name),
+                        id=self._generate_table_id(metadata.base_metadata.name),
                         vector=vector,
-                        payload=payload_dict,
+                        payload=asdict(metadata),
                     )
                 ],
             )
             logger.debug(
-                f"Metadata added/updated for table: {payload.base_metadata.name}"
+                f"Metadata added/updated for table: {metadata.base_metadata.name}"
             )
             return True
         except Exception as e:
             logger.error(f"Error adding table metadata: {str(e)}")
             return False
 
-    def add_column(self, payload: EnhancedColumnMetadata) -> bool:
+    def add_column(self, metadata: EnhancedColumnMetadata) -> bool:
         """
         Aggiunge o aggiorna un documento colonna nella collection
 
         Args:
-            payload: Metadati arricchiti della colonna
+            metadata: Metadati arricchiti della colonna
         Returns:
             bool: True se l'operazione è andata a buon fine
         """
 
         try:
-            embedding_text = f"{payload.base_metadata.name} {payload.description}"
+            embedding_text = f"{metadata.base_metadata.name} {metadata.description}"
             vector = self.embedding_model.encode(embedding_text)
-
-            # Creiamo il dizionario per il payload
-            payload_dict = {
-                "name": payload.base_metadata.name,
-                "table": payload.base_metadata.table,
-                "data_type": payload.base_metadata.data_type,
-                "nullable": payload.base_metadata.nullable,
-                "is_primary_key": payload.base_metadata.is_primary_key,
-                "is_foreign_key": payload.base_metadata.is_foreign_key,
-                "distinct_values": payload.base_metadata.distinct_values,
-                "ai_name": payload.ai_name,
-                "description": payload.description,
-                "keywords": payload.keywords,
-            }
-
-            # ID deterministico basato su tabella e nome colonna
-            column_id = self._generate_column_id(
-                payload.base_metadata.table, payload.base_metadata.name
-            )
 
             # upsert del documento
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=[
                     models.PointStruct(
-                        id=column_id, vector=vector, payload=payload_dict
+                        id=self._generate_column_id(
+                            metadata.base_metadata.table, metadata.base_metadata.name
+                        ),
+                        vector=vector,
+                        payload=asdict(metadata),
                     )
                 ],
             )
             logger.debug(
-                f"Column metadata added/updated for: {payload.base_metadata.table}.{payload.base_metadata.name}"
+                f"Column metadata added/updated for: {metadata.base_metadata.table}.{metadata.base_metadata.name}"
             )
             return True
 

@@ -84,20 +84,17 @@ class VectorStoreStartup:
                     logger.error(f"Failed to add metadata for table: {table_name}")
                     return False
 
-                # Secondo passo: aggiungi i documenti colonna per questa tabella
-                if table_name in metadata.columns:
-                    table_columns = metadata.columns[table_name]
-                    for column_name, column_metadata in table_columns.items():
-                        logger.info(
-                            f"Processing column metadata for {table_name}.{column_name}"
+            # Secondo passo: aggiungi tutti i documenti colonna
+            for table_name, table_columns in metadata.columns.items():
+                for column_name, column_metadata in table_columns.items():
+                    logger.info(
+                        f"Processing column metadata for {table_name}.{column_name}"
+                    )
+                    if not self.vector_store.add_column(column_metadata):
+                        logger.error(
+                            f"Failed to add column metadata for {table_name}.{column_name}"
                         )
-                        if not self.vector_store.add_column(
-                            column_metadata
-                        ):  # column_metadata è un EnhancedColumnMetadata
-                            logger.error(
-                                f"Failed to add column metadata for {table_name}.{column_name}"
-                            )
-                            continue
+                        continue
 
             logger.info(
                 "Collection successfully populated with table and column metadata"
