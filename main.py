@@ -15,6 +15,7 @@ from src.metadata.metadata_startup import (
     MetadataStartup,
     MetadataProcessor,
 )
+from src.startup.vectorstore_startup import VectorStoreStartup
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -52,7 +53,7 @@ def create_app():
 
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 
-    app.config["DEBUG"] = config.debug
+    # app.config["DEBUG"] = config.debug
 
     try:
         # Build all app components
@@ -67,6 +68,9 @@ def create_app():
         )
         metadata_startup = MetadataStartup(metadata_processor, app_components.cache)
         metadata = metadata_startup.initialize_metadata()
+
+        vector_store_startup = VectorStoreStartup(app_components.vector_store)
+        vector_store_startup.initialize(metadata)
 
         chat_service = ChatService(app_components.sql_llm)
         schema_service = SchemaService(metadata)

@@ -23,28 +23,22 @@ class VectorStoreStartup:
 
     def initialize(self, metadata: Metadata) -> bool:
         """
-        Initialize vector store system.
+        Initialize and sync the vector store with current metadata state.
 
         Args:
-            metadata_state: Current metadata state to use for population
-
+            metadata: Current metadata state to sync
         Returns:
             bool: True if initialization successful
         """
         try:
-            # Check if collection exists and is populated
-            if self.vector_store.collection_exists():
-                logger.info("Vector store collection already exists")
-                return True
-
-            # Create and populate collection
-            logger.info("Creating and populating vector store collection")
-            if not self.vector_store.initialize():
+            logger.info("Initializing vector store collection")
+            if not self.vector_store.initialize_collection():
                 raise RuntimeError("Failed to initialize vector store collection")
 
-            # Populate with metadata
-            if not self.populate_store(metadata):
-                raise RuntimeError("Failed to populate vector store with metadata")
+            # Always sync metadata to ensure consistency
+            logger.info("Syncing metadata to vector store")
+            if not self._sync_metadata(metadata):
+                raise RuntimeError("Failed to sync metadata to vector store")
 
             logger.info("Vector store initialization completed successfully")
             return True
@@ -53,56 +47,32 @@ class VectorStoreStartup:
             logger.exception(f"Error during vector store initialization: {str(e)}")
             return False
 
-    def populate_store(self, metadata: Metadata) -> bool:
+    def _sync_metadata(self, metadata: Metadata) -> bool:
         """
-        Populate the vector store with metadata.
-
-        Args:
-            metadata (Metadata): metadata state to use for population
-        Returns:
-            bool: True se il popolamento ha successo o non era necessario
+        Sync current metadata state to vector store through upserts.
+        Uses deterministic IDs to ensure proper updates.
         """
         try:
-            # popola solo se la collection è vuota
-            if (
-                self.vector_store.collection_exists()
-                and self.vector_store.client.count(
-                    self.vector_store.collection_name
-                ).count
-                > 0
-            ):
-                logger.info(
-                    "Collection already populated, skipping metadata population"
-                )
-                return True
-
-            logger.info("Populating collection with metadata")
-
-            # Primo passo: aggiungi i documenti tabella
+            # Sync table metadata
             for table_name, table_metadata in metadata.tables.items():
                 if not self.vector_store.add_table(table_metadata):
-                    logger.error(f"Failed to add metadata for table: {table_name}")
+                    logger.error(f"Failed to sync table metadata: {table_name}")
                     return False
 
-            # Secondo passo: aggiungi tutti i documenti colonna
+            # Sync column metadata
             for table_name, table_columns in metadata.columns.items():
                 for column_name, column_metadata in table_columns.items():
-                    logger.info(
-                        f"Processing column metadata for {table_name}.{column_name}"
-                    )
                     if not self.vector_store.add_column(column_metadata):
                         logger.error(
-                            f"Failed to add column metadata for {table_name}.{column_name}"
+                            f"Failed to sync column metadata: {table_name}.{column_name}"
                         )
+                        # Continue syncing other columns even if one fails
                         continue
 
-            logger.info(
-                "Collection successfully populated with table and column metadata"
-            )
             return True
 
         except Exception as e:
-            logger.error(f"Error in metadata population: {str(e)}")
+            logger.error(f"Error syncing metadata: {str(e)}")
             return False
 
     def refresh(self, metadata: Metadata) -> bool:

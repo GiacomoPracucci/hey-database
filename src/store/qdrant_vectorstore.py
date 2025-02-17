@@ -55,16 +55,34 @@ class QdrantStore(VectorStore):
         self.collection_name = collection_name
         self.vector_size = self.embedding_model.get_embedding_dimension()
 
-    def initialize(self) -> bool:
-        """Inizializza la collection se non esiste.
+    def initialize_collection(self) -> bool:
+        """
+        Initialize the vector store collection. This method:
+        1. Checks if collection exists
+        2. If exists, validates the vector configuration
+        3. If doesn't exist, creates it with proper configuration
+
+        Collection initialization ensures that:
+        - The collection exists in the vector store
+        - Vector dimensions match the embedding model
+        - Distance metric is properly set
+
         Returns:
-            bool: True se l'inizializzazione ha successo
+            bool: True if initialization successful, False otherwise
         """
         try:
-            collections = self.client.get_collections().collections
-            exists = any(c.name == self.collection_name for c in collections)
+            exists = self.collection_exists()
+            if exists:
+                # For existing collections, verify vector configuration
+                if not self._check_vector_size():
+                    logger.error(
+                        f"Vector size mismatch for collection: {self.collection_name}. "
+                        f"Expected size: {self.vector_size}"
+                    )
+                    return False
 
             if not exists:
+                # Create new collection with proper configuration
                 logger.info(f"Creating new collection: {self.collection_name}")
                 self.client.create_collection(
                     collection_name=self.collection_name,
@@ -74,16 +92,59 @@ class QdrantStore(VectorStore):
                 )
                 logger.info(f"Collection {self.collection_name} created successfully")
             else:
-                logger.info(f"Collection {self.collection_name} already exists")
+                logger.info(
+                    f"Collection {self.collection_name} exists with valid configuration"
+                )
 
             return True
 
         except Exception as e:
-            logger.error(f"Error in store initialization: {str(e)}")
+            logger.error(f"Error in collection initialization: {str(e)}")
             return False
 
+    def collection_exists(self) -> bool:
+        """
+        Check if the collection exists in the vector store.
+
+        This method queries the vector store to verify the existence
+        of a collection with the configured name.
+
+        Returns:
+            bool: True if collection exists, False otherwise or on error
+        """
+        try:
+            collections = self.client.get_collections().collections
+            return any(c.name == self.collection_name for c in collections)
         except Exception as e:
-            logger.error(f"Error in store initialization: {str(e)}")
+            logger.error(f"Error checking collection existence: {str(e)}")
+            return False
+
+    def _check_vector_size(self) -> bool:
+        """
+        Validate vector dimensions of an existing collection.
+
+        This method ensures that the vector dimensions in the collection
+        match the dimensions of the configured embedding model. This check
+        is crucial as dimension mismatch would cause insertion/query failures.
+
+        Returns:
+            bool: True if vector dimensions match, False otherwise or on error
+        """
+        try:
+            collection_info = self.client.get_collection(self.collection_name)
+            current_size = collection_info.config.params.vectors.size
+            expected_size = self.vector_size
+
+            if current_size != expected_size:
+                logger.error(
+                    f"Vector size mismatch. Collection: {current_size}, "
+                    f"Embedding model: {expected_size}"
+                )
+                return False
+
+            return True
+        except Exception as e:
+            logger.error(f"Error checking vector dimensions: {str(e)}")
             return False
 
     def _table_exists(self, table_name: str) -> bool:
@@ -350,15 +411,6 @@ class QdrantStore(VectorStore):
         except Exception as e:
             logger.error(f"Errore nella ricerca esatta: {str(e)}")
             return None
-
-    def collection_exists(self) -> bool:
-        """Verifica se una collection esiste"""
-        try:
-            collections = self.client.get_collections().collections
-            return any(c.name == self.collection_name for c in collections)
-        except Exception as e:
-            logger.error(f"Error checking collection existence: {str(e)}")
-            return False
 
     def update_table_documents(
         self, enhanced_metadata: Dict[str, EnhancedTableMetadata]
