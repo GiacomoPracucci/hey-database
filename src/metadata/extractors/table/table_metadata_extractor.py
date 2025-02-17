@@ -19,7 +19,7 @@ class TableMetadataExtractor(ABC):
         self.inspector: Inspector = inspect(db.engine)
         self.schema = schema
 
-    def get_tables(self) -> List[str]:
+    def get_tables_names(self) -> List[str]:
         """
         Get list of tables in the schema.
 

@@ -42,7 +42,7 @@ class MetadataProcessor:
         tables_metadata = {}
         columns_metadata = {}
 
-        table_list = self.table_extractor.get_tables()
+        table_list = self.table_extractor.get_tables_names()
 
         for table_name in table_list:
             logger.debug(f"Processing table: {table_name}")

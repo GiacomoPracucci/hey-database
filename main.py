@@ -15,7 +15,7 @@ from src.metadata.metadata_startup import (
     MetadataStartup,
     MetadataProcessor,
 )
-from src.startup.vectorstore_startup import VectorStoreStartup
+from src.store.vectorstore_startup import VectorStoreStartup
 
 logging.basicConfig(
     level=logging.WARNING,
