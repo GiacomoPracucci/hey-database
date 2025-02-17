@@ -11,7 +11,7 @@ class MetadataConfig:
 
 
 @dataclass
-class TableMetadata:
+class BaseTableMetadata:
     """Metadati base inferiti dallo schema"""
 
     name: str
@@ -22,13 +22,39 @@ class TableMetadata:
 
 
 @dataclass
-class EnhancedTableMetadata:
+class TableMetadata:
     """Metadati che generiamo noi con l'enhancer"""
 
-    base_metadata: TableMetadata  # metadati originali
+    base_metadata: BaseTableMetadata  # metadati originali
     description: str  # descrizione generata
     keywords: List[str]  # keywords estratte
     importance_score: float  # score calcolato
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "TableMetadata":
+        """
+        Creates an EnhancedTableMetadata instance from a dictionary.
+        Used when loading data from cache.
+
+        Args:
+            data: Dictionary containing the serialized metadata
+        Returns:
+            EnhancedTableMetadata instance
+        """
+        base_metadata = BaseTableMetadata(
+            name=data["name"],
+            columns=data["columns"],
+            primary_keys=data["primary_keys"],
+            foreign_keys=data["foreign_keys"],
+            row_count=data["row_count"],
+        )
+
+        return cls(
+            base_metadata=base_metadata,
+            description=data["description"],
+            keywords=data["keywords"],
+            importance_score=data["importance_score"],
+        )
 
 
 @dataclass
@@ -44,7 +70,7 @@ class TableRelationship:
 
 
 @dataclass
-class ColumnMetadata:
+class BaseColumnMetadata:
     """Base metadata for a column"""
 
     name: str
@@ -58,13 +84,42 @@ class ColumnMetadata:
 
 
 @dataclass
-class EnhancedColumnMetadata:
+class ColumnMetadata:
     """Enhanced metadata for a column"""
 
-    base_metadata: ColumnMetadata
+    base_metadata: BaseColumnMetadata
     ai_name: str
     description: str
     keywords: List[str]
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "ColumnMetadata":
+        """
+        Creates an EnhancedColumnMetadata instance from a dictionary.
+        Used when loading data from cache.
+
+        Args:
+            data: Dictionary containing the serialized metadata
+        Returns:
+            EnhancedColumnMetadata instance
+        """
+        base_metadata = BaseColumnMetadata(
+            name=data["name"],
+            table=data["table"],
+            data_type=data["data_type"],
+            nullable=data["nullable"],
+            is_primary_key=data["is_primary_key"],
+            is_foreign_key=data["is_foreign_key"],
+            distinct_values=data["distinct_values"],
+            relationships=[],  # Le relationships sono vuote perché non vengono serializzate
+        )
+
+        return cls(
+            base_metadata=base_metadata,
+            ai_name=data["ai_name"],
+            description=data["description"],
+            keywords=data["keywords"],
+        )
 
 
 @dataclass
@@ -74,8 +129,8 @@ class Metadata:
     Acts as an immutable container for metadata information.
     """
 
-    tables: Dict[str, EnhancedTableMetadata]
-    columns: Dict[str, Dict[str, EnhancedColumnMetadata]]
+    tables: Dict[str, TableMetadata]
+    columns: Dict[str, Dict[str, ColumnMetadata]]
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Metadata":
@@ -85,12 +140,12 @@ class Metadata:
         This method is used when metadata are loaded from the cache.
         """
         tables = {
-            name: EnhancedTableMetadata.from_dict(table_data)
+            name: TableMetadata.from_dict(table_data)
             for name, table_data in data["tables"].items()
         }
         columns = {
             table_name: {
-                col_name: EnhancedColumnMetadata.from_dict(col_data)
+                col_name: ColumnMetadata.from_dict(col_data)
                 for col_name, col_data in table_cols.items()
             }
             for table_name, table_cols in data["columns"].items()

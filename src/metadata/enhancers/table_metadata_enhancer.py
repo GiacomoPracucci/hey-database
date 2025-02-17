@@ -1,7 +1,7 @@
 from typing import Optional
 import logging
 
-from src.models.metadata import TableMetadata, EnhancedTableMetadata
+from src.models.metadata import TableMetadata, BaseTableMetadata
 from src.llm_handler.llm_handler import LLMHandler
 from src.keywords.YAKE_keywords_finder import YAKEKeywordsFinder
 
@@ -23,7 +23,7 @@ class TableMetadataEnhancer:
         # TODO: Since tables are fewer than columns, we could adapt the query-focused prompt for description input
         self.llm_handler = llm_handler
 
-    def enhance(self, base_metadata: TableMetadata) -> EnhancedTableMetadata:
+    def enhance(self, base_metadata: BaseTableMetadata) -> TableMetadata:
         """
         Enriches the metadata of a database table
 
@@ -31,14 +31,14 @@ class TableMetadataEnhancer:
             base_metadata: Base metadata of the table
 
         Returns:
-            EnhancedTableMetadata containing the enriched metadata or error information
+            TableMetadata containing the enriched metadata or error information
         """
         try:
             # description = self._generate_description(base_metadata)
             description = "placeholder"
 
             if not description:
-                return EnhancedTableMetadata(
+                return TableMetadata(
                     base_metadata=base_metadata,
                     description="No description available",
                     keywords=[],
@@ -47,7 +47,7 @@ class TableMetadataEnhancer:
 
             keywords_response = self.keywords_finder.find_keywords(description)
             if not keywords_response.success:
-                return EnhancedTableMetadata(
+                return TableMetadata(
                     base_metadata=base_metadata,
                     description=description,
                     keywords=[],
@@ -56,7 +56,7 @@ class TableMetadataEnhancer:
 
             importance_score = self._calculate_importance_score(base_metadata)
 
-            return EnhancedTableMetadata(
+            return TableMetadata(
                 base_metadata=base_metadata,
                 description=description,
                 keywords=keywords_response.keywords,
@@ -65,14 +65,26 @@ class TableMetadataEnhancer:
 
         except Exception as e:
             logger.exception(f"Error enhancing table metadata: {str(e)}")
-            return EnhancedTableMetadata(
+            return TableMetadata(
                 base_metadata=base_metadata,
                 description="Error enhancing metadata",
                 keywords=[],
                 importance_score=0.0,
             )
 
-    def build_prompt(self, metadata: TableMetadata) -> str:
+    def _generate_description(self, metadata: BaseTableMetadata) -> Optional[str]:
+        """Generates a semantic description of the table using the LLM"""
+        prompt = self.build_prompt(metadata)
+
+        description = self.llm_handler.get_completion(
+            prompt=prompt,
+            system_prompt="You are a database expert providing concise table descriptions.",
+            temperature=0.1,
+        )
+
+        return description.strip() if description else None
+
+    def build_prompt(self, metadata: BaseTableMetadata) -> str:
         """Builds the prompt for generating the table description"""
 
         foreign_keys_info = []
@@ -106,19 +118,7 @@ The description must be clear and concise."""
 
         return prompt
 
-    def _generate_description(self, metadata: TableMetadata) -> Optional[str]:
-        """Generates a semantic description of the table using the LLM"""
-        prompt = self.build_prompt(metadata)
-
-        description = self.llm_handler.get_completion(
-            prompt=prompt,
-            system_prompt="You are a database expert providing concise table descriptions.",
-            temperature=0.1,
-        )
-
-        return description.strip() if description else None
-
-    def _calculate_importance_score(self, metadata: TableMetadata) -> float:
+    def _calculate_importance_score(self, metadata: BaseTableMetadata) -> float:
         """
         Calculates an importance score for the table
         The logic is that a table is more important if it has more relationships, columns, and primary keys

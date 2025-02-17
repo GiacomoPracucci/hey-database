@@ -1,7 +1,7 @@
 from typing import Optional
 import logging
 
-from src.models.metadata import ColumnMetadata, EnhancedColumnMetadata
+from src.models.metadata import ColumnMetadata, BaseColumnMetadata
 from src.llm_handler.llm_handler import LLMHandler
 from src.keywords.YAKE_keywords_finder import YAKEKeywordsFinder
 
@@ -19,7 +19,7 @@ class ColumnMetadataEnhancer:
         self.keywords_finder = YAKEKeywordsFinder()
         self.llm_handler = llm_handler
 
-    def enhance(self, base_metadata: ColumnMetadata) -> EnhancedColumnMetadata:
+    def enhance(self, base_metadata: BaseColumnMetadata) -> ColumnMetadata:
         """
         Enriches the metadata of a database column
 
@@ -34,7 +34,7 @@ class ColumnMetadataEnhancer:
             description = "placeholder"
 
             if not description:
-                return EnhancedColumnMetadata(
+                return ColumnMetadata(
                     base_metadata=base_metadata,
                     ai_name="placeholder",
                     description="No description available",
@@ -43,14 +43,14 @@ class ColumnMetadataEnhancer:
 
             keywords_response = self.keywords_finder.find_keywords(description)
             if not keywords_response.success:
-                return EnhancedColumnMetadata(
+                return ColumnMetadata(
                     base_metadata=base_metadata,
                     ai_name="placeholder",
                     description=description,
                     keywords=[],
                 )
 
-            return EnhancedColumnMetadata(
+            return ColumnMetadata(
                 base_metadata=base_metadata,
                 ai_name="placeholder",
                 description=description,
@@ -59,14 +59,26 @@ class ColumnMetadataEnhancer:
 
         except Exception as e:
             logger.exception(f"Error enhancing column metadata: {str(e)}")
-            return EnhancedColumnMetadata(
+            return ColumnMetadata(
                 base_metadata=base_metadata,
                 ai_name="placeholder",
                 description="Error enhancing column metadata",
                 keywords=[],
             )
 
-    def build_prompt(self, metadata: ColumnMetadata) -> str:
+    def _generate_description(self, metadata: BaseColumnMetadata) -> Optional[str]:
+        """Generates a semantic description of the column using the LLM"""
+        prompt = self.build_prompt(metadata)
+
+        description = self.llm_handler.get_completion(
+            prompt=prompt,
+            system_prompt="You are a database expert who provides detailed and technically accurate column descriptions",
+            temperature=0.05,
+        )
+
+        return description.strip() if description else None
+
+    def build_prompt(self, metadata: BaseColumnMetadata) -> str:
         """
         Builds the prompt for generating the column description
         TODO: This responsibility should be moved to a separate class
@@ -120,15 +132,3 @@ class ColumnMetadataEnhancer:
          """)
 
         return "\n".join(prompt_parts)
-
-    def _generate_description(self, metadata: ColumnMetadata) -> Optional[str]:
-        """Generates a semantic description of the column using the LLM"""
-        prompt = self.build_prompt(metadata)
-
-        description = self.llm_handler.get_completion(
-            prompt=prompt,
-            system_prompt="You are a database expert who provides detailed and technically accurate column descriptions",
-            temperature=0.05,
-        )
-
-        return description.strip() if description else None

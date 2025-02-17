@@ -7,7 +7,7 @@ from dataclasses import asdict
 
 from src.store.vectorstore import VectorStore
 from src.embedding.embedding import Embedder
-from src.models.metadata import EnhancedTableMetadata, EnhancedColumnMetadata
+from src.models.metadata import TableMetadata, ColumnMetadata
 from src.models.vector_store import (
     TablePayload,
     QueryPayload,
@@ -169,7 +169,7 @@ class QdrantStore(VectorStore):
             logger.error(f"Error checking table existence: {str(e)}")
             return False
 
-    def add_table(self, metadata: EnhancedTableMetadata) -> bool:
+    def add_table(self, metadata: TableMetadata) -> bool:
         """
         Aggiunge o aggiorna un documento tabella nella collection
         Args:
@@ -201,7 +201,7 @@ class QdrantStore(VectorStore):
             logger.error(f"Error adding table metadata: {str(e)}")
             return False
 
-    def add_column(self, metadata: EnhancedColumnMetadata) -> bool:
+    def add_column(self, metadata: ColumnMetadata) -> bool:
         """
         Aggiunge o aggiorna un documento colonna nella collection
 
@@ -412,13 +412,11 @@ class QdrantStore(VectorStore):
             logger.error(f"Errore nella ricerca esatta: {str(e)}")
             return None
 
-    def update_table_documents(
-        self, enhanced_metadata: Dict[str, EnhancedTableMetadata]
-    ) -> bool:
+    def update_table_documents(self, metadata: Dict[str, TableMetadata]) -> bool:
         """Aggiorna i documenti table di una collezione"""
         try:
-            for table_name, metadata in enhanced_metadata.items():
-                if not self.add_table(metadata):
+            for table_name, metadata_ in metadata.items():
+                if not self.add_table(metadata_):
                     logger.error(f"Failed to update metadata for table: {table_name}")
                     return False
             return True
