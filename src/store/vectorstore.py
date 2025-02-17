@@ -9,8 +9,21 @@ class VectorStore(ABC):
     """Interfaccia base per i vectorstore"""
 
     @abstractmethod
-    def initialize(self) -> bool:
-        """Inizializza la connessione e crea la collection se necessario"""
+    def initialize_collection(self) -> bool:
+        """
+        Initialize the vector store collection. This method:
+        1. Checks if collection exists
+        2. If exists, validates the vector configuration
+        3. If doesn't exist, creates it with proper configuration
+
+        Collection initialization ensures that:
+        - The collection exists in the vector store
+        - Vector dimensions match the embedding model
+        - Distance metric is properly set
+
+        Returns:
+            bool: True if initialization successful, False otherwise
+        """
         pass
 
     @abstractmethod
