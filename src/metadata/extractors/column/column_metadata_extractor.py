@@ -1,4 +1,4 @@
-from src.models.metadata import ColumnMetadata
+from src.models.metadata import BaseColumnMetadata
 from typing import List
 from abc import ABC, abstractmethod
 
@@ -15,7 +15,7 @@ class ColumnMetadataExtractor(ABC):
         self.inspector: Inspector = inspect(db.engine)
         self.schema = schema
 
-    def extract_metadata(self, table_name: str) -> List[ColumnMetadata]:
+    def extract_metadata(self, table_name: str) -> List[BaseColumnMetadata]:
         """
         Retrieves column metadata for a given table.
 
@@ -41,7 +41,7 @@ class ColumnMetadataExtractor(ABC):
                 max_values=10,
             )
 
-            column = ColumnMetadata(
+            column = BaseColumnMetadata(
                 name=col["name"],
                 table=table_name,
                 data_type=str(col["type"]),

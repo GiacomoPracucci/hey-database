@@ -1,4 +1,4 @@
-from src.models.metadata import TableMetadata
+from src.models.metadata import BaseTableMetadata
 from typing import List, Any, Dict
 from abc import ABC, abstractmethod
 
@@ -32,7 +32,7 @@ class TableMetadataExtractor(ABC):
             logger.error(f"Error getting tables for schema {self.schema}: {str(e)}")
             return []
 
-    def extract_metadata(self, table_name: str) -> TableMetadata:
+    def extract_metadata(self, table_name: str) -> BaseTableMetadata:
         """
         Extracts base metadata for a table.
 
@@ -55,7 +55,7 @@ class TableMetadataExtractor(ABC):
         # 4. Get table row count
         row_count = self._get_row_count(table_name)
 
-        return TableMetadata(
+        return BaseTableMetadata(
             name=table_name,
             columns=columns,
             primary_keys=primary_keys,
