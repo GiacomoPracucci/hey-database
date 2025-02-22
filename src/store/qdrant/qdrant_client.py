@@ -1,17 +1,13 @@
 import logging
-from typing import List, Optional, Dict
+from typing import Optional
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams
-from dataclasses import asdict
 
 from store.vectorstore_client import VectorStore
 from src.embedding.embedding import Embedder
-from src.models.metadata import TableMetadata, ColumnMetadata
 from src.models.vector_store import (
-    TablePayload,
     QueryPayload,
-    TableSearchResult,
     QuerySearchResult,
 )
 
@@ -29,7 +25,8 @@ class QdrantStore(VectorStore):
         url: Optional[str] = None,
         api_key: Optional[str] = None,
     ) -> None:
-        """Inizializza il client Qdrant
+        """
+        Inizializza il client Qdrant
 
         Args:
             collection_name: Nome della collezione
@@ -166,95 +163,6 @@ class QdrantStore(VectorStore):
             logger.error(f"Error checking table existence: {str(e)}")
             return False
 
-    def add_table(self, metadata: TableMetadata) -> bool:
-        """
-        Aggiunge o aggiorna un documento tabella nella collection
-        Args:
-            metadata: Metadati arricchiti della tabella
-        Returns:
-            bool: True se l'operazione è andata a buon fine, False altrimenti
-        """
-        try:
-            # embedding dalla descrizione e keywords
-            embedding_text = f"{metadata.base_metadata.name} {metadata.description} {' '.join(metadata.keywords)}"
-            vector = self.embedding_model.encode(embedding_text)
-
-            # upsert del documento
-            self.client.upsert(
-                collection_name=self.collection_name,
-                points=[
-                    models.PointStruct(
-                        id=self._generate_table_id(metadata.base_metadata.name),
-                        vector=vector,
-                        payload=asdict(metadata),
-                    )
-                ],
-            )
-            logger.debug(
-                f"Metadata added/updated for table: {metadata.base_metadata.name}"
-            )
-            return True
-        except Exception as e:
-            logger.error(f"Error adding table metadata: {str(e)}")
-            return False
-
-    def add_column(self, metadata: ColumnMetadata) -> bool:
-        """
-        Aggiunge o aggiorna un documento colonna nella collection
-
-        Args:
-            metadata: Metadati arricchiti della colonna
-        Returns:
-            bool: True se l'operazione è andata a buon fine
-        """
-
-        try:
-            embedding_text = f"{metadata.base_metadata.name} {metadata.description}"
-            vector = self.embedding_model.encode(embedding_text)
-
-            # upsert del documento
-            self.client.upsert(
-                collection_name=self.collection_name,
-                points=[
-                    models.PointStruct(
-                        id=self._generate_column_id(
-                            metadata.base_metadata.table, metadata.base_metadata.name
-                        ),
-                        vector=vector,
-                        payload=asdict(metadata),
-                    )
-                ],
-            )
-            logger.debug(
-                f"Column metadata added/updated for: {metadata.base_metadata.table}.{metadata.base_metadata.name}"
-            )
-            return True
-
-        except Exception as e:
-            logger.error(f"Error adding column metadata: {str(e)}")
-            return False
-
-    def add_query(self, query: QueryPayload) -> bool:
-        """Aggiunge una risposta del LLM al vector store (domanda utente + query sql + spiegazione)"""
-        try:
-            vector = self.embedding_model.encode(query.question)
-
-            self.client.upsert(
-                collection_name=self.collection_name,
-                points=[
-                    models.PointStruct(
-                        id=self._generate_query_id(query.question),
-                        vector=vector,
-                        payload=asdict(query),
-                    )
-                ],
-            )
-            return True
-
-        except Exception as e:
-            logger.error(f"Error adding query: {str(e)}")
-            return False
-
     def handle_positive_feedback(
         self, question: str, sql_query: str, explanation: str
     ) -> bool:
@@ -330,18 +238,6 @@ class QdrantStore(VectorStore):
         except Exception as e:
             logger.error(f"Errore nella ricerca esatta: {str(e)}")
             return None
-
-    def update_table_documents(self, metadata: Dict[str, TableMetadata]) -> bool:
-        """Aggiorna i documenti table di una collezione"""
-        try:
-            for table_name, metadata_ in metadata.items():
-                if not self.add_table(metadata_):
-                    logger.error(f"Failed to update metadata for table: {table_name}")
-                    return False
-            return True
-        except Exception as e:
-            logger.error(f"Error updating metadata: {str(e)}")
-            return False
 
     def _verify_connection(self) -> bool:
         """Verifica che il vector store sia raggiungibile
