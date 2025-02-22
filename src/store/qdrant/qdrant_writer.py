@@ -10,7 +10,7 @@ from src.models.metadata import (
 )
 
 from src.store.qdrant.qdrant_client import QdrantStore
-from src.store.vectorstore_writer import StoreWriter
+from store.vectorstore_write import StoreWriter
 
 import logging
 
@@ -39,7 +39,7 @@ class QdrantWriter(StoreWriter):
         try:
             # embedding dalla descrizione e keywords
             embedding_text = f"{metadata.base_metadata.name} {metadata.description} {' '.join(metadata.keywords)}"
-            vector = self.embedding_model.encode(embedding_text)
+            vector = self.vector_store.embedding_model.encode(embedding_text)
 
             # upsert del documento
             self.client.upsert(
@@ -80,7 +80,7 @@ class QdrantWriter(StoreWriter):
                 try:
                     # Generate embedding for the table
                     embedding_text = f"{table_name} {metadata.description} {' '.join(metadata.keywords)}"
-                    vector = self.embedding_model.encode(embedding_text)
+                    vector = self.vector_store.embedding_model.encode(embedding_text)
 
                     # Create point structure
                     point = PointStruct(
@@ -116,7 +116,7 @@ class QdrantWriter(StoreWriter):
 
         try:
             embedding_text = f"{metadata.base_metadata.name} {metadata.description}"
-            vector = self.embedding_model.encode(embedding_text)
+            vector = self.vector_store.embedding_model.encode(embedding_text)
 
             # upsert del documento
             self.client.upsert(
@@ -164,7 +164,7 @@ class QdrantWriter(StoreWriter):
                     embedding_text = (
                         f"{metadata.base_metadata.name} {metadata.description}"
                     )
-                    vector = self.embedding_model.encode(embedding_text)
+                    vector = self.vector_store.embedding_model.encode(embedding_text)
 
                     # Create point structure
                     point = PointStruct(
@@ -196,7 +196,7 @@ class QdrantWriter(StoreWriter):
     def add_query(self, query: QueryPayload) -> bool:
         """Aggiunge una risposta del LLM al vector store (domanda utente + query sql + spiegazione)"""
         try:
-            vector = self.embedding_model.encode(query.question)
+            vector = self.vector_store.embedding_model.encode(query.question)
 
             self.client.upsert(
                 collection_name=self.collection_name,
@@ -232,7 +232,7 @@ class QdrantWriter(StoreWriter):
             for query in queries:
                 try:
                     # Generate embedding for the query
-                    vector = self.embedding_model.encode(query.question)
+                    vector = self.vector_store.embedding_model.encode(query.question)
 
                     # Create point structure
                     point = PointStruct(

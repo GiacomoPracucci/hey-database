@@ -15,6 +15,8 @@ class AppComponentsBuilder:
         self.config = app_config
         self.db = None
         self.vector_store = None
+        self.vector_store_writer = None
+        self.vector_store_searcher = None
         self.sql_llm = None
         self.cache = None
         self.table_metadata_extractor = None
@@ -28,10 +30,31 @@ class AppComponentsBuilder:
         return self
 
     def build_vector_store(self):
-        """Costruisce e inizializza il vector store se abilitato"""
-        logger.info("Vector store enabled, initializing client...")
-        self.vector_store = VectorStoreFactory.create(self.config.vector_store)
-        return self
+        """
+        Build and initialize the vector store ecosystem including store, writer, and searcher.
+        Returns the builder instance for method chaining.
+        """
+        logger.info("Initializing vector store components...")
+
+        if not self.config.vector_store.enabled:
+            logger.info("Vector store disabled, skipping initialization")
+            return self
+
+        try:
+            # create all vector store components using unified factory
+            vector_components = VectorStoreFactory.create(self.config.vector_store)
+
+            # assign components to builder
+            self.vector_store = vector_components.store
+            self.vector_store_writer = vector_components.writer
+            self.vector_store_searcher = vector_components.search
+
+            logger.info("Vector store components initialized successfully")
+            return self
+
+        except Exception as e:
+            logger.error(f"Failed to initialize vector store components: {str(e)}")
+            raise
 
     def build_sql_llm(self):
         """Costruisce l'handler LLM"""
@@ -84,10 +107,10 @@ class AppComponentsBuilder:
         return self
 
     def build(self) -> AppComponents:
-        """Costruisce e restituisce l'app inizializzata"""
+        """Build and return the initialized application components"""
 
         self.build_database()
-        self.build_vector_store()
+        self.build_vector_store()  # Now builds all vector store components
         self.build_sql_llm()
         self.build_cache()
         self.build_table_metadata_extractor()
@@ -98,6 +121,8 @@ class AppComponentsBuilder:
         return AppComponents(
             db=self.db,
             vector_store=self.vector_store,
+            vector_store_writer=self.vector_store_writer,
+            vector_store_searcher=self.vector_store_searcher,
             sql_llm=self.llm,
             cache=self.cache,
             table_metadata_extractor=self.table_metadata_extractor,

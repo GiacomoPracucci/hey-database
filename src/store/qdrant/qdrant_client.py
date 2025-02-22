@@ -4,9 +4,9 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams
 
-from store.vectorstore_client import VectorStore
+from src.store.vectorstore_client import VectorStore
 from src.embedding.embedding import Embedder
-from src.models.vector_store import (
+from models.vector_store import (
     QueryPayload,
     QuerySearchResult,
 )
