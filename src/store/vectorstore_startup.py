@@ -1,5 +1,5 @@
 import logging
-from src.store.vectorstore import VectorStore
+from store.vectorstore_client import VectorStore
 from src.models.metadata import Metadata
 
 logger = logging.getLogger("hey-database")
@@ -7,7 +7,7 @@ logger = logging.getLogger("hey-database")
 
 class VectorStoreStartup:
     """
-    Manages vector store initialization and first population.
+    Manages vector store collection initialization and first population.
     Follows same patterns as metadata startup:
     - Check if store exists and is populate
     - Create and populate if needed

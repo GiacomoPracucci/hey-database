@@ -6,7 +6,7 @@ from src.models.embedding import EmbeddingConfig
 from src.embedding.huggingface_embedding import HuggingFaceEmbedding
 from src.embedding.openai_embedding import OpenAIEmbedding
 
-from src.store.qdrant_vectorstore import QdrantStore
+from store.qdrant.qdrant_client import QdrantStore
 
 logger = logging.getLogger("hey-database")
 

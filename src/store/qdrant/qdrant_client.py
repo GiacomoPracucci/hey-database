@@ -5,7 +5,7 @@ from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams
 from dataclasses import asdict
 
-from src.store.vectorstore import VectorStore
+from store.vectorstore_client import VectorStore
 from src.embedding.embedding import Embedder
 from src.models.metadata import TableMetadata, ColumnMetadata
 from src.models.vector_store import (
@@ -19,10 +19,7 @@ logger = logging.getLogger("hey-database")
 
 
 class QdrantStore(VectorStore):
-    """Implementazione del vectorstore Qdrant
-    TODO sta classe è arrivata a fare troppa roba, andrebbero divisi i vari servizi che offre
-    TODO disassociare il concetto di metadati enhanced allo store e integrarlo all'estrazione dei metadati dallo schema
-    """
+    """Implementazione del vectorstore Qdrant"""
 
     def __init__(
         self,
@@ -237,49 +234,6 @@ class QdrantStore(VectorStore):
             logger.error(f"Error adding column metadata: {str(e)}")
             return False
 
-    def search_similar_tables(
-        self, question: str, limit: int = 3
-    ) -> List[TableSearchResult]:
-        """Trova le tabelle più rilevanti per domanda utente usando similarità del coseno"""
-        try:
-            vector = self.embedding_model.encode(question)
-
-            search_result = self.client.search(
-                collection_name=self.collection_name,
-                query_vector=vector,
-                query_filter=models.Filter(
-                    must=[
-                        models.FieldCondition(
-                            key="type", match=models.MatchValue(value="table")
-                        )
-                    ]
-                ),
-                limit=limit,
-            )
-
-            return [
-                TableSearchResult(
-                    table_name=hit.payload["table_name"],
-                    metadata=TablePayload(
-                        type="table",
-                        table_name=hit.payload["table_name"],
-                        description=hit.payload["description"],
-                        keywords=hit.payload["keywords"],
-                        columns=hit.payload["columns"],
-                        primary_keys=hit.payload["primary_keys"],
-                        foreign_keys=hit.payload["foreign_keys"],
-                        row_count=hit.payload["row_count"],
-                        importance_score=hit.payload.get("importance_score", 0.0),
-                    ),
-                    relevance_score=hit.score,
-                )
-                for hit in search_result
-            ]
-
-        except Exception as e:
-            logger.error(f"Errore nella ricerca delle tabelle: {str(e)}")
-            return []
-
     def add_query(self, query: QueryPayload) -> bool:
         """Aggiunge una risposta del LLM al vector store (domanda utente + query sql + spiegazione)"""
         try:
@@ -300,41 +254,6 @@ class QdrantStore(VectorStore):
         except Exception as e:
             logger.error(f"Error adding query: {str(e)}")
             return False
-
-    def search_similar_queries(
-        self, question: str, limit: int = 3
-    ) -> List[QuerySearchResult]:
-        """Cerca query simili nel vector store"""
-        try:
-            vector = self.embedding_model.encode(question)
-
-            search_result = self.client.search(
-                collection_name=self.collection_name,
-                query_vector=vector,
-                query_filter=models.Filter(
-                    must=[
-                        models.FieldCondition(
-                            key="type", match=models.MatchValue(value="query")
-                        )
-                    ]
-                ),
-                limit=limit,
-            )
-
-            return [
-                QuerySearchResult(
-                    question=hit.payload["question"],
-                    sql_query=hit.payload["sql_query"],
-                    explanation=hit.payload["explanation"],
-                    score=hit.score,
-                    positive_votes=hit.payload["positive_votes"],
-                )
-                for hit in search_result
-            ]
-
-        except Exception as e:
-            logger.error(f"Error searching similar queries: {str(e)}")
-            return []
 
     def handle_positive_feedback(
         self, question: str, sql_query: str, explanation: str

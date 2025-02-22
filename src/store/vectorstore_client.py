@@ -1,7 +1,6 @@
 import uuid
 from abc import ABC, abstractmethod
-from typing import List
-from src.models.vector_store import TableSearchResult, QuerySearchResult, QueryPayload
+from src.models.vector_store import QueryPayload
 from src.models.metadata import Metadata
 
 
@@ -36,22 +35,8 @@ class VectorStore(ABC):
     pass
 
     @abstractmethod
-    def search_similar_tables(
-        self, question: str, limit: int
-    ) -> List[TableSearchResult]:
-        """Cerca tabelle simili nel vectorstore rispetto alla domanda dell'utente"""
-        pass
-
-    @abstractmethod
     def add_table(self, payload: Metadata) -> bool:
         """Aggiunge una tabella al vectorstore"""
-        pass
-
-    @abstractmethod
-    def search_similar_queries(
-        self, question: str, limit: int
-    ) -> List[QuerySearchResult]:
-        """Cerca domande-querysql-spiegazione simili nel vectorstore rispetto alla domanda dell'utente"""
         pass
 
     @abstractmethod

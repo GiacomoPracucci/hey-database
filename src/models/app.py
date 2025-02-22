@@ -9,7 +9,7 @@ from src.models.metadata import MetadataConfig
 from src.connectors.connector import DatabaseConnector
 from src.llm_handler.llm_handler import LLMHandler
 from src.metadata.metadata_cache import MetadataCache
-from src.store.vectorstore import VectorStore
+from store.vectorstore_client import VectorStore
 from src.metadata.extractors.table.table_metadata_extractor import (
     TableMetadataExtractor,
 )

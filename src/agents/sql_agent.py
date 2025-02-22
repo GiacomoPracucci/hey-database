@@ -4,7 +4,7 @@ from src.connectors.connector import DatabaseConnector
 from src.llm_handler.llm_handler import LLMHandler
 from src.metadata.metadata_retriever import DatabaseMetadataRetriever
 from src.llm_output_processing.response_handler import ResponseHandler
-from src.store.vectorstore import VectorStore
+from store.vectorstore_client import VectorStore
 from src.config.languages import SupportedLanguage
 from src.agents.agent import Agent
 from src.models.agent import SQLAgentResponse
