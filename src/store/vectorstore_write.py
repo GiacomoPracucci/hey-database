@@ -2,11 +2,8 @@ from typing import List, Dict
 from abc import ABC, abstractmethod
 import uuid
 
-from src.models.metadata import (
-    TableMetadata,
-    ColumnMetadata,
-    QueryPayload,
-)
+from src.models.metadata import TableMetadata, ColumnMetadata
+from src.models.vector_store import QueryPayload
 
 
 class StoreWriter(ABC):

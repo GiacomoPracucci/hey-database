@@ -98,6 +98,8 @@ class MetadataStartup:
             )
             metadata = self.metadata_processor.extract_and_enrich_metadata()
 
+            logger.info("Metadata processing completed successfully.")
+
             # 3. Save new metadata to cache
             if metadata:
                 self.cache_handler.set(metadata)

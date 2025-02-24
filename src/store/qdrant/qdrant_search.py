@@ -34,9 +34,7 @@ class QdrantSearch(StoreSearch):
 
         self.vector_store = vector_store
 
-    def _search_points_by_type(
-        self, vector: List[float], type_value: str, limit: int
-    ) -> List[models.Hit]:
+    def _search_points_by_type(self, vector: List[float], type_value: str, limit: int):
         """Esegue una ricerca nel database Qdrant per un tipo specifico di entità"""
 
         # filtro base che ricerca i documenti per tipologia (tabella, colonna, query)

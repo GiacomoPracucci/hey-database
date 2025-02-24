@@ -1,5 +1,6 @@
 import logging
-from store.vectorstore_client import VectorStore
+from src.store.vectorstore_client import VectorStore
+from src.store.vectorstore_write import StoreWriter
 from src.models.metadata import Metadata
 
 logger = logging.getLogger("hey-database")
@@ -14,12 +15,13 @@ class VectorStoreStartup:
     - Handle updates when metadata changes
     """
 
-    def __init__(self, vector_store: VectorStore):
+    def __init__(self, vector_store: VectorStore, vector_store_writer: StoreWriter):
         """
         Args:
             vector_store (VectorStore): initialized vector store instance (that contains the vector store client)
         """
         self.vector_store = vector_store
+        self.writer = vector_store_writer
 
     def initialize(self, metadata: Metadata) -> bool:
         """
@@ -55,14 +57,14 @@ class VectorStoreStartup:
         try:
             # Sync table metadata
             for table_name, table_metadata in metadata.tables.items():
-                if not self.vector_store.add_table(table_metadata):
+                if not self.writer.add_table(table_metadata):
                     logger.error(f"Failed to sync table metadata: {table_name}")
                     return False
 
             # Sync column metadata
             for table_name, table_columns in metadata.columns.items():
                 for column_name, column_metadata in table_columns.items():
-                    if not self.vector_store.add_column(column_metadata):
+                    if not self.writer.add_column(column_metadata):
                         logger.error(
                             f"Failed to sync column metadata: {table_name}.{column_name}"
                         )
@@ -80,7 +82,7 @@ class VectorStoreStartup:
         Force refresh of vector store data using current metadata
         """
         try:
-            return self.vector_store.update_table_documents(metadata.tables)
+            return self.writer.update_table_documents(metadata.tables)
         except Exception as e:
             logger.error(f"Error refreshing vector store: {str(e)}")
             return False

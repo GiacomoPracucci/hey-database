@@ -3,14 +3,11 @@ from dataclasses import asdict
 from qdrant_client.http import models
 from qdrant_client.http.models import PointStruct, UpdateStatus
 
-from src.models.metadata import (
-    TableMetadata,
-    ColumnMetadata,
-    QueryPayload,
-)
+from src.models.metadata import TableMetadata, ColumnMetadata
+from src.models.vector_store import QueryPayload
 
 from src.store.qdrant.qdrant_client import QdrantStore
-from store.vectorstore_write import StoreWriter
+from src.store.vectorstore_write import StoreWriter
 
 import logging
 
@@ -42,8 +39,8 @@ class QdrantWriter(StoreWriter):
             vector = self.vector_store.embedding_model.encode(embedding_text)
 
             # upsert del documento
-            self.client.upsert(
-                collection_name=self.collection_name,
+            self.vector_store.client.upsert(
+                collection_name=self.vector_store.collection_name,
                 points=[
                     models.PointStruct(
                         id=self._generate_table_id(metadata.base_metadata.name),
@@ -96,7 +93,9 @@ class QdrantWriter(StoreWriter):
 
             # Execute batch upsert
             if points:
-                self.client.upsert(collection_name=self.collection_name, points=points)
+                self.vector_store.client.upsert(
+                    collection_name=self.vector_store.collection_name, points=points
+                )
 
             return table_status
 
@@ -119,8 +118,8 @@ class QdrantWriter(StoreWriter):
             vector = self.vector_store.embedding_model.encode(embedding_text)
 
             # upsert del documento
-            self.client.upsert(
-                collection_name=self.collection_name,
+            self.vector_store.client.upsert(
+                collection_name=self.vector_store.collection_name,
                 points=[
                     models.PointStruct(
                         id=self._generate_column_id(
@@ -182,7 +181,9 @@ class QdrantWriter(StoreWriter):
 
             # Execute batch upsert
             if points:
-                self.client.upsert(collection_name=self.collection_name, points=points)
+                self.vector_store.client.upsert(
+                    collection_name=self.vector_store.collection_name, points=points
+                )
 
             return column_status
 
@@ -198,8 +199,8 @@ class QdrantWriter(StoreWriter):
         try:
             vector = self.vector_store.embedding_model.encode(query.question)
 
-            self.client.upsert(
-                collection_name=self.collection_name,
+            self.vector_store.client.upsert(
+                collection_name=self.vector_store.collection_name,
                 points=[
                     models.PointStruct(
                         id=self._generate_query_id(query.question),
@@ -250,7 +251,9 @@ class QdrantWriter(StoreWriter):
 
             # Execute batch upsert
             if points:
-                self.client.upsert(collection_name=self.collection_name, points=points)
+                self.vector_store.client.upsert(
+                    collection_name=self.vector_store.collection_name, points=points
+                )
 
             return query_status
 
@@ -269,8 +272,8 @@ class QdrantWriter(StoreWriter):
             bool: True if all deletions were successful
         """
         try:
-            response = self.client.delete(
-                collection_name=self.collection_name,
+            response = self.vector_store.client.delete(
+                collection_name=self.vector_store.collection_name,
                 points_selector=models.PointIdsList(points=point_ids),
             )
             # Check if operation was successful
@@ -304,8 +307,9 @@ class QdrantWriter(StoreWriter):
                 update_vectors=models.UpdateVectors(points=vectors_to_update)
             )
 
-            self.client.batch_update_points(
-                collection_name=self.collection_name, update_operations=[operation]
+            self.vector_store.client.batch_update_points(
+                collection_name=self.vector_store.collection_name,
+                update_operations=[operation],
             )
             return True
 
