@@ -6,10 +6,8 @@ from qdrant_client.http.models import Distance, VectorParams
 
 from src.store.vectorstore_client import VectorStore
 from src.embedding.embedding import Embedder
-from src.models.vector_store import (
-    QueryPayload,
-    QuerySearchResult,
-)
+from src.models.vector_store import QuerySearchResult
+from src.models.metadata import QueryMetadata
 
 logger = logging.getLogger("hey-database")
 
@@ -193,11 +191,12 @@ class QdrantStore(VectorStore):
 
             # se è una nuova domanda
             # crea/aggiorna in base alla situazione che si è verificata
-            query = QueryPayload(
+            query = QueryMetadata(
                 question=question,
                 sql_query=sql_query,
                 explanation=explanation,
                 positive_votes=votes,
+                type="query",
             )
 
             return self.add_query(query)

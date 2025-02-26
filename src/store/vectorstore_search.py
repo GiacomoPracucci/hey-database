@@ -2,12 +2,12 @@ from abc import ABC, abstractmethod
 from typing import List, TypeVar
 
 from src.models.vector_store import (
-    TablePayload,
     TableSearchResult,
-    ColumnPayload,
     ColumnSearchResult,
     QuerySearchResult,
 )
+
+from src.models.metadata import TableMetadata, ColumnMetadata
 
 # Generic type for search results
 T = TypeVar("T")
@@ -93,7 +93,7 @@ class StoreSearch(ABC):
         return TableSearchResult(
             id=hit.id,
             table_name=hit.payload["table_name"],
-            metadata=TablePayload(**hit.payload),
+            metadata=TableMetadata(**hit.payload),
             relevance_score=hit.score,
         )
 
@@ -113,7 +113,7 @@ class StoreSearch(ABC):
             column_name=hit.payload["column_name"],
             column_name_alias=hit.payload["column_name_alias"],
             table_name=hit.payload["table_name"],
-            metadata=ColumnPayload(**hit.payload),
+            metadata=ColumnMetadata(**hit.payload),
             relevance_score=hit.score,
         )
 

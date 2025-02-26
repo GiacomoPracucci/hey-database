@@ -210,20 +210,18 @@ class ColumnMetadata:
         type: Document type identifier for vector store (default: "column")
     """
 
-    # Base metadata fields
     name: str
     table: str
     data_type: str
     nullable: bool
     is_primary_key: bool
     is_foreign_key: bool
-    distinct_values: List[str] = field(default_factory=list)
-    relationships: List[Dict[str, str]] = field(default_factory=list)
-
-    # Enhanced metadata fields
     ai_name: str
     description: str
     keywords: List[str]
+
+    distinct_values: List[str] = field(default_factory=list)
+    relationships: List[Dict[str, str]] = field(default_factory=list)
     type: str = "column"
 
     @classmethod

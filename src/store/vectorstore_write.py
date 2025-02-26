@@ -1,8 +1,7 @@
 from typing import List, Dict
 from abc import ABC, abstractmethod
 
-from src.models.metadata import TableMetadata, ColumnMetadata
-from src.models.vector_store import QueryPayload
+from src.models.metadata import TableMetadata, ColumnMetadata, QueryMetadata
 
 
 class StoreWriter(ABC):
@@ -71,7 +70,7 @@ class StoreWriter(ABC):
         pass
 
     @abstractmethod
-    def add_query(self, query: QueryPayload) -> bool:
+    def add_query(self, query: QueryMetadata) -> bool:
         """
         Add or update a query document in the vector store.
         This stores user questions along with their SQL translations and explanations.
@@ -85,7 +84,7 @@ class StoreWriter(ABC):
         pass
 
     @abstractmethod
-    def add_queries_batch(self, queries: List[QueryPayload]) -> Dict[str, bool]:
+    def add_queries_batch(self, queries: List[QueryMetadata]) -> Dict[str, bool]:
         """
         Add or update multiple query documents in the vector store.
         This operation is more efficient than adding queries individually.
