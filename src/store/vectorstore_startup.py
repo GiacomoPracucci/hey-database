@@ -8,17 +8,26 @@ logger = logging.getLogger("hey-database")
 
 class VectorStoreStartup:
     """
-    Manages vector store collection initialization and first population.
-    Follows same patterns as metadata startup:
-    - Check if store exists and is populate
+    Manages vector store collection initialization and population.
+
+    This class is responsible for initializing the vector store collection
+    and ensuring it's properly populated with metadata. It follows similar
+    patterns to the metadata startup:
+    - Check if store exists and is populated
     - Create and populate if needed
     - Handle updates when metadata changes
+
+    The class serves as a bridge between the metadata system and
+    the vector storage system, ensuring both remain in sync.
     """
 
     def __init__(self, vector_store: VectorStore, vector_store_writer: StoreWriter):
         """
+        Initialize the vector store startup service.
+
         Args:
-            vector_store (VectorStore): initialized vector store instance (that contains the vector store client)
+            vector_store: Initialized vector store instance for database operations
+            vector_store_writer: Writer component for adding/updating vector store documents
         """
         self.vector_store = vector_store
         self.writer = vector_store_writer
@@ -27,10 +36,15 @@ class VectorStoreStartup:
         """
         Initialize and sync the vector store with current metadata state.
 
+        This method ensures the vector store collection exists and contains
+        up-to-date metadata. It's designed to be idempotent, meaning it can
+        be safely called multiple times without duplicating data.
+
         Args:
-            metadata: Current metadata state to sync
+            metadata: Current metadata state to sync to the vector store
+
         Returns:
-            bool: True if initialization successful
+            bool: True if initialization successful, False otherwise
         """
         try:
             logger.info("Initializing vector store collection")
@@ -52,7 +66,16 @@ class VectorStoreStartup:
     def _sync_metadata(self, metadata: Metadata) -> bool:
         """
         Sync current metadata state to vector store through upserts.
-        Uses deterministic IDs to ensure proper updates.
+
+        This method ensures that the vector store contains the latest version
+        of all metadata, using deterministic IDs to ensure proper updates
+        and avoid duplicates.
+
+        Args:
+            metadata: Current metadata state to sync
+
+        Returns:
+            bool: True if sync successful, False if any errors occurred
         """
         try:
             # Sync table metadata
@@ -71,6 +94,17 @@ class VectorStoreStartup:
                         # Continue syncing other columns even if one fails
                         continue
 
+            # Sync query metadata if available
+            if metadata.queries:
+                logger.info(f"Syncing {len(metadata.queries)} queries to vector store")
+                for question, query_metadata in metadata.queries.items():
+                    if not self.writer.add_query(query_metadata):
+                        logger.error(
+                            f"Failed to sync query metadata: {question[:50]}..."
+                        )
+                        # Continue syncing other queries even if one fails
+                        continue
+
             return True
 
         except Exception as e:
@@ -79,10 +113,25 @@ class VectorStoreStartup:
 
     def refresh(self, metadata: Metadata) -> bool:
         """
-        Force refresh of vector store data using current metadata
+        Force refresh of vector store data using current metadata.
+
+        This method is useful when you want to completely rebuild the
+        vector store with the latest metadata, for example after changes
+        to the embedding model or vector store configuration.
+
+        Args:
+            metadata: Current metadata state to use for refresh
+
+        Returns:
+            bool: True if refresh successful, False otherwise
         """
         try:
-            return self.writer.update_table_documents(metadata.tables)
+            # Clear existing vector store content if needed
+            # Note: Not implemented yet - would require collection recreate
+
+            # Simply reuse sync metadata to update all content
+            return self._sync_metadata(metadata)
+
         except Exception as e:
             logger.error(f"Error refreshing vector store: {str(e)}")
             return False

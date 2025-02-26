@@ -314,7 +314,6 @@ class QueryMetadata:
     sql_query: str
     explanation: str
     positive_votes: int = 0
-    timestamp: datetime = field(default_factory=datetime.now)
     type: str = "query"
 
     @classmethod
