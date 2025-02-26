@@ -1,7 +1,6 @@
 from typing import List
 from qdrant_client.http import models
 
-from src.models.metadata import TableMetadata, ColumnMetadata, QueryMetadata
 from src.models.vector_store import (
     DocumentType,
     TableSearchResult,
@@ -107,8 +106,9 @@ class QdrantSearch(StoreSearch):
         Returns:
             TableSearchResult with structured table metadata
         """
-        # Create a new TableMetadata object from the payload
-        table_metadata = TableMetadata(
+        return TableSearchResult(
+            id=hit.id,
+            similarity_score=hit.score,
             name=hit.payload.get("name"),
             columns=hit.payload.get("columns", []),
             primary_keys=hit.payload.get("primary_keys", []),
@@ -117,14 +117,6 @@ class QdrantSearch(StoreSearch):
             description=hit.payload.get("description", ""),
             keywords=hit.payload.get("keywords", []),
             importance_score=hit.payload.get("importance_score", 0.0),
-            type=hit.payload.get("type", "table"),
-        )
-
-        return TableSearchResult(
-            id=hit.id,
-            table_name=hit.payload.get("name"),
-            metadata=table_metadata,
-            relevance_score=hit.score,
         )
 
     def search_columns(self, question: str, limit: int = 5) -> List[ColumnSearchResult]:
@@ -165,29 +157,19 @@ class QdrantSearch(StoreSearch):
         Returns:
             ColumnSearchResult with structured column metadata
         """
-        # Create a new ColumnMetadata object from the payload
-        column_metadata = ColumnMetadata(
+        return ColumnSearchResult(
+            id=hit.id,
+            similarity_score=hit.score,
             name=hit.payload.get("name"),
             table=hit.payload.get("table"),
             data_type=hit.payload.get("data_type", "unknown"),
             nullable=hit.payload.get("nullable", False),
             is_primary_key=hit.payload.get("is_primary_key", False),
             is_foreign_key=hit.payload.get("is_foreign_key", False),
-            distinct_values=hit.payload.get("distinct_values", []),
             relationships=hit.payload.get("relationships", []),
             ai_name=hit.payload.get("ai_name", ""),
             description=hit.payload.get("description", ""),
             keywords=hit.payload.get("keywords", []),
-            type=hit.payload.get("type", "column"),
-        )
-
-        return ColumnSearchResult(
-            id=hit.id,
-            column_name=hit.payload.get("name"),
-            ai_name=hit.payload.get("ai_name", ""),
-            table_name=hit.payload.get("table"),
-            metadata=column_metadata,
-            relevance_score=hit.score,
         )
 
     def search_queries(self, question: str, limit: int = 3) -> List[QuerySearchResult]:
@@ -228,22 +210,11 @@ class QdrantSearch(StoreSearch):
         Returns:
             QuerySearchResult with query details and score
         """
-        # Create a QueryMetadata object from the payload
-        query_metadata = QueryMetadata(
-            question=hit.payload.get("question"),
-            sql_query=hit.payload.get("sql_query"),
-            explanation=hit.payload.get("explanation"),
-            positive_votes=hit.payload.get("positive_votes", 0),
-            # Note: timestamp isn't included as it would need datetime conversion
-            type=hit.payload.get("type", "query"),
-        )
-
         return QuerySearchResult(
             id=hit.id,
+            similarity_score=hit.score,
             question=hit.payload.get("question"),
             sql_query=hit.payload.get("sql_query"),
             explanation=hit.payload.get("explanation"),
-            score=hit.score,
             positive_votes=hit.payload.get("positive_votes", 0),
-            metadata=query_metadata,
         )

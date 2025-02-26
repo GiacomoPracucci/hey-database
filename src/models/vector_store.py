@@ -3,7 +3,6 @@ from typing import Optional
 from enum import Enum
 
 from src.models.embedding import EmbeddingConfig
-from src.models.metadata import TableMetadata, ColumnMetadata, QueryMetadata
 
 
 class DocumentType(Enum):
@@ -88,9 +87,15 @@ class TableSearchResult:
     """
 
     id: str
-    table_name: str
-    metadata: TableMetadata
-    relevance_score: float
+    similarity_score: float
+    name: str
+    columns: list
+    primary_keys: list
+    foreign_keys: list
+    row_count: int
+    description: str
+    keywords: list
+    importance_score: float
 
 
 @dataclass
@@ -110,11 +115,17 @@ class ColumnSearchResult:
     """
 
     id: str
-    column_name: str
+    similarity_score: float
+    name: str
+    table: str
+    data_type: str
+    nullable: bool
+    is_primary_key: bool
+    is_foreign_key: bool
+    relationships: list
     ai_name: str
-    table_name: str
-    metadata: ColumnMetadata
-    relevance_score: float
+    description: str
+    keywords: list
 
 
 @dataclass
@@ -135,9 +146,8 @@ class QuerySearchResult:
     """
 
     id: str
+    similarity_score: float
     question: str
     sql_query: str
     explanation: str
-    score: float
     positive_votes: int
-    metadata: Optional[QueryMetadata] = None
