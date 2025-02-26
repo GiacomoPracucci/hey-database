@@ -10,32 +10,52 @@ logger = logging.getLogger("hey-database")
 
 class ColumnMetadataEnhancer:
     """
-    Enhancer responsible for enriching column metadata with:
-    - Semantic description generated via LLM
-    - Keywords extracted from the description
+    Enhancer responsible for enriching database column metadata.
+
+    This class takes base column metadata extracted from the database schema
+    and enhances it with AI-generated descriptions and semantic analysis, including:
+    - Natural language descriptions generated via LLM
+    - Keywords extracted from the description for improved semantic search
+    - AI-suggested alternative column names for improved readability
+
+    The enhancer provides a bridge between raw database schema information and
+    semantically rich metadata that can be used for search, visualization, and
+    natural language interfaces.
     """
 
     def __init__(self, llm_handler: LLMHandler):
+        """
+        Initialize the column metadata enhancer.
+
+        Args:
+            llm_handler: Handler for large language model operations,
+                        used to generate semantic descriptions
+        """
         self.keywords_finder = YAKEKeywordsFinder()
         self.llm_handler = llm_handler
 
     def enhance(self, base_metadata: BaseColumnMetadata) -> ColumnMetadata:
         """
-        Enriches the metadata of a database column
+        Enrich column metadata with AI-generated descriptions and keywords.
+
+        This method takes the base metadata extracted from the database schema
+        and enhances it with semantic descriptions, keywords, and alternative names
+        to make it more useful for search and natural language interactions.
 
         Args:
-            base_metadata: Base metadata of the column
+            base_metadata: Base column metadata extracted from database schema
 
         Returns:
-            EnhancedColumnMetadata containing the enriched metadata or error information
+            ColumnMetadata: Enhanced column metadata with descriptions and keywords
         """
         try:
+            # In production, uncomment the following line to use real LLM-generated descriptions
             # description = self._generate_description(base_metadata)
             description = "placeholder"
 
             if not description:
-                return ColumnMetadata(
-                    base_metadata=base_metadata,
+                return ColumnMetadata.from_base_metadata(
+                    base=base_metadata,
                     ai_name="placeholder",
                     description="No description available",
                     keywords=[],
@@ -43,15 +63,15 @@ class ColumnMetadataEnhancer:
 
             keywords_response = self.keywords_finder.find_keywords(description)
             if not keywords_response.success:
-                return ColumnMetadata(
-                    base_metadata=base_metadata,
+                return ColumnMetadata.from_base_metadata(
+                    base=base_metadata,
                     ai_name="placeholder",
                     description=description,
                     keywords=[],
                 )
 
-            return ColumnMetadata(
-                base_metadata=base_metadata,
+            return ColumnMetadata.from_base_metadata(
+                base=base_metadata,
                 ai_name="placeholder",
                 description=description,
                 keywords=keywords_response.keywords,
@@ -59,15 +79,27 @@ class ColumnMetadataEnhancer:
 
         except Exception as e:
             logger.exception(f"Error enhancing column metadata: {str(e)}")
-            return ColumnMetadata(
-                base_metadata=base_metadata,
+            return ColumnMetadata.from_base_metadata(
+                base=base_metadata,
                 ai_name="placeholder",
                 description="Error enhancing column metadata",
                 keywords=[],
             )
 
     def _generate_description(self, metadata: BaseColumnMetadata) -> Optional[str]:
-        """Generates a semantic description of the column using the LLM"""
+        """
+        Generate a semantic description of the column using the LLM.
+
+        Uses a carefully constructed prompt to guide the LLM in generating
+        a concise, accurate, and semantically meaningful description of the column
+        based on its name, data type, and sample values.
+
+        Args:
+            metadata: Base metadata about the column
+
+        Returns:
+            str: Generated description, or None if generation failed
+        """
         prompt = self.build_prompt(metadata)
 
         description = self.llm_handler.get_completion(
@@ -80,8 +112,17 @@ class ColumnMetadataEnhancer:
 
     def build_prompt(self, metadata: BaseColumnMetadata) -> str:
         """
-        Builds the prompt for generating the column description
-        TODO: This responsibility should be moved to a separate class
+        Build the prompt for generating the column description.
+
+        Constructs a detailed prompt that provides the LLM with context about
+        the column, including its name, data type, constraints, and sample values.
+        The prompt includes examples and guidance to ensure high-quality descriptions.
+
+        Args:
+            metadata: Base metadata about the column
+
+        Returns:
+            str: Complete prompt for LLM description generation
         """
         prompt_parts = [
             f"""Provide a semantic description of this database column, focusing on the meaning of the data it contains.

@@ -1,149 +1,143 @@
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Literal
-
-import uuid
+from typing import Optional
+from enum import Enum
 
 from src.models.embedding import EmbeddingConfig
-from src.models.metadata import Metadata
+from src.models.metadata import TableMetadata, ColumnMetadata, QueryMetadata
+
+
+class DocumentType(Enum):
+    """
+    Enum representing the possible document types in the vector store.
+
+    Using an enum instead of string literals provides better type safety,
+    autocompletion support, and prevents typos in document type references.
+    """
+
+    TABLE = "table"
+    COLUMN = "column"
+    QUERY = "query"
+
+    def __str__(self):
+        """
+        Returns the string value of the enum member.
+
+        This allows the enum to be used in string contexts like database queries.
+        """
+        return self.value
+
+    @classmethod
+    def from_string(cls, type_str: str) -> "DocumentType":
+        """
+        Converts a string to the corresponding DocumentType enum value.
+
+        Args:
+            type_str: String representation of the document type
+
+        Returns:
+            The corresponding DocumentType enum value
+
+        Raises:
+            ValueError: If the string doesn't match any valid document type
+        """
+        for doc_type in cls:
+            if doc_type.value == type_str:
+                return doc_type
+        raise ValueError(f"Invalid document type: {type_str}")
 
 
 @dataclass
 class VectorStoreConfig:
-    """Configurazione standard per il vector store"""
+    """
+    Configuration for the vector store.
 
-    type: str  # qdrant, ecc
+    Contains all the necessary parameters to initialize and connect
+    to a vector database for storing and retrieving semantic vectors.
+
+    Attributes:
+        type: Type of vector store (e.g., "qdrant")
+        collection_name: Name of the collection in the vector store
+        path: Path for local storage (optional)
+        url: URL for remote server (optional)
+        embedding: Configuration for the embedding model
+        api_key: API key for remote server authentication (optional)
+        batch_size: Number of documents to process in each batch operation
+    """
+
+    type: str
     collection_name: str
-    path: Optional[str]  # path per lo storage locale
-    url: Optional[str]  # url per server remoto
+    path: Optional[str]
+    url: Optional[str]
     embedding: EmbeddingConfig
     api_key: Optional[str] = None
     batch_size: int = 100
 
 
-# "type" possibili di documento all'interno dello store
-DocumentType = Literal["table", "column", "query"]
-
-
-@dataclass
-class BasePayload:
-    """Base class per tutti i payload nel vector store"""
-
-    type: DocumentType
-
-
-@dataclass
-class TablePayload(BasePayload):
-    """Rappresenta il payload per i metadati di un documento 'tabella' nel vector store"""
-
-    name: str
-    description: str
-    keywords: List[str]
-    columns: List[str]
-    primary_keys: List[str]
-    foreign_keys: List[Dict[str, str]]
-    row_count: int
-    importance_score: float = 0.0
-
-    @classmethod
-    def from_enhanced_metadata(cls, metadata: Metadata) -> "TablePayload":
-        """Crea un payload da metadati enhanced"""
-        return cls(
-            type="table",
-            name=metadata.base_metadata.name,
-            description=metadata.description,
-            keywords=metadata.keywords,
-            columns=metadata.base_metadata.columns,
-            primary_keys=metadata.base_metadata.primary_keys,
-            foreign_keys=metadata.base_metadata.foreign_keys,
-            row_count=metadata.base_metadata.row_count,
-            importance_score=metadata.importance_score,
-        )
-
-
-@dataclass
-class ColumnPayload(BasePayload):
-    """Rappresenta il payload per i metadati di un documento 'colonna' nel vector store"""
-
-    column_name: str
-    ai_name: str
-    table_name: str
-    description: str
-    keywords: List[str]
-    data_type: str
-    nullable: bool
-    is_primary_key: bool
-    is_foreign_key: bool
-    distinct_values: List[str]
-    # relationships:  List[Dict[str, str]] = field(default_factory=list)
-
-    @classmethod
-    def from_enhanced_metadata(cls, metadata: Metadata) -> "ColumnPayload":
-        """Crea un payload da metadati enhanced della colonna"""
-        return cls(
-            type="column",
-            column_name=metadata.base_metadata.name,
-            ai_name=metadata.column_name_alias,
-            table_name=metadata.base_metadata.table_name,
-            description=metadata.description,
-            keywords=metadata.keywords,
-            data_type=metadata.base_metadata.data_type,
-            nullable=metadata.base_metadata.nullable,
-            is_primary_key=metadata.base_metadata.is_primary_key,
-            is_foreign_key=metadata.base_metadata.is_foreign_key,
-            distinct_values=metadata.base_metadata.distinct_values,
-            # relationships=metadata.base_metadata.relationships if metadata.base_metadata.is_foreign_key else None
-        )
-
-    @staticmethod
-    def generate_id(table_name: str, column_name: str) -> str:
-        """Generate a unique id for a column, based on table and column name"""
-        return str(uuid.uuid5(uuid.NAMESPACE_DNS, f"column_{table_name}_{column_name}"))
-
-
-@dataclass
-class QueryPayload(BasePayload):
-    """Payload per le query cached"""
-
-    question: str
-    sql_query: str
-    explanation: str
-    positive_votes: int
-
-    def __init__(self, **kwargs):
-        super().__init__(type="query")
-        self.question = kwargs["question"]
-        self.sql_query = kwargs["sql_query"]
-        self.explanation = kwargs["explanation"]
-        self.positive_votes = kwargs.get("positive_votes", 0)
-
-
 @dataclass
 class TableSearchResult:
-    """Risultato della ricerca di tabelle rilevanti"""
+    """
+    Result of a table search operation in the vector store.
 
+    Contains the matched table metadata along with relevance information.
+
+    Attributes:
+        id: Unique identifier of the document in the vector store
+        table_name: Name of the matched table
+        metadata: Complete metadata of the matched table
+        relevance_score: Similarity score between query and table (0-1)
+    """
+
+    id: str
     table_name: str
-    metadata: TablePayload
+    metadata: TableMetadata
     relevance_score: float
 
 
 @dataclass
 class ColumnSearchResult:
-    """Risultato della ricerca di colonne rilevanti"""
+    """
+    Result of a column search operation in the vector store.
+
+    Contains the matched column metadata along with relevance information.
+
+    Attributes:
+        id: Unique identifier of the document in the vector store
+        column_name: Name of the matched column
+        ai_name: AI-generated alternative name for the column
+        table_name: Name of the table containing the column
+        metadata: Complete metadata of the matched column
+        relevance_score: Similarity score between query and column (0-1)
+    """
 
     id: str
     column_name: str
     ai_name: str
     table_name: str
-    metadata: ColumnPayload
+    metadata: ColumnMetadata
     relevance_score: float
 
 
 @dataclass
 class QuerySearchResult:
-    """Rappresenta un risultato della ricerca in un vectorstore"""
+    """
+    Result of a query search operation in the vector store.
 
+    Contains the matched query information along with relevance score.
+
+    Attributes:
+        id: Unique identifier of the document in the vector store
+        question: Natural language question that was asked
+        sql_query: SQL query that answers the question
+        explanation: Explanation of how the SQL query works
+        score: Similarity score between input and stored question (0-1)
+        positive_votes: Number of positive user feedback received
+        metadata: Complete metadata of the matched query (optional)
+    """
+
+    id: str
     question: str
     sql_query: str
     explanation: str
     score: float
     positive_votes: int
+    metadata: Optional[QueryMetadata] = None

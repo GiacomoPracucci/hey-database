@@ -52,12 +52,12 @@ class QdrantSearch(StoreSearch):
     def search_tables(self, question: str, limit: int = 3) -> List[TableSearchResult]:
         """Trova le tabelle più rilevanti per domanda utente usando similarità del coseno"""
         try:
-            vector = self.embedding_model.encode(question)
+            vector = self.vector_store.embedding_model.encode(question)
 
             search_result = self._search_points_by_type(
                 vector=vector, type_value="table", limit=limit
             )
-
+            logger.info(f"Risultati ricerca tabelle: {search_result}")
             return [self._convert_to_table_result(hit) for hit in search_result]
 
         except Exception as e:
