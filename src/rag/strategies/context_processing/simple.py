@@ -2,7 +2,7 @@ import logging
 from typing import Dict, Any, List
 
 from src.rag.models import RAGContext
-from src.rag.strategies import ContextProcessingStrategy
+from src.rag.strategies.strategies import ContextProcessingStrategy
 from src.models.vector_store import (
     TableSearchResult,
     ColumnSearchResult,
@@ -200,21 +200,32 @@ class SimpleContextProcessor(ContextProcessingStrategy):
         return "\n\n".join(formatted_queries)
 
     @classmethod
-    def from_config(cls, config: Dict[str, Any]) -> "SimpleContextProcessor":
+    def from_config(
+        cls, config: Dict[str, Any], **dependencies
+    ) -> "SimpleContextProcessor":
         """
         Create a SimpleContextProcessor from a configuration dictionary.
 
         Args:
             config: Configuration dictionary with processor parameters
+            **dependencies: Additional dependencies (not used by this strategy)
 
         Returns:
             An initialized SimpleContextProcessor
         """
+        from src.rag.utils import get_config_value
+
         return cls(
-            include_table_descriptions=config.get("include_table_descriptions", True),
-            include_column_descriptions=config.get("include_column_descriptions", True),
-            include_sample_queries=config.get("include_sample_queries", True),
-            max_tables=config.get("max_tables", 5),
-            max_columns=config.get("max_columns", 10),
-            max_queries=config.get("max_queries", 2),
+            include_table_descriptions=get_config_value(
+                config, "include_table_descriptions", True, value_type=bool
+            ),
+            include_column_descriptions=get_config_value(
+                config, "include_column_descriptions", True, value_type=bool
+            ),
+            include_sample_queries=get_config_value(
+                config, "include_sample_queries", True, value_type=bool
+            ),
+            max_tables=get_config_value(config, "max_tables", 5, value_type=int),
+            max_columns=get_config_value(config, "max_columns", 10, value_type=int),
+            max_queries=get_config_value(config, "max_queries", 2, value_type=int),
         )

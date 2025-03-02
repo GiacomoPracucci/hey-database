@@ -1,7 +1,7 @@
 from typing import Optional
 
 from src.rag.recipe import RAGRecipe
-from src.rag.strategies import (
+from src.rag.strategies.strategies import (
     QueryUnderstandingStrategy,
     RetrievalStrategy,
     ContextProcessingStrategy,

@@ -1,8 +1,8 @@
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from src.rag.models import RAGContext
-from src.rag.strategies import RetrievalStrategy
+from src.rag.strategies.strategies import RetrievalStrategy
 from src.store.vectorstore_search import StoreSearch
 
 logger = logging.getLogger("hey-database")
@@ -106,14 +106,14 @@ class CosineSimRetrievalStrategy(RetrievalStrategy):
 
     @classmethod
     def from_config(
-        cls, config: Dict[str, Any], vector_store_search: Optional[StoreSearch] = None
+        cls, config: Dict[str, Any], **dependencies
     ) -> "CosineSimRetrievalStrategy":
         """
         Create a CosineSimRetrievalStrategy from a configuration dictionary.
 
         Args:
             config: Configuration dictionary with strategy parameters
-            vector_store_search: Vector store search component (required if not in config)
+            **dependencies: Additional dependencies, must include vector_store_search
 
         Returns:
             An initialized CosineSimRetrievalStrategy
@@ -121,13 +121,27 @@ class CosineSimRetrievalStrategy(RetrievalStrategy):
         Raises:
             ValueError: If required parameters are missing or invalid
         """
-        if vector_store_search is None and "vector_store_search" not in config:
-            raise ValueError("Vector store search component is required")
+        from src.rag.utils import get_config_value
+
+        # Check for required dependencies
+        vector_store_search = dependencies.get("vector_store_search")
+        if vector_store_search is None:
+            raise ValueError(
+                "vector_store_search dependency is required for CosineSimRetrievalStrategy"
+            )
+
+        # Parse configuration with defaults
+        tables_limit = get_config_value(config, "tables_limit", 3, value_type=int)
+        columns_limit = get_config_value(config, "columns_limit", 5, value_type=int)
+        queries_limit = get_config_value(config, "queries_limit", 3, value_type=int)
+        use_exact_match = get_config_value(
+            config, "use_exact_match", True, value_type=bool
+        )
 
         return cls(
-            vector_store_search=vector_store_search or config["vector_store_search"],
-            tables_limit=config.get("tables_limit", 3),
-            columns_limit=config.get("columns_limit", 5),
-            queries_limit=config.get("queries_limit", 3),
-            use_exact_match=config.get("use_exact_match", True),
+            vector_store_search=vector_store_search,
+            tables_limit=tables_limit,
+            columns_limit=columns_limit,
+            queries_limit=queries_limit,
+            use_exact_match=use_exact_match,
         )

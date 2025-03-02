@@ -3,7 +3,7 @@ import re
 from typing import Dict, Any, List, Optional, Tuple
 
 from src.rag.models import RAGContext, RAGResponse
-from src.rag.strategies import ResponseProcessingStrategy
+from src.rag.strategies.strategies import ResponseProcessingStrategy
 from src.connectors.connector import DatabaseConnector
 
 logger = logging.getLogger("hey-database")
@@ -216,14 +216,14 @@ class SQLResponseProcessor(ResponseProcessingStrategy):
 
     @classmethod
     def from_config(
-        cls, config: Dict[str, Any], db: Optional[DatabaseConnector] = None
+        cls, config: Dict[str, Any], **dependencies
     ) -> "SQLResponseProcessor":
         """
         Create a SQLResponseProcessor from a configuration dictionary.
 
         Args:
             config: Configuration dictionary with processor parameters
-            db: Database connector (required if not in config)
+            **dependencies: Additional dependencies, must include db_connector or db
 
         Returns:
             An initialized SQLResponseProcessor
@@ -231,11 +231,21 @@ class SQLResponseProcessor(ResponseProcessingStrategy):
         Raises:
             ValueError: If database connector is not provided
         """
-        if db is None and "db" not in config:
-            raise ValueError("Database connector is required")
+        from src.rag.utils import get_config_value
+
+        # Check for required dependencies - support both 'db_connector' and 'db' for flexibility
+        db_connector = dependencies.get("db_connector") or dependencies.get("db")
+        if db_connector is None:
+            raise ValueError(
+                "Database connector dependency is required for SQLResponseProcessor"
+            )
 
         return cls(
-            db=db or config["db"],
-            max_preview_rows=config.get("max_preview_rows", 10),
-            execute_query=config.get("execute_query", True),
+            db=db_connector,
+            max_preview_rows=get_config_value(
+                config, "max_preview_rows", 10, value_type=int
+            ),
+            execute_query=get_config_value(
+                config, "execute_query", True, value_type=bool
+            ),
         )

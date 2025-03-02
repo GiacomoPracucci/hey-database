@@ -2,7 +2,7 @@ import logging
 from typing import Dict, Any, Optional
 
 from src.rag.models import RAGContext
-from src.rag.strategies import LLMInteractionStrategy
+from src.rag.strategies.strategies import LLMInteractionStrategy
 from src.llm_handler.llm_handler import LLMHandler
 
 logger = logging.getLogger("hey-database")
@@ -87,14 +87,14 @@ class DirectLLMInteractionStrategy(LLMInteractionStrategy):
 
     @classmethod
     def from_config(
-        cls, config: Dict[str, Any], llm_handler: Optional[LLMHandler] = None
+        cls, config: Dict[str, Any], **dependencies
     ) -> "DirectLLMInteractionStrategy":
         """
         Create a DirectLLMInteractionStrategy from a configuration dictionary.
 
         Args:
             config: Configuration dictionary with strategy parameters
-            llm_handler: LLMHandler instance (required if not in config)
+            **dependencies: Additional dependencies, must include llm_handler
 
         Returns:
             An initialized DirectLLMInteractionStrategy
@@ -102,12 +102,18 @@ class DirectLLMInteractionStrategy(LLMInteractionStrategy):
         Raises:
             ValueError: If LLMHandler is not provided
         """
-        if llm_handler is None and "llm_handler" not in config:
-            raise ValueError("LLM handler is required")
+        from src.rag.utils import get_config_value
+
+        # Check for required dependencies
+        llm_handler = dependencies.get("llm_handler")
+        if llm_handler is None:
+            raise ValueError(
+                "llm_handler dependency is required for DirectLLMInteractionStrategy"
+            )
 
         return cls(
-            llm_handler=llm_handler or config["llm_handler"],
-            system_prompt=config.get("system_prompt"),
-            temperature=config.get("temperature", 0.1),
-            max_tokens=config.get("max_tokens", 2000),
+            llm_handler=llm_handler,
+            system_prompt=get_config_value(config, "system_prompt", None),
+            temperature=get_config_value(config, "temperature", 0.1, value_type=float),
+            max_tokens=get_config_value(config, "max_tokens", 2000, value_type=int),
         )

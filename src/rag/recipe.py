@@ -2,7 +2,7 @@ import logging
 from typing import Dict, Any
 
 from src.rag.models import RAGContext, RAGResponse
-from src.rag.strategies import (
+from src.rag.strategies.strategies import (
     QueryUnderstandingStrategy,
     RetrievalStrategy,
     ContextProcessingStrategy,
@@ -109,7 +109,7 @@ class RAGRecipe:
             )
 
     @classmethod
-    def from_config(cls, config: Dict[str, Any]) -> "RAGRecipe":
+    def from_config(cls, config: Dict[str, Any], strategy_factory=None) -> "RAGRecipe":
         """
         Create a RAGRecipe from a configuration dictionary.
 
@@ -119,6 +119,8 @@ class RAGRecipe:
 
         Args:
             config: Configuration dictionary defining the recipe
+            strategy_factory: Optional factory function for creating strategy instances
+                             If not provided, assumes strategy instances are directly in config
 
         Returns:
             RAGRecipe: Initialized recipe with all strategies
@@ -127,6 +129,57 @@ class RAGRecipe:
             ValueError: If configuration is invalid
             ImportError: If a strategy class cannot be imported
         """
-        # This is a placeholder for now - we'll implement this later
-        # when we have strategy implementations and a configuration system
-        raise NotImplementedError("Recipe configuration loading not yet implemented")
+        # Extract basic recipe information
+        name = config.get("name")
+        if not name:
+            raise ValueError("Recipe configuration must include a 'name'")
+
+        description = config.get("description", f"Recipe: {name}")
+
+        # Validate that we have all required strategy sections
+        required_strategies = [
+            "query_understanding",
+            "retrieval",
+            "context_processing",
+            "prompt_building",
+            "llm_interaction",
+            "response_processing",
+        ]
+
+        for strategy_type in required_strategies:
+            if strategy_type not in config:
+                raise ValueError(
+                    f"Recipe configuration must include a '{strategy_type}' section"
+                )
+
+        # Create strategies based on configuration
+        strategies = {}
+
+        if strategy_factory:
+            # If a strategy factory is provided, use it to create strategy instances
+            for strategy_type in required_strategies:
+                strategy_config = config[strategy_type]
+                strategies[strategy_type] = strategy_factory(
+                    strategy_type, strategy_config
+                )
+        else:
+            # Otherwise, assume strategy instances are directly provided in the config
+            for strategy_type in required_strategies:
+                strategy = config.get(strategy_type)
+                if not strategy:
+                    raise ValueError(
+                        f"Missing {strategy_type} strategy in recipe configuration"
+                    )
+                strategies[strategy_type] = strategy
+
+        # Create and return the recipe
+        return cls(
+            name=name,
+            description=description,
+            query_understanding=strategies["query_understanding"],
+            retrieval=strategies["retrieval"],
+            context_processing=strategies["context_processing"],
+            prompt_building=strategies["prompt_building"],
+            llm_interaction=strategies["llm_interaction"],
+            response_processing=strategies["response_processing"],
+        )

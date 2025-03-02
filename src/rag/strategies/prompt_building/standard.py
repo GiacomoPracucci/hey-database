@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional
 from string import Template
 
 from src.rag.models import RAGContext
-from src.rag.strategies import PromptBuildingStrategy
+from src.rag.strategies.strategies import PromptBuildingStrategy
 
 logger = logging.getLogger("hey-database")
 
@@ -96,19 +96,24 @@ class StandardPromptBuilder(PromptBuildingStrategy):
         return context
 
     @classmethod
-    def from_config(cls, config: Dict[str, Any]) -> "StandardPromptBuilder":
+    def from_config(
+        cls, config: Dict[str, Any], **dependencies
+    ) -> "StandardPromptBuilder":
         """
         Create a StandardPromptBuilder from a configuration dictionary.
 
         Args:
             config: Configuration dictionary with builder parameters
+            **dependencies: Additional dependencies (not used by this strategy)
 
         Returns:
             An initialized StandardPromptBuilder
         """
+        from src.rag.utils import get_config_value
+
         # If a template file path is provided, load the template from the file
         template = None
-        template_file = config.get("template_file")
+        template_file = get_config_value(config, "template_file", None)
 
         if template_file:
             try:
@@ -121,9 +126,11 @@ class StandardPromptBuilder(PromptBuildingStrategy):
 
         # Use inline template if provided and file loading failed or wasn't attempted
         if template is None:
-            template = config.get("template")
+            template = get_config_value(config, "template", None)
 
         return cls(
             template=template,
-            include_original_query=config.get("include_original_query", True),
+            include_original_query=get_config_value(
+                config, "include_original_query", True, value_type=bool
+            ),
         )

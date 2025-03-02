@@ -1,0 +1,55 @@
+# Basic RAG Recipe Configuration
+# This recipe uses cosine similarity retrieval and a standard prompt template
+
+name: basic_rag
+description: "Simple RAG recipe with cosine similarity retrieval"
+
+# Query Understanding Strategy
+query_understanding:
+  type: PassthroughQueryUnderstandingStrategy
+  params: {}
+
+# Retrieval Strategy
+retrieval:
+  type: CosineSimRetrievalStrategy
+  params:
+    tables_limit: 3
+    columns_limit: 5
+    queries_limit: 2
+    use_exact_match: true
+
+# Context Processing Strategy
+context_processing:
+  type: SimpleContextProcessor
+  params:
+    include_table_descriptions: true
+    include_column_descriptions: true
+    include_sample_queries: true
+    max_tables: 3
+    max_columns: 10
+    max_queries: 2
+
+# Prompt Building Strategy
+prompt_building:
+  type: StandardPromptBuilder
+  params:
+    include_original_query: true
+    # Optional template override
+    # template: |
+    #   You are an SQL expert who helps convert natural language queries into SQL queries.
+    #   ...
+
+# LLM Interaction Strategy
+llm_interaction:
+  type: DirectLLMInteractionStrategy
+  params:
+    system_prompt: "You are a SQL expert. Generate valid, executable SQL queries based on the user's question and database schema information."
+    temperature: 0.1
+    max_tokens: 2000
+
+# Response Processing Strategy
+response_processing:
+  type: SQLResponseProcessor
+  params:
+    max_preview_rows: 10
+    execute_query: true

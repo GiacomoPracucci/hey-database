@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
 from src.rag.models import RAGContext
-from src.rag.strategies import QueryUnderstandingStrategy
+from src.rag.strategies.strategies import QueryUnderstandingStrategy
 
 
 class PassthroughQueryUnderstandingStrategy(QueryUnderstandingStrategy):
@@ -32,7 +32,7 @@ class PassthroughQueryUnderstandingStrategy(QueryUnderstandingStrategy):
 
     @classmethod
     def from_config(
-        cls, config: Dict[str, Any]
+        cls, config: Dict[str, Any], **dependencies
     ) -> "PassthroughQueryUnderstandingStrategy":
         """
         Create a PassthroughQueryUnderstandingStrategy from a configuration dictionary.
@@ -42,8 +42,10 @@ class PassthroughQueryUnderstandingStrategy(QueryUnderstandingStrategy):
 
         Args:
             config: Configuration dictionary (ignored)
+            **dependencies: Additional dependencies (ignored for this strategy)
 
         Returns:
             A new PassthroughQueryUnderstandingStrategy instance
         """
+        # This strategy has no configurable parameters
         return cls()

@@ -72,7 +72,10 @@ def create_app():
         vector_store_startup = VectorStoreStartup(app_components.vector_store)
         vector_store_startup.initialize(metadata)
 
-        chat_service = ChatService(app_components.sql_llm)
+        chat_service = ChatService(
+            recipe_registry=app_components.recipe_registry,
+            vector_store=app_components.vector_store,
+        )
         schema_service = SchemaService(metadata)
 
         # registra le routes
