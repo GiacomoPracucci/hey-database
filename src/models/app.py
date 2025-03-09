@@ -1,3 +1,6 @@
+from typing import List
+from dataclasses import field
+
 from dataclasses import dataclass
 from src.models.db import DatabaseConfig
 from src.models.llm import LLMConfig
@@ -22,7 +25,7 @@ from src.metadata.extractors.column.column_metadata_extractor import (
 from src.metadata.enhancers.table_metadata_enhancer import TableMetadataEnhancer
 from src.metadata.enhancers.column_metadata_enhancer import ColumnMetadataEnhancer
 
-from src.rag.recipe_registry import RAGRecipeRegistry
+from src.models.recipes import RecipeConfig, RecipesCollection
 
 from src.models.base import BaseConfig
 
@@ -36,6 +39,7 @@ class AppConfig:
     metadata: MetadataConfig
     vector_store: VectorStoreConfig
     base_config: BaseConfig
+    recipes_configs: List[RecipeConfig] = field(default_factory=list)
 
 
 @dataclass
@@ -50,4 +54,4 @@ class AppComponents:
     column_metadata_extractor: ColumnMetadataExtractor
     table_metadata_enhancer: TableMetadataEnhancer
     column_metadata_enhancer: ColumnMetadataEnhancer
-    recipe_registry: RAGRecipeRegistry
+    recipes_collection: RecipesCollection

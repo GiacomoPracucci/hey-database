@@ -4,7 +4,7 @@ from src.rag.models import RAGContext
 from src.rag.strategies.strategies import QueryUnderstandingStrategy
 
 
-class PassthroughQueryUnderstandingStrategy(QueryUnderstandingStrategy):
+class PassthroughQueryUnderstanding(QueryUnderstandingStrategy):
     """
     A simple query understanding strategy that passes the query through unchanged.
 
@@ -33,7 +33,7 @@ class PassthroughQueryUnderstandingStrategy(QueryUnderstandingStrategy):
     @classmethod
     def from_config(
         cls, config: Dict[str, Any], **dependencies
-    ) -> "PassthroughQueryUnderstandingStrategy":
+    ) -> "PassthroughQueryUnderstanding":
         """
         Create a PassthroughQueryUnderstandingStrategy from a configuration dictionary.
 

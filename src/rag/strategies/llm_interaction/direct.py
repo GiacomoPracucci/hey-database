@@ -8,7 +8,7 @@ from src.llm_handler.llm_handler import LLMHandler
 logger = logging.getLogger("hey-database")
 
 
-class DirectLLMInteractionStrategy(LLMInteractionStrategy):
+class DirectLLMInteraction(LLMInteractionStrategy):
     """
     A strategy for direct interaction with an LLM.
 
@@ -88,7 +88,7 @@ class DirectLLMInteractionStrategy(LLMInteractionStrategy):
     @classmethod
     def from_config(
         cls, config: Dict[str, Any], **dependencies
-    ) -> "DirectLLMInteractionStrategy":
+    ) -> "DirectLLMInteraction":
         """
         Create a DirectLLMInteractionStrategy from a configuration dictionary.
 

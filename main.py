@@ -29,6 +29,7 @@ def create_app():
     project_root = Path(__file__).resolve().parent
     sys.path.append(str(project_root))
     os.chdir(project_root)
+    recipes_dir = os.path.join(project_root, "configs", "rag_recipes")
 
     template_dir = os.path.join(project_root, "src", "web", "templates")
     static_dir = os.path.join(project_root, "src", "web", "static")
@@ -49,6 +50,7 @@ def create_app():
         prompt_config_path=os.path.join(project_root, "configs", "prompt.yaml"),
         metadata_config_path=os.path.join(project_root, "configs", "metadata_.yaml"),
         base_config_path=os.path.join(project_root, "configs", "base_config.yaml"),
+        recipes_dir=recipes_dir
     )
 
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)

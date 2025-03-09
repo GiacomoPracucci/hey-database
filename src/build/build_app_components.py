@@ -5,18 +5,20 @@ from src.factories.metadata import MetadataFactory
 from src.factories.vector_store import VectorStoreFactory
 from src.factories.llm import LLMFactory
 from src.factories.cache import CacheFactory
-from src.rag.recipe_loader import RAGRecipeLoader
 
-from src.rag.recipe_registry import RAGRecipeRegistry
+from src.factories.recipes import RecipeFactory
+from src.models.recipes import RecipesCollection
 from src.rag.recipe_builder import RAGRecipeBuilder
-from src.rag.strategies import (
-    PassthroughQueryUnderstandingStrategy,
-    CosineSimRetrievalStrategy,
-    SimpleContextProcessor,
-    StandardPromptBuilder,
-    DirectLLMInteractionStrategy,
-    SQLResponseProcessor,
+
+from src.rag.strategies.query_understanding.passthrough import (
+    PassthroughQueryUnderstanding,
 )
+from src.rag.strategies.retrieval.cosine_sim import CosineSimRetrieval
+from src.rag.strategies.context_processing.simple import SimpleContextProcessor
+from src.rag.strategies.prompt_building.standard import StandardPromptBuilder
+from src.rag.strategies.llm_interaction.direct import DirectLLMInteraction
+from src.rag.strategies.response_processing.sql_processor import SQLResponseProcessor
+
 
 logger = logging.getLogger("hey-database")
 
@@ -66,7 +68,7 @@ class AppComponentsBuilder:
         self.table_metadata_enhancer = None
         self.column_metadata_enhancer = None
 
-        self.recipe_registry = None
+        self.recipes_collection = None
 
     def build_database(self):
         """
@@ -234,78 +236,88 @@ class AppComponentsBuilder:
         self.cache = CacheFactory.create_cache(self.config.cache)
         return self
 
-    def build_recipe_registry(self):
+    def build_recipes_collection(self):
         """
-        Build and initialize the RAG recipe registry.
-
-        Creates a registry and populates it with the default RAG recipes.
+        Costruisce la collezione di recipes dalle configurazioni.
 
         Returns:
             self: Builder instance for method chaining
 
         Raises:
-            RuntimeError: If required dependencies are not available
+            RuntimeError: If required dependencies are missing
         """
         if not self.sql_llm:
-            raise RuntimeError("Cannot build recipe registry without LLM handler")
+            raise RuntimeError("Cannot build recipes without LLM handler")
         if not self.vector_store_searcher:
-            raise RuntimeError(
-                "Cannot build recipe registry without vector store searcher"
-            )
+            raise RuntimeError("Cannot build recipes without vector store searcher")
         if not self.db:
-            raise RuntimeError(
-                "Cannot build recipe registry without database connector"
-            )
+            raise RuntimeError("Cannot build recipes without database connector")
 
-        logger.info("Initializing RAG recipe registry")
+        logger.info("Inizializzazione collezione di recipes RAG")
 
-        # Create recipe registry
-        self.recipe_registry = RAGRecipeRegistry()
+        # Crea le dipendenze per le strategie
+        dependencies = {
+            "db_connector": self.db,
+            "vector_store_search": self.vector_store_searcher,
+            "llm_handler": self.sql_llm,
+        }
 
-        # Create basic RAG recipe
-        basic_recipe = (
-            RAGRecipeBuilder(
-                "basic_rag", "Basic RAG recipe with cosine similarity retrieval"
-            )
-            .with_query_understanding(PassthroughQueryUnderstandingStrategy())
-            .with_retrieval(
-                CosineSimRetrievalStrategy(
-                    vector_store_search=self.vector_store_searcher,
-                    tables_limit=3,
-                    columns_limit=5,
-                    queries_limit=2,
-                )
-            )
-            .with_context_processing(
-                SimpleContextProcessor(
-                    include_table_descriptions=True,
-                    include_column_descriptions=True,
-                    include_sample_queries=True,
-                )
-            )
-            .with_prompt_building(StandardPromptBuilder())
-            .with_llm_interaction(
-                DirectLLMInteractionStrategy(
-                    llm_handler=self.sql_llm,
-                    system_prompt="You are a SQL expert. Generate valid, executable SQL queries based on the user's question and database schema information.",
-                )
-            )
-            .with_response_processing(
-                SQLResponseProcessor(
-                    db=self.db, max_preview_rows=10, execute_query=True
-                )
-            )
-            .build()
+        # Crea la factory per le recipes
+        recipe_factory = RecipeFactory(dependencies)
+
+        # Crea la collezione di recipes dalle configurazioni
+        self.recipes_collection = recipe_factory.create_recipes_collection(
+            self.config.recipes_configs
         )
 
-        # Register the basic recipe as default
-        self.recipe_registry.register_recipe(basic_recipe, set_as_default=True)
+        # Se non ci sono recipes configurate, crea una recipe di base come fallback
+        if not self.recipes_collection.recipes:
+            logger.warning(
+                "Nessuna recipe configurata trovata. Creazione recipe di base come fallback."
+            )
 
-        # TODO: In future, we could load additional recipes from config files
-        # recipe_loader = RAGRecipeLoader(dependencies={...})
-        # recipe_loader.load_and_register_recipes(config_path, self.recipe_registry)
+            # Crea una recipe di base con le stesse strategie che usavi nel Registry
+            basic_recipe = (
+                RAGRecipeBuilder(
+                    "basic_rag", "Basic RAG recipe with cosine similarity retrieval"
+                )
+                .with_query_understanding(PassthroughQueryUnderstanding())
+                .with_retrieval(
+                    CosineSimRetrieval(
+                        vector_store_search=self.vector_store_searcher,
+                        tables_limit=3,
+                        columns_limit=5,
+                        queries_limit=2,
+                    )
+                )
+                .with_context_processing(
+                    SimpleContextProcessor(
+                        include_table_descriptions=True,
+                        include_column_descriptions=True,
+                        include_sample_queries=True,
+                    )
+                )
+                .with_prompt_building(StandardPromptBuilder())
+                .with_llm_interaction(
+                    DirectLLMInteraction(
+                        llm_handler=self.sql_llm,
+                        system_prompt="You are a SQL expert. Generate valid, executable SQL queries based on the user's question and database schema information.",
+                    )
+                )
+                .with_response_processing(
+                    SQLResponseProcessor(
+                        db=self.db, max_preview_rows=10, execute_query=True
+                    )
+                )
+                .build()
+            )
 
-        logger.info(f"Registered default RAG recipe: {basic_recipe.name}")
+            # Aggiungi la recipe alla collezione
+            self.recipes_collection = RecipesCollection(
+                recipes={"basic_rag": basic_recipe}, default_recipe_name="basic_rag"
+            )
+
+        logger.info(f"Inizializzate {len(self.recipes_collection.recipes)} recipes")
         return self
 
     def build(self) -> AppComponents:
@@ -329,7 +341,7 @@ class AppComponentsBuilder:
         self.build_column_metadata_extractor()
         self.build_table_metadata_enhancer()
         self.build_column_metadata_enhancer()
-        self.build_recipe_registry()
+        self.build_recipes_collection()
 
         return AppComponents(
             db=self.db,
@@ -342,5 +354,5 @@ class AppComponentsBuilder:
             column_metadata_extractor=self.column_metadata_extractor,
             table_metadata_enhancer=self.table_metadata_enhancer,
             column_metadata_enhancer=self.column_metadata_enhancer,
-            recipe_registry=self.recipe_registry,
+            recipes_collection=self.recipes_collection,
         )

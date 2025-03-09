@@ -2,7 +2,7 @@ import logging
 from typing import Optional, Dict, Any
 
 from src.store.vectorstore_client import VectorStore
-from src.rag.recipe_registry import RAGRecipeRegistry
+from src.models.recipes import RecipesCollection
 
 logger = logging.getLogger("hey-database")
 
@@ -21,18 +21,18 @@ class ChatService:
 
     def __init__(
         self,
-        recipe_registry: RAGRecipeRegistry,
+        recipes_collection: RecipesCollection,
         vector_store: Optional[VectorStore] = None,
     ):
         """
         Initialize the chat service with required components.
 
         Args:
-            recipe_registry: Registry of RAG recipes
+            recipes-collectiom: Lists of RAG recipes to use for processing messages
             vector_store: Optional vector store for handling feedback
         """
         self.vector_store = vector_store
-        self.recipe_registry = recipe_registry
+        self.recipes_collection = recipes_collection
 
     def process_message(
         self, message: str, recipe_name: Optional[str] = None
@@ -51,7 +51,7 @@ class ChatService:
             logger.debug(f"Processing message: '{message}'")
 
             # Get the appropriate recipe
-            recipe = self.recipe_registry.get_recipe(recipe_name)
+            recipe = self.recipes_collection.get_recipe(recipe_name)
             logger.debug(f"Using RAG recipe: {recipe.name}")
 
             # Execute the RAG recipe

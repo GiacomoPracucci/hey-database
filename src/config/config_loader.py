@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 import yaml
 import os
 
@@ -12,6 +12,7 @@ from src.models.embedding import EmbeddingConfig
 from src.models.cache import CacheConfig
 from src.models.metadata import MetadataConfig
 from src.models.base import BaseConfig
+from src.models.recipes import RecipeConfig, StrategyConfig
 
 from dotenv import load_dotenv
 
@@ -66,6 +67,7 @@ class ConfigLoader:
         metadata_config_path: str,
         vector_store_config_path: str,
         base_config_path: str,
+        recipes_dir: str = "src/configs/rag_recipes",
     ) -> AppConfig:
         """Load the configuration"""
         db_config = cls.load_db_config(db_config_path)
@@ -75,6 +77,7 @@ class ConfigLoader:
         metadata_config = cls.load_metadata_config(metadata_config_path)
         vector_store_config = cls.load_vector_store_config(vector_store_config_path)
         base_config = cls.load_base_config(base_config_path)
+        recipes_configs = cls.load_recipes_configs(recipes_dir)
 
         return AppConfig(
             database=db_config,
@@ -84,6 +87,7 @@ class ConfigLoader:
             metadata=metadata_config,
             vector_store=vector_store_config,
             base_config=base_config,
+            recipes_configs=recipes_configs,
         )
 
     @staticmethod
@@ -169,6 +173,79 @@ class ConfigLoader:
             retrieve_distinct_values=config_data.get("retrieve_distinct_values", False),
             max_distinct_values=config_data.get("max_distinct_values", 100),
         )
+
+    @classmethod
+    def load_recipes_configs(cls, recipes_dir: str) -> List[RecipeConfig]:
+        """Carica tutte le configurazioni delle recipes da una directory"""
+        recipes_configs = []
+
+        if not os.path.exists(recipes_dir):
+            logger.warning(f"Directory recipes non trovata: {recipes_dir}")
+            return recipes_configs
+
+        for filename in os.listdir(recipes_dir):
+            if filename.endswith((".yaml", ".yml")):
+                try:
+                    config_path = os.path.join(recipes_dir, filename)
+                    logger.debug(f"Caricamento configurazione recipe da: {config_path}")
+
+                    config_data = cls._open_config(config_path)
+                    config_data = ConfigResolver.resolve_env_vars(config_data)
+
+                    # Crea gli oggetti StrategyConfig per ogni strategia
+                    query_understanding = StrategyConfig(
+                        type=config_data["query_understanding"]["type"],
+                        params=config_data["query_understanding"].get("params", {}),
+                    )
+
+                    retrieval = StrategyConfig(
+                        type=config_data["retrieval"]["type"],
+                        params=config_data["retrieval"].get("params", {}),
+                    )
+
+                    context_processing = StrategyConfig(
+                        type=config_data["context_processing"]["type"],
+                        params=config_data["context_processing"].get("params", {}),
+                    )
+
+                    prompt_building = StrategyConfig(
+                        type=config_data["prompt_building"]["type"],
+                        params=config_data["prompt_building"].get("params", {}),
+                    )
+
+                    llm_interaction = StrategyConfig(
+                        type=config_data["llm_interaction"]["type"],
+                        params=config_data["llm_interaction"].get("params", {}),
+                    )
+
+                    response_processing = StrategyConfig(
+                        type=config_data["response_processing"]["type"],
+                        params=config_data["response_processing"].get("params", {}),
+                    )
+
+                    # Crea l'oggetto RecipeConfig
+                    recipe_config = RecipeConfig(
+                        name=config_data["name"],
+                        description=config_data["description"],
+                        default=config_data.get("default", False),
+                        query_understanding=query_understanding,
+                        retrieval=retrieval,
+                        context_processing=context_processing,
+                        prompt_building=prompt_building,
+                        llm_interaction=llm_interaction,
+                        response_processing=response_processing,
+                    )
+
+                    recipes_configs.append(recipe_config)
+                    logger.info(f"Caricata configurazione recipe: {recipe_config.name}")
+
+                except Exception as e:
+                    logger.error(
+                        f"Errore nel caricamento della configurazione recipe da {filename}: {str(e)}"
+                    )
+                    # Continua con la prossima configurazione anche se una fallisce
+
+        return recipes_configs
 
     @classmethod
     def load_vector_store_config(cls, config_path) -> VectorStoreConfig:

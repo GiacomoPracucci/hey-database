@@ -8,7 +8,7 @@ from src.store.vectorstore_search import StoreSearch
 logger = logging.getLogger("hey-database")
 
 
-class CosineSimRetrievalStrategy(RetrievalStrategy):
+class CosineSimRetrieval(RetrievalStrategy):
     """
     A retrieval strategy that uses cosine similarity to find relevant information.
 
@@ -107,7 +107,7 @@ class CosineSimRetrievalStrategy(RetrievalStrategy):
     @classmethod
     def from_config(
         cls, config: Dict[str, Any], **dependencies
-    ) -> "CosineSimRetrievalStrategy":
+    ) -> "CosineSimRetrieval":
         """
         Create a CosineSimRetrievalStrategy from a configuration dictionary.
 

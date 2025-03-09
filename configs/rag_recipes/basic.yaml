@@ -3,15 +3,16 @@
 
 name: basic_rag
 description: "Simple RAG recipe with cosine similarity retrieval"
+default: true
 
 # Query Understanding Strategy
 query_understanding:
-  type: PassthroughQueryUnderstandingStrategy
+  type: PassthroughQueryUnderstanding
   params: {}
 
 # Retrieval Strategy
 retrieval:
-  type: CosineSimRetrievalStrategy
+  type: CosineSimRetrieval
   params:
     tables_limit: 3
     columns_limit: 5
@@ -41,7 +42,7 @@ prompt_building:
 
 # LLM Interaction Strategy
 llm_interaction:
-  type: DirectLLMInteractionStrategy
+  type: DirectLLMInteraction
   params:
     system_prompt: "You are a SQL expert. Generate valid, executable SQL queries based on the user's question and database schema information."
     temperature: 0.1
