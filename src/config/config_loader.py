@@ -237,7 +237,7 @@ class ConfigLoader:
                     )
 
                     recipes_configs.append(recipe_config)
-                    logger.info(f"Caricata configurazione recipe: {recipe_config.name}")
+                    logger.debug(f"Caricata configurazione recipe: {recipe_config.name}")
 
                 except Exception as e:
                     logger.error(

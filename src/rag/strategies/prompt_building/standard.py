@@ -34,7 +34,7 @@ class StandardPromptBuilder(PromptBuildingStrategy):
     }
     
     Important:
-    - Always use fully qualified table names
+    - Always insert schema name "northwind" before the tables
     - Do not include comments in the SQL query
     - The query must be executable
     - Use the provided context information to ensure correct column names and types
