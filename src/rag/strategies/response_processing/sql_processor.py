@@ -1,5 +1,6 @@
 import logging
 import re
+import json
 from typing import Dict, Any, List, Optional, Tuple
 
 from src.rag.models import RAGContext, RAGResponse
@@ -120,9 +121,7 @@ class SQLResponseProcessor(ResponseProcessingStrategy):
 
         return response
 
-    def _extract_sql_and_explanation(
-        self, text: str
-    ) -> Tuple[Optional[str], Optional[str]]:
+    def _extract_sql_and_explanation(self, text: str) -> Tuple[Optional[str], Optional[str]]:
         """
         Extract SQL query and explanation from LLM response text.
 
@@ -135,68 +134,110 @@ class SQLResponseProcessor(ResponseProcessingStrategy):
         Returns:
             Tuple containing (sql_query, explanation), either can be None if not found
         """
-        import json
-
         # First, try to parse as JSON
         try:
-            # Clean up the text to extract JSON if it's wrapped in markdown
-            cleaned_text = text.strip()
-
-            # Handle markdown code blocks
-            if "```json" in cleaned_text:
-                cleaned_text = cleaned_text.split("```json")[1].split("```")[0].strip()
-            elif "```" in cleaned_text:
-                # Might be a code block without language specification
-                cleaned_text = cleaned_text.split("```")[1].split("```")[0].strip()
-
-            # Parse the JSON
-            response_json = json.loads(cleaned_text)
-
-            # Extract query and explanation
-            if isinstance(response_json, dict):
-                sql_query = response_json.get("query")
-                explanation = response_json.get("explanation")
-
-                if sql_query:
-                    logger.debug("Successfully extracted SQL query from JSON response")
-                    return sql_query, explanation
-
+            sql_query, explanation = self._parse_sql_and_explanation_as_json(text)
+            if sql_query:
+                logger.debug("Successfully extracted SQL query from JSON response")
+                return sql_query, explanation
         except (json.JSONDecodeError, IndexError) as e:
-            logger.warning(
-                f"Failed to parse response as JSON: {str(e)}. Falling back to regex."
-            )
+            logger.warning(f"Failed to parse response as JSON: {str(e)}. Falling back to regex.")
 
         # If JSON parsing failed, fall back to regex-based extraction
+        return self._extract_sql_and_explanation_fallback(text)
+    
+    def _parse_sql_and_explanation_as_json(self, text: str) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Parse SQL query and explanation from JSON formatted response.
+        
+        Args:
+            text: Text containing JSON response
+            
+        Returns:
+            Tuple of (sql_query, explanation), both None if parsing fails
+        """
+        # Clean up the text to extract JSON if it's wrapped in markdown
+        cleaned_text = text.strip()
+        cleaned_text = self._handle_markdown_code_blocks(cleaned_text)
+        
+        # Parse the JSON
+        response_json = json.loads(cleaned_text)
+        
+        # Extract query and explanation if response is a dict
+        if isinstance(response_json, dict):
+            sql_query = response_json.get("query")
+            explanation = response_json.get("explanation")
+            return sql_query, explanation
+            
+        return None, None
+
+    @staticmethod
+    def _handle_markdown_code_blocks(text: str) -> str:
+        """
+        Handle markdown code blocks in the LLM response text.
+
+        This method extracts code blocks from the text and returns the cleaned text.
+
+        Args:
+            text: LLM response text
+        """
+        if "```json" in text:
+            text = text.split("```json")[1].split("```")[0].strip()
+        elif "```" in text:
+            # Might be a code block without language specification
+            text = text.split("```")[1].split("```")[0].strip()
+        return text
+    
+    def _extract_sql_and_explanation_fallback(self, text: str) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Extract SQL query and explanation using regex patterns.
+        Attempts multiple patterns in order of reliability.
+        """
         logger.debug("Using regex fallback to extract SQL query")
-
-        # Look for SQL code blocks with markdown backticks
-        sql_match = re.search(r"```sql\s*([\s\S]*?)\s*```", text, re.IGNORECASE)
-
-        if not sql_match:
-            # Try to find code blocks without specifying sql
-            sql_match = re.search(r"```\s*([\s\S]*?)\s*```", text)
+        
+        sql_match = (
+            self._find_sql_in_code_block(text) or 
+            self._find_sql_by_keywords(text)
+        )
 
         if not sql_match:
-            # Look for SQL keywords as a last resort
-            # This is more error-prone but better than nothing
-            sql_pattern = r"(?:SELECT|INSERT|UPDATE|DELETE)[\s\S]*?;"
-            sql_match = re.search(sql_pattern, text, re.IGNORECASE)
+            return None, None
 
-        # Extract SQL query if found
-        sql_query = sql_match.group(1).strip() if sql_match else None
-
-        # If we found the query with the last resort method, we need to get the full match
-        if sql_match and not sql_query:
-            sql_query = sql_match.group(0).strip()
-
-        # Extract explanation (everything before the SQL query)
-        explanation = None
-        if sql_match:
-            explanation_text = text[: sql_match.start()].strip()
-            if explanation_text:
-                explanation = explanation_text
+        sql_query = self._extract_sql_from_match(sql_match)
+        explanation = self._extract_explanation_from_match(text, sql_match)
 
         return sql_query, explanation
+
+    def _find_sql_in_code_block(self, text: str) -> Optional[re.Match]:
+        """Find SQL query in markdown code blocks."""
+        # Try SQL-specific code block first
+        sql_match = re.search(r"```sql\s*([\s\S]*?)\s*```", text, re.IGNORECASE)
+        if sql_match:
+            return sql_match
+            
+        # Try generic code block
+        return re.search(r"```\s*([\s\S]*?)\s*```", text)
+
+    def _find_sql_by_keywords(self, text: str) -> Optional[re.Match]:
+        """Find SQL query by looking for SQL keywords."""
+        sql_pattern = r"(?:SELECT|INSERT|UPDATE|DELETE)[\s\S]*?;"
+        return re.search(sql_pattern, text, re.IGNORECASE)
+
+    def _extract_sql_from_match(self, match: re.Match) -> str:
+        """Extract SQL query from regex match object."""
+        # Try to get the content from the code block
+        sql_query = match.group(1).strip() if match.groups() else None
+        
+        # If that failed (e.g. with keyword matching), get the full match
+        if not sql_query:
+            sql_query = match.group(0).strip()
+            
+        return sql_query
+
+    def _extract_explanation_from_match(self, text: str, match: re.Match) -> Optional[str]:
+        """Extract explanation text that appears before the SQL query."""
+        explanation_text = text[:match.start()].strip()
+        return explanation_text if explanation_text else None
 
     def _execute_query(self, query: str) -> Optional[Tuple[List[str], List[Tuple]]]:
         """
