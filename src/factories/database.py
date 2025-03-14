@@ -46,4 +46,5 @@ class DatabaseFactory:
                 database=config.database,
                 user=config.user,
                 password=config.password,
+                schema=config.schema,
             )

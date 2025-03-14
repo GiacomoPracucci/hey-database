@@ -71,11 +71,11 @@ def create_app():
         metadata_startup = MetadataStartup(metadata_processor, app_components.cache)
         metadata = metadata_startup.initialize_metadata()
 
-        vector_store_startup = VectorStoreStartup(app_components.vector_store)
+        vector_store_startup = VectorStoreStartup(app_components.vector_store, app_components.vector_store_writer)
         vector_store_startup.initialize(metadata)
 
         chat_service = ChatService(
-            recipe_registry=app_components.recipe_registry,
+            recipes_collection=app_components.recipes_collection,
             vector_store=app_components.vector_store,
         )
         schema_service = SchemaService(metadata)
@@ -83,7 +83,7 @@ def create_app():
         # registra le routes
         create_chat_routes(app, chat_service)
         create_schema_routes(app, schema_service)
-        create_preview_routes(app, app_components.db, app_components.metadata_retriever)
+        create_preview_routes(app, app_components.db)
 
         # route principale
         @app.route("/")

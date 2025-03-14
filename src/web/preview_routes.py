@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger('hey-database')
 logger.setLevel(logging.DEBUG)
 
-def create_preview_routes(app, db, metadata_retriever):
+def create_preview_routes(app, db):
     """ Crea e configura le routes per la preview dei dati
     
     Args:
@@ -12,7 +12,7 @@ def create_preview_routes(app, db, metadata_retriever):
         db: Istanza DatabaseConnector per l'accesso al database
     """
     preview_bp = Blueprint('preview', __name__)
-    schema = metadata_retriever.schema
+    schema = db.schema
     
     @preview_bp.route('/api/tables/<table_name>/preview')
     def get_table_preview(table_name):

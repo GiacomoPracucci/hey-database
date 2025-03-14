@@ -13,6 +13,7 @@ class MySQLManager(DatabaseConnector):
         database: str = "mysql",
         user: str = "root",
         password: str = None,
+        schema: str = "northwind", 
         charset: str = "utf8mb4",
         ssl_ca: str = None,
     ) -> None:
@@ -27,6 +28,7 @@ class MySQLManager(DatabaseConnector):
             charset (str): Set di caratteri da utilizzare (default: utf8mb4)
             ssl_ca (str, optional): Percorso al certificato SSL CA per connessioni sicure
         """
+        self.schema = schema
         params = {
             "host": host,
             "port": port,

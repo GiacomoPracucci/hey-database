@@ -17,7 +17,9 @@ class PostgresManager(DatabaseConnector):
         database: str = "postgres",
         user: str = "postgres",
         password: str = None,
+        schema: str = "northwind", 
     ) -> None:
+        self.schema = schema
         self.connection_string = (
             f"postgresql://{user}:{password}@{host}:{port}/{database}"
         )

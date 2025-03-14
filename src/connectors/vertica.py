@@ -13,6 +13,7 @@ class VerticaManager(DatabaseConnector):
         database: str = "vertica",
         user: str = "dbadmin",
         password: str = None,
+        schema: str = "northwind", 
     ) -> None:
         """Inizializza il connettore Vertica
 
@@ -23,6 +24,7 @@ class VerticaManager(DatabaseConnector):
             user (str): Nome utente
             password (str): Password
         """
+        self.schema = schema
         self.connection_string = (
             f"vertica+vertica_python://{user}:{password}@{host}:{port}/{database}"
         )
