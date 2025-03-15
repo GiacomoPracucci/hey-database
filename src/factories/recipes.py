@@ -11,16 +11,30 @@ logger = logging.getLogger("hey-database")
 
 
 class RecipeFactory:
-    """Factory per la creazione delle RAG recipes dalle configurazioni"""
+    """
+    Factory for creating RAG recipes from configurations.
+
+    This class handles the instantiation of RAG recipes by creating and
+    configuring their component strategies based on provided configurations.
+    It manages the dependencies injection and ensures proper initialization
+    of all recipe components.
+    """
 
     def __init__(self, dependencies: Dict[str, Any]):
         """
-        Inizializza la factory con le dipendenze necessarie.
+        Initialize the factory with necessary dependencies.
 
         Args:
-            dependencies: Dizionario delle dipendenze necessarie per le strategie
+            dependencies: Dictionary of dependencies needed by the strategies,
+                        such as database connectors, vector stores, and LLM handlers
         """
         self.dependencies = dependencies
+        
+        if "schema" not in self.dependencies and "db_connector" in self.dependencies:
+            db = self.dependencies["db_connector"]
+            if hasattr(db, "schema"):
+                self.dependencies["schema"] = db.schema
+
         self.strategy_modules = [
             "src.rag.strategies.query_understanding.passthrough",
             "src.rag.strategies.retrieval.cosine_sim",
@@ -34,13 +48,13 @@ class RecipeFactory:
         self, configs: List[RecipeConfig]
     ) -> RecipesCollection:
         """
-        Crea una collezione di recipes dalle configurazioni.
+        Create a collection of recipes from configurations.
 
         Args:
-            configs: Lista delle configurazioni delle recipes
+            configs: List of recipe configurations
 
         Returns:
-            RecipesCollection con tutte le recipes create
+            RecipesCollection containing all successfully created recipes
         """
         recipes = {}
         default_recipe_name = None
@@ -72,13 +86,16 @@ class RecipeFactory:
 
     def create_recipe(self, config: RecipeConfig) -> RAGRecipe:
         """
-        Crea una singola recipe dalla sua configurazione.
+        Create a single recipe from its configuration.
 
         Args:
-            config: Configurazione della recipe
+            config: Configuration for the recipe
 
         Returns:
-            RAGRecipe inizializzata
+            Initialized RAGRecipe instance with all required strategies
+
+        Raises:
+            ValueError: If recipe creation fails
         """
         logger.debug(f"Creazione recipe: {config.name}")
 
@@ -139,18 +156,18 @@ class RecipeFactory:
         self, strategy_type: str, class_name: str, params: Dict[str, Any]
     ) -> RAGStrategy:
         """
-        Crea un'istanza di una strategia dal suo nome e parametri.
+        Create a strategy instance from its class name and parameters.
 
         Args:
-            strategy_type: Tipo di strategia (es. "query_understanding")
-            class_name: Nome della classe della strategia
-            params: Parametri di configurazione per la strategia
+            strategy_type: Type of strategy (e.g., "query_understanding")
+            class_name: Name of the strategy class
+            params: Configuration parameters for the strategy
 
         Returns:
-            Istanza della strategia inizializzata
+            Initialized strategy instance
 
         Raises:
-            ValueError: Se la classe della strategia non viene trovata o non è del tipo corretto
+            ValueError: If strategy class is not found or initialization fails
         """
         # Cerca la classe della strategia nei moduli registrati
         strategy_class = None

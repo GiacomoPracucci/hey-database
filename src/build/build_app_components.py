@@ -297,7 +297,7 @@ class AppComponentsBuilder:
                         include_sample_queries=True,
                     )
                 )
-                .with_prompt_building(StandardPromptBuilder())
+                .with_prompt_building(StandardPromptBuilder(schema=self.db.schema))
                 .with_llm_interaction(
                     DirectLLMInteraction(
                         llm_handler=self.sql_llm,

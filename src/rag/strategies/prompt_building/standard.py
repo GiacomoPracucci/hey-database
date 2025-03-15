@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Any, Optional
 from string import Template
 
+from src.rag.utils import get_config_value
 from src.rag.models import RAGContext
 from src.rag.strategies.strategies import PromptBuildingStrategy
 
@@ -34,7 +35,7 @@ class StandardPromptBuilder(PromptBuildingStrategy):
     }
     
     Important:
-    - Always insert schema name "northwind" before the tables
+    - Always insert schema name "${schema}" before the tables
     - Do not include comments in the SQL query
     - The query must be executable
     - Use the provided context information to ensure correct column names and types
@@ -48,16 +49,18 @@ class StandardPromptBuilder(PromptBuildingStrategy):
     """
 
     def __init__(
-        self, template: Optional[str] = None, include_original_query: bool = True
+        self, schema: str, template: Optional[str] = None, include_original_query: bool = True
     ):
         """
         Initialize the prompt builder with a custom template.
 
         Args:
+            schema: Database schema name to use in SQL queries
             template: Custom template string (optional, uses default if None)
             include_original_query: Whether to use the original query in the prompt
                                    (if False, uses processed_query)
         """
+        self.schema = schema
         self.template = template or self.DEFAULT_TEMPLATE
         self.include_original_query = include_original_query
 
@@ -87,7 +90,7 @@ class StandardPromptBuilder(PromptBuildingStrategy):
         # Build the prompt with context if available
         context_str = context.processed_context or "No relevant context available."
 
-        prompt = template.safe_substitute(context=context_str, query=query)
+        prompt = template.safe_substitute(context=context_str, query=query, schema=self.schema)
 
         # Set the final prompt in the context
         context.final_prompt = prompt
@@ -109,9 +112,48 @@ class StandardPromptBuilder(PromptBuildingStrategy):
         Returns:
             An initialized StandardPromptBuilder
         """
-        from src.rag.utils import get_config_value
+        template = StandardPromptBuilder._get_template_from_config(config)
+        schema = StandardPromptBuilder._get_schema_from_config(dependencies)
 
-        # If a template file path is provided, load the template from the file
+        return cls(
+            schema=schema,
+            template=template,
+            include_original_query=get_config_value(
+                config, "include_original_query", True, value_type=bool
+            ),
+        )
+
+    @staticmethod   
+    def _get_schema_from_config(dependencies: Dict[str, Any]) -> str:
+        """
+        Get the schema name from the dependencies.
+
+        Args:
+            dependencies: A dictionary of dependencies
+
+        Returns:
+            The schema name
+        """
+        schema = dependencies.get("schema")
+        if not schema and "db_connector" in dependencies:
+            schema = dependencies["db_connector"].schema
+
+        if not schema:
+            raise ValueError("Database schema name not provided for prompt building")
+        
+        return schema
+        
+    @staticmethod
+    def _get_template_from_config(config: Dict[str, Any]) -> Optional[str]:
+        """
+        Get the template string from the configuration.
+
+        Args:
+            config: Configuration dictionary
+
+        Returns:
+            The template string, or None if not provided
+        """
         template = None
         template_file = get_config_value(config, "template_file", None)
 
@@ -127,10 +169,5 @@ class StandardPromptBuilder(PromptBuildingStrategy):
         # Use inline template if provided and file loading failed or wasn't attempted
         if template is None:
             template = get_config_value(config, "template", None)
-
-        return cls(
-            template=template,
-            include_original_query=get_config_value(
-                config, "include_original_query", True, value_type=bool
-            ),
-        )
+        
+        return template
