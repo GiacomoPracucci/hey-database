@@ -3,7 +3,8 @@ collection_name: northwind
 path: ./data/stores/northwind_store
 #url: ${QDRANT_URL}
 #api_key: ${QDRANT_API_KEY}
-batch_size: 100
+batch_size: 
+sync_on_startup: false
 embedding:
   type: openai
   model_name: text-embedding-3-small 

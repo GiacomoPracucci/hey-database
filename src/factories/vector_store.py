@@ -104,6 +104,7 @@ class VectorStoreFactory:
             collection_name=config.collection_name,
             api_key=config.api_key,
             embedding_model=embedding_model,
+            sync_on_startup=config.sync_on_startup,
         )
 
         # Create additional components

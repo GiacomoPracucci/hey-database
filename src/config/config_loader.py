@@ -273,4 +273,5 @@ class ConfigLoader:
             embedding=embedding_config,
             api_key=config_data.get("api_key") if config_data.get("api_key") else None,
             batch_size=config_data.get("batch_size", 100),
+            sync_on_startup=config_data.get("sync_on_startup", True)
         )

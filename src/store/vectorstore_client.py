@@ -28,8 +28,19 @@ class VectorStore(ABC):
     ) -> bool:
         """Gestisce il feedback positivo dell'utente per una coppia domanda-risposta.
         Se la coppia esiste, incrementa il contatore. Se non esiste, crea una nuova entry."""
+        pass
 
-    pass
+    @abstractmethod
+    def is_collection_empty(self) -> bool:
+        """
+        Check if the vector store collection is empty.
+        
+        Uses collection statistics to determine if it contains any points.
+        
+        Returns:
+            bool: True if the collection is empty or doesn't exist, False otherwise
+        """
+        pass
 
     @abstractmethod
     def _verify_connection(self) -> bool:

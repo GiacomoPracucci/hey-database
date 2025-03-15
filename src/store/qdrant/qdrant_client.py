@@ -22,6 +22,7 @@ class QdrantStore(VectorStore):
         path: Optional[str] = None,
         url: Optional[str] = None,
         api_key: Optional[str] = None,
+        sync_on_startup: bool = True,
     ) -> None:
         """
         Inizializza il client Qdrant
@@ -32,6 +33,7 @@ class QdrantStore(VectorStore):
             url: URL del server remoto (opzionale)
             api_key: API key per server remoto (opzionale)
             embedding_model: Modello per generare gli embedding
+            sync_on_startup: Se sincronizzare i metadati all'avvio (default: True)
         """
         if path:
             self.client = QdrantClient(path=path)
@@ -46,6 +48,7 @@ class QdrantStore(VectorStore):
         self.embedding_model = embedding_model
         self.collection_name = collection_name
         self.vector_size = self.embedding_model.get_embedding_dimension()
+        self.sync_on_startup = sync_on_startup
 
     def initialize_collection(self) -> bool:
         """
@@ -237,6 +240,38 @@ class QdrantStore(VectorStore):
         except Exception as e:
             logger.error(f"Errore nella ricerca esatta: {str(e)}")
             return None
+        
+    def is_collection_empty(self) -> bool:
+        """
+        Check if the vector store collection is empty.
+        
+        Uses collection statistics to determine if it contains any points.
+        
+        Returns:
+            bool: True if the collection is empty or doesn't exist, False otherwise
+        """
+        try:
+            # Check if collection exists first
+            if not self.collection_exists():
+                return True
+                
+            # Get collection info which includes point count
+            collection_info = self.client.get_collection(self.collection_name)
+            
+            # Check points_count directly
+            points_count = collection_info.vectors_count
+            logger.debug(f"Collection {self.collection_name} contains {points_count} points")
+            
+            if points_count is None:
+                # If count is not available, assume it's empty
+                return True
+
+            return points_count == 0 # return True if empty, False otherwise
+            
+        except Exception as e:
+            logger.warning(f"Error checking if collection {self.collection_name} is empty: {str(e)}")
+            # In case of error, assume it's empty for safety
+            return True
 
     def _verify_connection(self) -> bool:
         """Verifica che il vector store sia raggiungibile

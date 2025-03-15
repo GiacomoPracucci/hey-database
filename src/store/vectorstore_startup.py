@@ -31,6 +31,7 @@ class VectorStoreStartup:
         """
         self.vector_store = vector_store
         self.writer = vector_store_writer
+        self.sync_on_startup = getattr(vector_store, "sync_on_startup", True)
 
     def initialize(self, metadata: Metadata) -> bool:
         """
@@ -50,11 +51,15 @@ class VectorStoreStartup:
             logger.info("Initializing vector store collection")
             if not self.vector_store.initialize_collection():
                 raise RuntimeError("Failed to initialize vector store collection")
-
-            # Always sync metadata to ensure consistency
-            logger.info("Syncing metadata to vector store")
-            if not self._sync_metadata(metadata):
-                raise RuntimeError("Failed to sync metadata to vector store")
+            
+            is_collection_empty = self.vector_store.is_collection_empty()
+            if self.sync_on_startup:
+                reason = "collection is empty" if is_collection_empty else "sync_on_startup is enabled"
+                logger.info(f"Syncing metadata to vector store ({reason})")
+                if not self._sync_metadata(metadata):
+                    raise RuntimeError("Failed to sync metadata to vector store")
+            else:
+                logger.info("Skipping metadata sync as sync_on_startup is disabled and collection is not empty")
 
             logger.info("Vector store initialization completed successfully")
             return True

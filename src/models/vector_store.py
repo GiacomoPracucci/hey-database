@@ -61,6 +61,7 @@ class VectorStoreConfig:
         embedding: Configuration for the embedding model
         api_key: API key for remote server authentication (optional)
         batch_size: Number of documents to process in each batch operation
+        sync_on_startup: Whether to sync metadata to vector store on startup (default: True)
     """
 
     type: str
@@ -70,6 +71,7 @@ class VectorStoreConfig:
     embedding: EmbeddingConfig
     api_key: Optional[str] = None
     batch_size: int = 100
+    sync_on_startup: bool = True
 
 
 @dataclass
