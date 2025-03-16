@@ -49,9 +49,8 @@ class ColumnMetadataEnhancer:
             ColumnMetadata: Enhanced column metadata with descriptions and keywords
         """
         try:
-            # In production, uncomment the following line to use real LLM-generated descriptions
-            # description = self._generate_description(base_metadata)
-            description = "placeholder"
+            description = self._generate_description(base_metadata)
+            #description = "placeholder"
 
             if not description:
                 return ColumnMetadata.from_base_metadata(

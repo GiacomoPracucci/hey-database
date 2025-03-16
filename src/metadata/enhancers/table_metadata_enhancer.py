@@ -52,9 +52,8 @@ class TableMetadataEnhancer:
             TableMetadata: Enhanced table metadata with descriptions, keywords, and importance score
         """
         try:
-            # In production, uncomment the following line to use real LLM-generated descriptions
-            # description = self._generate_description(base_metadata)
-            description = "placeholder"
+            description = self._generate_description(base_metadata)
+            #description = "placeholder"
 
             if not description:
                 return TableMetadata.from_base_metadata(
