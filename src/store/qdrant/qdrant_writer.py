@@ -321,6 +321,51 @@ class QdrantWriter(StoreWriter):
         except Exception as e:
             logger.error(f"Failed to delete points: {str(e)}")
             return False
+        
+    def handle_positive_feedback(
+        self, question: str, sql_query: str, explanation: str
+    ) -> bool:
+        """Gestisce il feedback positivo per una query"""
+        try:
+            # checkiamo se la domanda è già presente nello store
+            search_result = self.vector_store.client.scroll(
+                collection_name=self.vector_store.collection_name,
+                scroll_filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="type", match=models.MatchValue(value="query")
+                        ),
+                        models.FieldCondition(
+                            key="question", match=models.MatchValue(value=question)
+                        ),
+                    ]
+                ),
+                limit=1,
+            )[0]
+
+            # se è già presente, semplicemente incrementiamo i voti
+            if search_result:
+                existing = search_result[0].payload
+                votes = existing["positive_votes"] + 1
+            else:  # altrimenti è il primo voto
+                votes = 1
+
+            # se è una nuova domanda
+            # crea/aggiorna in base alla situazione che si è verificata
+            query = QueryMetadata(
+                question=question,
+                sql_query=sql_query,
+                explanation=explanation,
+                positive_votes=votes,
+                type="query",
+            )
+
+            return self.add_query(query)
+
+        except Exception as e:
+            logger.error(f"Errore nella gestione del feedback: {str(e)}")
+            return False
+
 
     def update_vectors(self, points: Dict[str, List[float]]) -> bool:
         """

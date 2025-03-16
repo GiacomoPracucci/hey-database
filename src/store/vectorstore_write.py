@@ -122,3 +122,11 @@ class StoreWriter(ABC):
             bool: True if all updates were successful, False otherwise
         """
         pass
+
+    @abstractmethod
+    def handle_positive_feedback(
+        self, question: str, sql_query: str, explanation: str
+    ) -> bool:
+        """Gestisce il feedback positivo dell'utente per una coppia domanda-risposta.
+        Se la coppia esiste, incrementa il contatore. Se non esiste, crea una nuova entry."""
+        pass

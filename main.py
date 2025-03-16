@@ -76,7 +76,7 @@ def create_app():
 
         chat_service = ChatService(
             recipes_collection=app_components.recipes_collection,
-            vector_store=app_components.vector_store,
+            vector_store_writer=app_components.vector_store_writer,
         )
         schema_service = SchemaService(metadata)
 

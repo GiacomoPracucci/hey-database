@@ -8,7 +8,8 @@ logger.setLevel(logging.DEBUG)
 
 
 def create_schema_routes(app, schema_service: SchemaService):
-    """Crea e configura le routes per la visualizzazione dello schema
+    """
+    Crea e configura le routes per la visualizzazione dello schema
 
     Args:
         app: Istanza Flask
@@ -24,7 +25,9 @@ def create_schema_routes(app, schema_service: SchemaService):
 
     @schema_bp.route("/api/metadata")
     def get_metadata():
-        """Endpoint API che fornisce i metadati dello schema per la visualizzazione
+        """
+        Endpoint API che fornisce i metadati dello schema per la visualizzazione
+        
         Restituisce la struttura completa del database incluse tabelle, colonne e relazioni
         """
         try:

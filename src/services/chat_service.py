@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, Dict, Any
 
-from src.store.vectorstore_client import VectorStore
+from src.store.vectorstore_write import StoreWriter
 from src.models.recipes import RecipesCollection
 
 logger = logging.getLogger("hey-database")
@@ -22,17 +22,18 @@ class ChatService:
     def __init__(
         self,
         recipes_collection: RecipesCollection,
-        vector_store: Optional[VectorStore] = None,
+        vector_store_writer: StoreWriter = None,
     ):
         """
         Initialize the chat service with required components.
 
         Args:
             recipes-collectiom: Lists of RAG recipes to use for processing messages
-            vector_store: Optional vector store for handling feedback
+            vector_store_writer: writer for the vector store
         """
-        self.vector_store = vector_store
+        self.vector_store_writer = vector_store_writer
         self.recipes_collection = recipes_collection
+
 
     def process_message(
         self, message: str, recipe_name: Optional[str] = None
@@ -94,12 +95,12 @@ class ChatService:
             bool: True if feedback was successfully handled, False otherwise
         """
         try:
-            if not self.vector_store:
+            if not self.vector_store_writer:
                 logger.warning("Cannot handle feedback: no vector store available")
                 return False
 
             logger.debug(f"Handling positive feedback for question: '{question}'")
-            return self.vector_store.handle_positive_feedback(
+            return self.vector_store_writer.handle_positive_feedback(
                 question=question, sql_query=sql_query, explanation=explanation
             )
 
