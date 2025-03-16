@@ -25,11 +25,16 @@ Ask questions in plain language and get SQL queries, detailed explanations, and 
 - Column-level semantic matching in development (find specific columns that match your intent)
 - Real-time query previews and result explanations
 
+### Customizable RAG Recipes
+
+- Modular Retrieval-Augmented Generation (RAG) pipelines
+- Configure specialized recipes for different query patterns
+- Mix and match strategies for query understanding, retrieval, and prompt building
+- Create domain-specific recipes optimized for different use cases
+
 ### Self-Learning System
 
 - Learns from successful queries through user feedback
-- Automatic metadata enrichment with domain-specific knowledge
-- Query pattern recognition for better suggestions
 
 ## 🚀 AI-Powered Core
 
@@ -37,6 +42,7 @@ Ask questions in plain language and get SQL queries, detailed explanations, and 
 - Sophisticated prompt engineering for accurate SQL generation
 - Vector store-based semantic memory system
 - Metadata enhancement through AI understanding
+- Pluggable RAG strategies with dependency injection
 
 ## Privacy & Storage Considerations
 
@@ -136,7 +142,7 @@ Edit .env and add your:
 
    ```yaml
    database:
-     type: postgres # or mysql or snowflake
+     type: postgres # or mysql or snowflake or vertica
      host: ...
      port: ...
      database: ...
@@ -161,7 +167,46 @@ Edit .env and add your:
        # api_key: ${OPENAI_API_KEY}  # required for OpenAI embeddings
    ```
 
-6. Run the application:
+6. Configure RAG recipes (optional):
+  Create YAML files in the configs/rag_recipes directory to define custom RAG recipes:
+
+      ```yaml
+      name: "custom_recipe"
+      description: "A custom RAG recipe for financial queries"
+      default: true  # Set as default recipe 
+
+      query_understanding:
+        type: "PassthroughQueryUnderstanding"
+        params: {}
+
+      retrieval:
+        type: "CosineSimRetrieval"
+        params:
+          tables_limit: 5
+          columns_limit: 10
+
+      context_processing:
+        type: "SimpleContextProcessor"
+        params:
+          include_table_descriptions: true
+
+      prompt_building:
+        type: "StandardPromptBuilder"
+        params:
+          template_file: "path/to/custom_template.txt"
+
+      llm_interaction:
+        type: "DirectLLMInteraction"
+        params:
+          temperature: 0.1
+
+      response_processing:
+        type: "SQLResponseProcessor"
+        params:
+          max_preview_rows: 20
+      ```
+
+7. Run the application:
 
 ```
 python main.py
