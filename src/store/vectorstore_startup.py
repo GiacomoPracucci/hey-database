@@ -52,8 +52,8 @@ class VectorStoreStartup:
             if not self.vector_store.initialize_collection():
                 raise RuntimeError("Failed to initialize vector store collection")
             
-            is_collection_empty = self.vector_store.is_collection_empty()
-            if self.sync_on_startup:
+            is_collection_empty = self.vector_store._is_collection_empty()
+            if is_collection_empty or self.sync_on_startup:
                 reason = "collection is empty" if is_collection_empty else "sync_on_startup is enabled"
                 logger.info(f"Syncing metadata to vector store ({reason})")
                 if not self._sync_metadata(metadata):

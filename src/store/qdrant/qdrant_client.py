@@ -246,6 +246,12 @@ class QdrantStore(VectorStore):
         Check if the vector store collection is empty.
         
         Uses collection statistics to determine if it contains any points.
+
+        This is the cleaneast way to check if a collection is empty, but 
+        get_collection in some cases returns "points_count" None even if there are points.
+
+        So I also implemented _is_collection_empty below that do the same thing but in a different way.
+        In vector store startup, the other method is used, until this cleaner way is fixed. 
         
         Returns:
             bool: True if the collection is empty or doesn't exist, False otherwise
@@ -267,6 +273,39 @@ class QdrantStore(VectorStore):
                 return True
 
             return points_count == 0 # return True if empty, False otherwise
+            
+        except Exception as e:
+            logger.warning(f"Error checking if collection {self.collection_name} is empty: {str(e)}")
+            # In case of error, assume it's empty for safety
+            return True
+        
+    def _is_collection_empty(self) -> bool:
+        """
+        Check if the vector store collection is empty.
+        
+        This method queries the collection to determine if it contains any points/documents.
+        It's useful for initialization logic that needs to determine if a collection
+        is newly created or already populated.
+        
+        Returns:
+            bool: True if the collection is empty or doesn't exist, False otherwise
+        """
+        try:
+            # Check if collection exists first
+            if not self.collection_exists():
+                logger.debug(f"Collection {self.collection_name} doesn't exist, considering it empty")
+                return True
+                
+            # Execute a minimal query that returns at most 1 point to check if collection has any data
+            result = self.client.scroll(
+                collection_name=self.collection_name,
+                limit=1
+            )
+            
+            # result[0] contains the list of points, if empty the collection is empty
+            is_empty = len(result[0]) == 0
+            logger.debug(f"Collection {self.collection_name} is {'empty' if is_empty else 'not empty'}")
+            return is_empty
             
         except Exception as e:
             logger.warning(f"Error checking if collection {self.collection_name} is empty: {str(e)}")
