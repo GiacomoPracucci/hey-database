@@ -27,20 +27,16 @@ def create_schema_routes(app, schema_service: SchemaService):
     def get_metadata():
         """
         Endpoint API che fornisce i metadati dello schema per la visualizzazione
-        
         Restituisce la struttura completa del database incluse tabelle, colonne e relazioni
         """
         try:
-            # Recupera i metadati dal retriever
             tables_metadata = schema_service.get_tables_metadata()
+            columns_metadata = schema_service.get_columns_metadata()
 
-            # Formatta i dati per il frontend
             schema_data = {"tables": []}
 
             for table_name, enhanced_table_info in tables_metadata.items():
-                # accediamo ai metadati base tramite base_metadata
-                table_info = enhanced_table_info.base_metadata
-
+                
                 table_data = {
                     "name": table_name,
                     "description": enhanced_table_info.description,
@@ -48,18 +44,22 @@ def create_schema_routes(app, schema_service: SchemaService):
                     "relationships": [],
                 }
 
-                # colonne
-                for col in table_info.columns:
-                    column_data = {
-                        "name": col["name"],
-                        "type": col["type"],
-                        "nullable": col["nullable"],
-                        "isPrimaryKey": col["name"] in table_info.primary_keys,
-                    }
-                    table_data["columns"].append(column_data)
+                # Recupera le colonne per questa tabella dai metadati colonna
+                if table_name in columns_metadata:
+                    table_columns = columns_metadata[table_name]
+                    
+                    # Aggiungi le informazioni di colonna
+                    for col_name, col_info in table_columns.items():
+                        column_data = {
+                            "name": col_name,
+                            "type": col_info.data_type,
+                            "nullable": col_info.nullable,
+                            "isPrimaryKey": col_info.is_primary_key,
+                        }
+                        table_data["columns"].append(column_data)
 
-                # relazioni (foreign keys)
-                for fk in table_info.foreign_keys:
+                # Estrai le relazioni (foreign keys) dai metadati della tabella
+                for fk in enhanced_table_info.foreign_keys:
                     relationship = {
                         "fromColumns": fk["constrained_columns"],
                         "toTable": fk["referred_table"],

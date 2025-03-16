@@ -19,3 +19,9 @@ class SchemaService:
             logger.error("Columns Metadata not initialized")
             return {}
         return self.metadata.columns
+    
+    def get_query_metadata(self):
+        if not self.metadata.queries:
+            logger.error("Queries Metadata not initialized or empty")
+            return {}
+        return self.metadata.queries
