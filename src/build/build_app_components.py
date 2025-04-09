@@ -285,7 +285,7 @@ class AppComponentsBuilder:
                 .with_retrieval(
                     CosineSimRetrieval(
                         vector_store_search=self.vector_store_searcher,
-                        tables_limit=3,
+                        tables_limit=3, # TODO qui devo inserire i parametri di config, non hardcodarli
                         columns_limit=5,
                         queries_limit=2,
                     )

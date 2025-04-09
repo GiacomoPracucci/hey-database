@@ -13,3 +13,4 @@ data/**/.lock
 # Ignora tutte le cartelle e file __pycache__
 **/__pycache__/
 *.pyc
+*.DS_Store

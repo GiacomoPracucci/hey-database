@@ -89,8 +89,8 @@ class StandardPromptBuilder(PromptBuildingStrategy):
 
         # Build the prompt with context if available
         context_str = context.processed_context or "No relevant context available."
-
         prompt = template.safe_substitute(context=context_str, query=query, schema=self.schema)
+        logger.debug(f"Prompt built: {prompt}")
 
         # Set the final prompt in the context
         context.final_prompt = prompt

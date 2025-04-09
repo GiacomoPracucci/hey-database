@@ -1,9 +1,13 @@
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 from src.rag.models import RAGContext
 from src.rag.strategies.strategies import RetrievalStrategy
 from src.store.vectorstore_search import StoreSearch
+
+from src.models.vector_store import (
+    ColumnSearchResult,
+)
 
 logger = logging.getLogger("hey-database")
 
@@ -78,23 +82,42 @@ class CosineSimRetrieval(RetrievalStrategy):
                     return context
 
             # If no exact match or exact matching is disabled, perform semantic search
+            # --- Step 1: Retrieve Relevant Tables ---
             logger.debug(f"Retrieving relevant tables for query: {query}")
             context.retrieved_tables = self.vector_store_search.search_tables(
                 question=query, limit=self.tables_limit
             )
             context.add_metadata("tables_retrieved", len(context.retrieved_tables))
+            logger.info(f"Retrieved {len(context.retrieved_tables)} relevant tables.")
 
-            logger.debug(f"Retrieving relevant columns for query: {query}")
-            context.retrieved_columns = self.vector_store_search.search_columns(
-                question=query, limit=self.columns_limit
-            )
+            # --- Step 2: Retrieve Relevant Columns PER TABLE ---
+            all_relevant_columns: List[ColumnSearchResult] = [] 
+            if context.retrieved_tables:
+                logger.debug(f"Retrieving top 5 relevant columns for each retrieved table...")
+                for table_result in context.retrieved_tables:
+                    if table_result and table_result.name:
+                        logger.debug(f"Searching columns in table '{table_result.name}' relevant to query: {query}")
+                        columns_for_this_table = self.vector_store_search.search_relevant_columns_in_table(
+                            question=query,
+                            table_name=table_result.name,
+                            limit=5
+                        )
+                        logger.debug(f"Found {len(columns_for_this_table)} relevant columns in table '{table_result.name}'.")
+                        all_relevant_columns.extend(columns_for_this_table)
+                    else:
+                        logger.warning("Skipping column search for a table_result with missing name.")
+            
+            context.retrieved_columns = all_relevant_columns
             context.add_metadata("columns_retrieved", len(context.retrieved_columns))
-
+            logger.info(f"Retrieved a total of {len(context.retrieved_columns)} relevant columns across all relevant tables.")
+            
+            # --- Step 3: Retrieve Relevant Queries ---
             logger.debug(f"Retrieving relevant queries for query: {query}")
             context.retrieved_queries = self.vector_store_search.search_queries(
                 question=query, limit=self.queries_limit
             )
             context.add_metadata("queries_retrieved", len(context.retrieved_queries))
+            logger.info(f"Retrieved {len(context.retrieved_queries)} similar queries.")
 
             return context
 
