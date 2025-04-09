@@ -153,7 +153,7 @@ class RecipeFactory:
         return builder.build()
 
     def _create_strategy(
-        self, strategy_type: str, class_name: str, params: Dict[str, Any]
+        self, class_name: str, params: Dict[str, Any]
     ) -> RAGStrategy:
         """
         Create a strategy instance from its class name and parameters.
