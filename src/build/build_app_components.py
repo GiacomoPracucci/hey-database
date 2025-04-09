@@ -255,28 +255,24 @@ class AppComponentsBuilder:
 
         logger.info("Inizializzazione collezione di recipes RAG")
 
-        # Crea le dipendenze per le strategie
         dependencies = {
             "db_connector": self.db,
             "vector_store_search": self.vector_store_searcher,
             "llm_handler": self.sql_llm,
         }
 
-        # Crea la factory per le recipes
         recipe_factory = RecipeFactory(dependencies)
 
-        # Crea la collezione di recipes dalle configurazioni
         self.recipes_collection = recipe_factory.create_recipes_collection(
             self.config.recipes_configs
         )
 
-        # Se non ci sono recipes configurate, crea una recipe di base come fallback
+        # If no recipes are found, create a basic one
         if not self.recipes_collection.recipes:
             logger.warning(
-                "Nessuna recipe configurata trovata. Creazione recipe di base come fallback."
+                "No recipes found in the configuration. Creating a basic recipe."
             )
 
-            # Crea una recipe di base con le stesse strategie che usavi nel Registry
             basic_recipe = (
                 RAGRecipeBuilder(
                     "basic_rag", "Basic RAG recipe with cosine similarity retrieval"
@@ -285,8 +281,8 @@ class AppComponentsBuilder:
                 .with_retrieval(
                     CosineSimRetrieval(
                         vector_store_search=self.vector_store_searcher,
-                        tables_limit=3, # TODO qui devo inserire i parametri di config, non hardcodarli
-                        columns_limit=5,
+                        tables_limit=3, 
+                        columns_per_table_limit=5,
                         queries_limit=2,
                     )
                 )
@@ -317,7 +313,7 @@ class AppComponentsBuilder:
                 recipes={"basic_rag": basic_recipe}, default_recipe_name="basic_rag"
             )
 
-        logger.info(f"Inizializzate {len(self.recipes_collection.recipes)} recipes")
+        logger.info(f"Initialized {len(self.recipes_collection.recipes)} recipes")
         return self
 
     def build(self) -> AppComponents:

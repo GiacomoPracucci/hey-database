@@ -15,7 +15,7 @@ retrieval:
   type: CosineSimRetrieval
   params:
     tables_limit: 3
-    columns_limit: 3
+    columns_per_table_limit: 3
     queries_limit: 2
     use_exact_match: true
 
