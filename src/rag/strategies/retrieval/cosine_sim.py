@@ -1,6 +1,9 @@
 import logging
 from typing import Dict, Any, Optional, List
 
+import concurrent.futures
+import os
+
 from src.rag.models import RAGContext
 from src.rag.strategies.strategies import RetrievalStrategy
 from src.store.vectorstore_search import StoreSearch
@@ -56,6 +59,7 @@ class CosineSimRetrieval(RetrievalStrategy):
         columns_per_table_limit: int = 5,
         queries_limit: int = 3,
         use_exact_match: bool = True,
+        max_column_search_workers: int = 4,
     ):
         """
         Initialize the retrieval strategy.
@@ -67,12 +71,14 @@ class CosineSimRetrieval(RetrievalStrategy):
                                      per relevant table (default: 5).
             queries_limit: Maximum number of previous queries to retrieve (default: 3)
             use_exact_match: Whether to check for exact matches in query store (default: True)
+            max_column_search_workers: Maximum number of workers for parallel column search
         """
         self.vector_store_search = vector_store_search
         self.tables_limit = tables_limit
         self.columns_per_table_limit = columns_per_table_limit
         self.queries_limit = queries_limit
         self.use_exact_match = use_exact_match
+        self.max_column_search_workers = max_column_search_workers
 
     def execute(self, context: RAGContext) -> RAGContext:
         """
@@ -168,9 +174,40 @@ class CosineSimRetrieval(RetrievalStrategy):
         context.add_metadata("tables_retrieved", len(context.retrieved_tables))
         logger.info(f"Retrieved {len(context.retrieved_tables)} relevant tables.")
 
+    
+    def _search_columns_in_table_task(self, query: str, table_result: TableSearchResult) -> List[ColumnSearchResult]:
+        """
+        Task executed by a single thread to search for relevant columns in a specific table.
+
+        Args:
+            query: The query string.
+            table_result: The table result to search in.
+
+        Returns:
+            A list of relevant columns found in the table.
+        """
+        if not table_result or not table_result.name:
+            logger.warning("Skipping column search task for missing table data.")
+            return []
+        
+        table_name = table_result.name
+        logger.debug(f"Starting column search task for table '{table_name}'...")
+
+        try:
+            columns_for_this_table = self.vector_store_search.search_relevant_columns_in_table(
+                question=query,
+                table_name=table_name,
+                limit=self.columns_per_table_limit
+            )
+            logger.debug(f"Completed column search task for table '{table_name}', found {len(columns_for_this_table)} columns.")
+            return columns_for_this_table
+        except Exception as e:
+            logger.error(f"Column search task failed for table '{table_name}': {e}", exc_info=True)
+            return [] # If for a table there is an error, we skip it and continue with the others
+
     def _retrieve_relevant_columns(self, query: str, context: RAGContext):
         """
-        Retrieves relevant columns for each table already present in the context.
+        Retrieves relevant columns **concurrently** for each table present in the context.
 
         Args:
             query: The query string.
@@ -183,28 +220,36 @@ class CosineSimRetrieval(RetrievalStrategy):
             context.retrieved_columns = []
             context.add_metadata("columns_retrieved", 0)
             return
+        
+        valid_tables = [t for t in context.retrieved_tables if t and t.name]
+        if not valid_tables:
+             logger.warning("No valid tables with names found in context, skipping column search.")
+             context.retrieved_columns = []
+             context.add_metadata("columns_retrieved", 0)
+             return
 
-        logger.debug(f"Retrieving top {self.columns_per_table_limit} relevant columns for each retrieved table...")
-        table_result: TableSearchResult
-        for table_result in context.retrieved_tables:
-            if table_result and table_result.name:
-                logger.debug(f"Searching columns in table '{table_result.name}' relevant to query: {query}")
+        logger.info(f"Starting concurrent column retrieval for {len(valid_tables)} tables using up to {self.max_column_search_workers} workers...")
+
+        futures = []
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_column_search_workers) as executor:
+            for table_result in valid_tables:
+                # append in the list of futures the result of every search, executed in parallel
+                futures.append(executor.submit(self._search_columns_in_table_task, query, table_result))
+
+            for future in concurrent.futures.as_completed(futures):
                 try:
-                    columns_for_this_table = self.vector_store_search.search_relevant_columns_in_table(
-                        question=query,
-                        table_name=table_result.name,
-                        limit=self.columns_per_table_limit
-                    )
-                    logger.debug(f"Found {len(columns_for_this_table)} relevant columns in table '{table_result.name}'.")
-                    all_relevant_columns.extend(columns_for_this_table)
+                    # future in the result of a sigle search
+                    # so, here we are getting the result of a single search
+                    columns_list = future.result()
+                    if columns_list: # if the list is not empty, we add it to the all_relevant_columns
+                        all_relevant_columns.extend(columns_list)
                 except Exception as e:
-                     logger.error(f"Failed to retrieve columns for table '{table_result.name}': {e}", exc_info=True)
-            else:
-                logger.warning("Skipping column search for a table_result with missing name or data.")
+                    logger.error(f"Error retrieving result from a column search future: {e}", exc_info=True)
 
         context.retrieved_columns = all_relevant_columns
         context.add_metadata("columns_retrieved", len(context.retrieved_columns))
-        logger.info(f"Retrieved a total of {len(context.retrieved_columns)} relevant columns across all relevant tables.")
+        logger.info(f"Finished concurrent column retrieval. Retrieved a total of {len(context.retrieved_columns)} relevant columns.")
 
     def _retrieve_similar_queries(self, query: str, context: RAGContext):
         """
@@ -251,9 +296,8 @@ class CosineSimRetrieval(RetrievalStrategy):
         tables_limit = get_config_value(config, "tables_limit", 3, value_type=int)
         columns_per_table_limit = get_config_value(config, "columns_per_table_limit", 5, value_type=int)
         queries_limit = get_config_value(config, "queries_limit", 3, value_type=int)
-        use_exact_match = get_config_value(
-            config, "use_exact_match", True, value_type=bool
-        )
+        use_exact_match = get_config_value(config, "use_exact_match", True, value_type=bool)
+        max_column_search_workers = get_config_value(config, "max_column_search_workers", 4, value_type=int)
 
         return cls(
             vector_store_search=vector_store_search,
@@ -261,4 +305,5 @@ class CosineSimRetrieval(RetrievalStrategy):
             columns_per_table_limit=columns_per_table_limit,
             queries_limit=queries_limit,
             use_exact_match=use_exact_match,
+            max_column_search_workers=max_column_search_workers,
         )

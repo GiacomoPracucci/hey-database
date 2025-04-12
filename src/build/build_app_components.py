@@ -283,7 +283,7 @@ class AppComponentsBuilder:
                         vector_store_search=self.vector_store_searcher,
                         tables_limit=3, 
                         columns_per_table_limit=5,
-                        queries_limit=2,
+                        queries_limit=2
                     )
                 )
                 .with_context_processing(
