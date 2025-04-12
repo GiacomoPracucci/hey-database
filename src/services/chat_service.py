@@ -78,9 +78,9 @@ class ChatService:
                 "original_question": message,
             }
 
-    def handle_feedback(self, question: str, sql_query: str, explanation: str) -> bool:
+    def process_feedback(self, question: str, sql_query: str, explanation: str) -> bool:
         """
-        Handle positive user feedback for a question-answer pair.
+        Process positive user feedback for a question-answer pair.
 
         This method stores the feedback in the vector store for future retrieval.
         When users mark a response as helpful, it gets stored and can be used for

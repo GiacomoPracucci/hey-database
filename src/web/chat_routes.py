@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
+from src.utils.query_result_sanitizer import sanitize_query_results
 import logging
 
 logger = logging.getLogger('hey-database')
@@ -31,7 +32,7 @@ def create_chat_routes(app, chat_service):
                 logger.error("Missing data in request")
                 return jsonify({"success": False, "error": "Missing data"}), 400
 
-            success = chat_service.handle_feedback(
+            success = chat_service.process_feedback(
                 question=data['question'],
                 sql_query=data['sql_query'],
                 explanation=data['explanation']
@@ -67,6 +68,7 @@ def create_chat_routes(app, chat_service):
                 
             logger.debug("Processing message with chat service")
             response = chat_service.process_message(message)
+            response = sanitize_query_results(response)
             logger.debug(f"Chat service response: {response}")
             
             return jsonify(response)
